@@ -12,13 +12,13 @@ class Piropazo extends Service
 	{
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
-		$limit = empty($request->query) ? 10 : $request->query;
+		$limit = empty($request->query) ? 5 : $request->query;
 
 		// get the completion percentage of your profile
 		$completion = $this->utils->getProfileCompletion($request->email);
 
 		// get best matches for you
-		if($completion < 70) $matches = $this->getMatchesByPopularity($user, $limit);
+		if($completion < 85) $matches = $this->getMatchesByPopularity($user, $limit);
 		else $matches = $this->getMatchesByUserFit($user, $limit);
 
 		$di = \Phalcon\DI\FactoryDefault::getDefault();
@@ -38,17 +38,18 @@ class Piropazo extends Service
 			if($match->city) $location = $match->city;
 			if($match->usstate) $location = $match->usstate;
 			if($match->province) $location = $match->province;
-			$match->location = ucfirst($location);
+			$location = str_replace("_", " ", $location);
+			$match->location = ucwords(strtolower($location));
 
 			// calculate the age
 			$match->age = empty($match->date_of_birth) ? "" : date_diff(date_create($match->date_of_birth), date_create('today'))->y;
 
 			// calculate the tags
-			$tags = array();
-			if($match->popularity > 70) $tags[] = "POPULAR";
-			if($match->religion && ($match->religion == $user->religion)) $tags[] = "RELIGION";
-			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = "NEARBY";
-			$match->tags = implode(",", $tags);
+			$match->tags = array();
+			if($match->popularity > 70) $match->tags[] = "POPULAR";
+			if($match->religion && ($match->religion == $user->religion)) $match->tags[] = "RELIGION";
+			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $match->tags[] = "NEARBY";
+			// @TODO missing tag SIMILAR for similar interests
 
 			// get the link to the image
 			if($match->picture)
@@ -61,19 +62,23 @@ class Piropazo extends Service
 			unset($match->pin,$match->email,$match->credit,$match->lang,$match->active,$match->mail_list,$match->last_update_date,$match->updated_by_user,$match->cupido,$match->sexual_orientation,$match->religion,$match->source,$match->blocked,$match->notifications,$match->city_proximity,$match->province_proximity,$match->state_proximity,$match->country_proximity,$match->percent_single,$match->popularity,$match->same_skin,$match->having_picture,$match->age_proximity,$match->same_body_type,$match->same_religion,$match->percent_match,$match->insertion_date,$match->last_access,$match->first_name,$match->middle_name,$match->last_name,$match->mother_name,$match->date_of_birth,$match->phone,$match->cellphone,$match->eyes,$match->skin,$match->body_type,$match->hair,$match->highest_school_level,$match->occupation,$match->marital_status,$match->usstate,$match->province,$match->city);
 		}
 
+		// check if your user has been crowned
+		$crowned = $this->checkUserIsCrowned($request->email);
+
 		// create response
 		$responseContent = array(
 			"noProfilePic" => empty($user->thumbnail),
 			"noProvince" => empty($user->province),
 			"fewInterests" => count($user->interests) <= 10,
 			"completion" => $completion,
+			"crowned" => $crowned,
 			"people" => $matches
 		);
 
 		// Building response
 		$response = new Response();
 		$response->setResponseSubject('Personas de tu interes');
-		$response->createFromTemplate('matches.tpl', $responseContent, $images);
+		$response->createFromTemplate('people.tpl', $responseContent, $images);
 		return $response;
 	}
 
@@ -188,7 +193,7 @@ class Piropazo extends Service
 		// get list of people whom you liked or liked you
 		$connection = new Connection();
 		$matches = $connection->deepQuery("
-			SELECT B.username, 'LIKE' as type, email_to as email, B.picture, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'LIKE' as type, email_to as email, B.picture, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_to = B.email
@@ -196,7 +201,7 @@ class Piropazo extends Service
 			AND status = 'like'
 			AND email_from = '{$request->email}'
 			UNION
-			SELECT B.username, 'WAITING' as type, email_from as email, B.picture, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'WAITING' as type, email_from as email, B.picture, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_from = B.email
@@ -204,14 +209,14 @@ class Piropazo extends Service
 			AND status = 'like'
 			AND email_to = '{$request->email}'
 			UNION
-			SELECT B.username, 'MATCH' as type, email_from as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'MATCH' as type, email_from as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_from = B.email
 			WHERE status = 'match'
 			AND email_to = '{$request->email}'
 			UNION
-			SELECT B.username, 'MATCH' as type, email_to as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'MATCH' as type, email_to as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_to = B.email
@@ -224,9 +229,27 @@ class Piropazo extends Service
 		$wwwroot = $di->get('path')['root'];
 		$images = array();
 
+		// initialize counters
+		$likeCounter = 0;
+		$waitingCounter = 0;
+		$matchCounter = 0;
+
 		// organize list of matches
 		foreach ($matches as $match)
 		{
+			// count the number of each
+			if($match->type == "LIKE") $likeCounter++;
+			if($match->type == "WAITING") $waitingCounter++;
+			if($match->type == "MATCH") $matchCounter++;
+
+			// calculate the location
+			$location = $match->country;
+			if($match->city) $location = $match->city;
+			if($match->usstate) $location = $match->usstate;
+			if($match->province) $location = $match->province;
+			$location = str_replace("_", " ", $location);
+			$match->location = ucwords(strtolower($location));
+
 			// get the link to the image
 			if($match->picture)
 			{
@@ -235,13 +258,20 @@ class Piropazo extends Service
 			}
 
 			// get rid of unnecesary stuff
-			unset($match->email);
+			unset($match->email,$match->province,$match->country,$match->usstate,$match->city);
 		}
+
+		// create response array
+		$responseArray = array(
+			"likeCounter" => $likeCounter,
+			"waitingCounter" => $waitingCounter,
+			"matchCounter" => $matchCounter,
+			"people"=>$matches);
 
 		// Building the response
 		$response = new Response();
 		$response->setResponseSubject('Tu lista de parejas');
-		$response->createFromTemplate('matches.tpl', array("people"=>$matches), $images);
+		$response->createFromTemplate('matches.tpl', $responseArray, $images);
 		return $response;
 	}
 
@@ -399,7 +429,9 @@ class Piropazo extends Service
 		// get the list of people
 		$connection = new Connection();
 		return $connection->deepQuery("
-			SELECT A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity
+			SELECT
+				A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
+				(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
 			FROM person A
 			RIGHT JOIN _piropazo_people B
 			ON A.email = B.email
@@ -459,5 +491,23 @@ class Piropazo extends Service
 		$people = $connection->deepQuery(trim($sql));
 
 		return $people;
+	}
+
+	/**
+	 * Check if the user us crowned
+	 *
+	 * @author salvipascual
+	 * @param String $email
+	 * @return Boolean
+	 */
+	private function checkUserIsCrowned($email)
+	{
+		$connection = new Connection();
+		$crowned = $connection->deepQuery("
+			SELECT COUNT(id) AS crowned
+			FROM _piropazo_crowns
+			WHERE email='html@apretaste.com'
+			AND datediff(CURDATE(), crowned) < 3");
+		return $crowned[0]->crowned;
 	}
 }

@@ -1,92 +1,108 @@
-{if $noProfilePic}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">No tiene foto de perfil. Usuarios con foto reciben 70% m&aacute;s atenci&oacute;n</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-	</tr></table>
-	{space10}
+{if $likeCounter gt 0}
+	<h1>Esperando por ti</h1>
+	<p><small>Estas personas dijeron que les gustas y est&aacute;n esperando por tu respuesta.</small></p>
+	{foreach item=person from=$people}
+		{if $person->type neq "LIKE"}{continue}{/if}
+		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+			<tr>
+				<td width="50" valign="middle" align="center">
+					{if empty($person->picture)}
+						{noimage width="50" height="100" text="No Foto"}
+					{else}
+						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+					{/if}
+				</td>
+				<td>&nbsp;</td>
+				<td valign="middle">
+					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
+					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
+					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					<br/>
+					{if $person->age}{$person->age} a&ntilde;os,{/if}
+					{if $person->location}{$person->location}{/if}
+					<br/>
+					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
+				</td>
+				<td valign="middle" align="right">
+					{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008; No" color="red" size="small"}
+				</td>
+			</tr>
+			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
+		</table>
+	{/foreach}
 {/if}
 
-{if $completion lt 85}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">Solo ha llenado el <b>{$completion|number_format}%</b> de su perfil. Complete su perfil para poder sugerirle personas m&aacute;s afines a usted</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Completar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-	</tr></table>
-	{space10}
+{space15}
+
+{if $matchCounter gt 0}
+	<h1>De pareja contigo</h1>
+	<p><small>Estas personas y usted se gustaron mutuamente y ahora pueden chatear.</small></p>
+	{foreach item=person from=$people}
+		{if $person->type neq "MATCH"}{continue}{/if}
+		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+			<tr>
+				<td width="50" valign="middle" align="center">
+					{if empty($person->picture)}
+						{noimage width="50" height="100" text="No Foto"}
+					{else}
+						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+					{/if}
+				</td>
+				<td>&nbsp;</td>
+				<td valign="middle">
+					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
+					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
+					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					<br/>
+					{if $person->age}{$person->age} a&ntilde;os,{/if}
+					{if $person->location}{$person->location}{/if}
+					<br/>
+					<font color="gray"><small>Se conocieron el {$person->matched_on|date_format:"%d/%m/%Y"}</small></font>
+				</td>
+				<td valign="middle" align="right">
+					{button href="NOTA @{$person->username}" caption="Chat" color="green" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="Borrar" color="red" size="small"}
+				</td>
+			</tr>
+			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
+		</table>
+	{/foreach}
 {/if}
 
-{if $noProvince}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">Incluya su provincia para poder sugerirle personas cercanas a usted</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Incluir" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-	</tr></table>
-	{space10}
+{space15}
+
+{if $waitingCounter gt 0}
+	<h1>Esperando por ellos</h1>
+	<p><small>Usted dijo "S&iacute;" a estas personas y ahora estamos esperando su respuesta. Si el tiempo de espera vence desapareceran de su lista. Mandeles flores para agregar una semana al tiempo de espera.</small></p>
+	{foreach item=person from=$people}
+		{if $person->type neq "WAITING"}{continue}{/if}
+		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+			<tr>
+				<td width="50" valign="middle" align="center">
+					{if empty($person->picture)}
+						{noimage width="50" height="100" text="No Foto"}
+					{else}
+						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+					{/if}
+				</td>
+				<td>&nbsp;</td>
+				<td valign="middle">
+					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
+					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
+					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					<br/>
+					{if $person->age}{$person->age} a&ntilde;os,{/if}
+					{if $person->location}{$person->location}{/if}
+					<br/>
+					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
+				</td>
+				<td valign="middle" align="right">
+					{button href="PIROPAZO FLOR @{$person->username}" caption="&#9880; Flor" color="green" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="Borrar" color="red" size="small"}
+				</td>
+			</tr>
+			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
+		</table>
+	{/foreach}
 {/if}
-
-{if $fewInterests}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">Agregue 10 &oacute; m&aacute;s intereses para poder encontrarle su pareja ideal</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-	</tr></table>
-	{space10}
-{/if}
-
-
-{if $random}
-	<h1>Cinco personas que le pueden interesar</h1>
-{else}
-	<h1>Personas afines a usted</h1>
-{/if}
-
-{space10}
-
-{foreach name=matchs item=item from=$matchs}
-	<table width="100%" cellspacing="0" cellspadding="0" border=0>
-		<tr>
-			<td width="150" valign="top" align="center">
-				{if empty($item->picture)}
-					{noimage width="150" height="100" text="Tristemente<br/>aun sin foto<br/>:'-("}
-				{else} 
-					<table cellpadding="3"><tr><td bgcolor="#202020">
-					{img src="{$item->thumbnail}" alt="Picture" width="150"}
-					</td></tr></table>
-				{/if}
-			</td>
-			<td>&nbsp;&nbsp;</td>
-			<td valign="top">
-				{if $item->commonInterests}<small style="background-color:#DFF0D8;"><font color="#3C763D"><nobr>intereses comunes</nobr></font></small>&nbsp;{/if}
-				{if $item->province != "" && $item->province == $profile->province}<small style="background-color:#FCF8E3;"><font color="#8A6D65"><nobr>viven cerca</nobr></font></small>&nbsp;{/if}
-				{if $item->popular}<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>super popular</nobr></font></small>&nbsp;{/if}
-				{if $item->religion != "" && $item->religion == $profile->religion}<small style="background-color:#F2DEDE;"><font color="#CF5C42"><nobr>misma creencia</nobr></font></small>&nbsp;{/if}
-
- 	 			<p>{link href="PERFIL {$item->username}" caption="@{$item->username}"}: {$item->description}</p>
-
- 	 			{if $item->button_like}{button href="CUPIDO LIKE @{$item->username}" caption="&hearts; Me gusta" color="green" size="small"}{/if} 
-				{button href="CUPIDO OCULTAR @{$item->username}" caption="&#10008; Ocultar" color="red" size="small"}
-				{button href="NOTA @{$item->username} Hola @{$item->username}. Me alegro encontrar tu perfil revisando cupido. Pareces una persona interesante y tenemos intereses en comun. Me gustaria llegar a conocerte mejor. Por favor respondeme." caption="Enviar nota" color="grey" body="Cambie la nota en el asunto por la que usted desea" size="small"}
-			</td>
-		</tr>
-	</table>   
-	{space10}
-{/foreach}
-
-{space10}
-
-<center>
-	<p><small>Los usuarios que usted oculte nunca se le mostrar&aacute;n nuevamente</small></p>
-	{button href="CUPIDO OCULTAR {foreach name=matchs item=item from=$matchs}{$item->username} {/foreach}" caption="&#10008; Ocultar todos" color="red"}
-	{button href="NOTA" caption="Ver notas" color="grey"}
-</center>
-
-{space30}
-
-<p><small><b>1.</b> Si nuestras sugerencias no le agradan, asegure que {link href="PERFIL EDITAR" caption="su perfil"} est&eacute; correcto y completo.</small></p>
-<p><small><b>2.</b> Si ya encontr&oacute; a su media naranja, puede {link href="CUPIDO SALIR" caption="salir de Cupido"} para no mostrar su perfil.</small></p>
-
