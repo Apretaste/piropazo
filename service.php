@@ -263,6 +263,7 @@ class Piropazo extends Service
 
 		// create response array
 		$responseArray = array(
+			"code" => "ok",
 			"likeCounter" => $likeCounter,
 			"waitingCounter" => $waitingCounter,
 			"matchCounter" => $matchCounter,
