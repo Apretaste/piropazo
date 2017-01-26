@@ -410,9 +410,15 @@ class Piropazo extends Service
 				GROUP BY B.username) C
 			ORDER BY sent DESC");
 
+		// create the response object
+		$jsonResponse = array(
+			"code" => "ok",
+			"items" => $state
+		);
+
 		// respond back to the API
 		$response = new Response();
-		return $response->createFromJSON(json_encode($state));
+		return $response->createFromJSON(json_encode($jsonResponse));
 	}
 
 
