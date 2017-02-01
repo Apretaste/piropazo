@@ -121,10 +121,11 @@ class Piropazo extends Service
 		}
 
 		// insert the new relationship
+		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
 		$connection->deepQuery("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE email_from='$emailfrom' AND email_to='$emailto';
-			INSERT INTO _piropazo_relationships (email_from,email_to,status) VALUES ('$emailfrom','$emailto','like');
+			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','like','$threeDaysForward');
 			COMMIT");
 
 		// Generate a notification
@@ -197,7 +198,7 @@ class Piropazo extends Service
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_to = B.email
-			WHERE DATE(expires_matched_blocked) > CURDATE()
+			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
 			AND email_from = '{$request->email}'
 			UNION
@@ -205,7 +206,7 @@ class Piropazo extends Service
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_from = B.email
-			WHERE DATE(expires_matched_blocked) > CURDATE()
+			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
 			AND email_to = '{$request->email}'
 			UNION
