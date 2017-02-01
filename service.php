@@ -145,15 +145,15 @@ class Piropazo extends Service
 	{
 		// get the emails from and to
 		$emailfrom = $request->email;
-		$emailto = $this->utils->getEmailFromUsername(trim($request->query));
+		$emailto = $this->utils->getEmailFromUsername($request->query);
 		if( ! $emailto) return new Response();
 
 		// insert the new relationship
 		$connection = new Connection();
 		$connection->deepQuery("
 			START TRANSACTION;
-			DELETE FROM _piropazo_relationships WHERE email_from='$emailfrom' AND email_to='$emailto';
-			INSERT INTO _piropazo_relationships (email_from,email_to,status) VALUES ('$emailfrom','$emailto','dislike');
+			DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
+			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
 			COMMIT");
 
 		// do not return anything
