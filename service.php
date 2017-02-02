@@ -384,8 +384,10 @@ class Piropazo extends Service
 	 */
 	public function _unread (Request $request)
 	{
-		// get the datetime passed
-		$filterDateTime = empty($request->query) ? date("Y-m-d H:i:s", strtotime("-1 month")) : date("Y-m-d H:i:s", strtotime($request->query));
+		// get current time and date
+		if(empty($request->query)) $currentTime = strtotime("-1 month");
+		else $currentTime = $request->query;
+		$currentDateTime = date("Y-m-d H:i:s", $currentTime);
 
 		// get the state of the system
 		$connection = new Connection();
@@ -395,25 +397,26 @@ class Piropazo extends Service
 				FROM _note A LEFT JOIN person B
 				ON A.from_user = B.email
 				WHERE to_user = '{$request->email}'
-				AND send_date > '$filterDateTime'
+				AND send_date > '$currentDateTime'
 				GROUP BY B.username
 				UNION
 				SELECT 'LIKE' as type, B.username, A.inserted as sent, '1' as counter
 				FROM _piropazo_relationships A LEFT JOIN person B
 				ON A.email_from = B.email
 				WHERE email_to = '{$request->email}'
-				AND A.inserted > '$filterDateTime'
+				AND A.inserted > '$currentDateTime'
 				UNION
 				SELECT 'FLOWER' as type, B.username, MAX(A.sent) as sent, COUNT(B.username) as counter
 				FROM _piropazo_flowers A LEFT JOIN person B
 				ON A.sender = B.email
 				WHERE receiver = '{$request->email}'
-				AND A.sent > '$filterDateTime'
+				AND A.sent > '$currentDateTime'
 				GROUP BY B.username) C
 			ORDER BY sent DESC");
 
 		// create the response object
 		$jsonResponse = array(
+			"last" => mktime(),
 			"code" => "ok",
 			"items" => $state
 		);
@@ -422,7 +425,6 @@ class Piropazo extends Service
 		$response = new Response();
 		return $response->createFromJSON(json_encode($jsonResponse));
 	}
-
 
 	/**
 	 * Get the list of matches solely by popularity
