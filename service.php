@@ -14,6 +14,9 @@ class Piropazo extends Service
 		$user = $this->utils->getPerson($request->email);
 		$limit = empty($request->query) ? 5 : $request->query;
 
+		// activate new users and people who left
+		$this->activatePiropazoUser($request->email);
+
 		// get the completion percentage of your profile
 		$completion = $this->utils->getProfileCompletion($request->email);
 
@@ -61,6 +64,9 @@ class Piropazo extends Service
 			// get rid of the pin and other unnecesary stuff
 			unset($match->pin,$match->email,$match->credit,$match->lang,$match->active,$match->mail_list,$match->last_update_date,$match->updated_by_user,$match->cupido,$match->sexual_orientation,$match->religion,$match->source,$match->blocked,$match->notifications,$match->city_proximity,$match->province_proximity,$match->state_proximity,$match->country_proximity,$match->percent_single,$match->popularity,$match->same_skin,$match->having_picture,$match->age_proximity,$match->same_body_type,$match->same_religion,$match->percent_match,$match->insertion_date,$match->last_access,$match->first_name,$match->middle_name,$match->last_name,$match->mother_name,$match->date_of_birth,$match->phone,$match->cellphone,$match->eyes,$match->skin,$match->body_type,$match->hair,$match->highest_school_level,$match->occupation,$match->marital_status,$match->usstate,$match->province,$match->city);
 		}
+
+		// mark the last time the system was used
+		$this->markLastTimeUsed($request->email);
 
 		// check if your user has been crowned
 		$crowned = $this->checkUserIsCrowned($request->email);
@@ -170,7 +176,7 @@ class Piropazo extends Service
 	{
 		// get the emails from and to
 		$emailfrom = $request->email;
-		$emailto = $this->utils->getEmailFromUsername(trim($request->query));
+		$emailto = $this->utils->getEmailFromUsername($request->query);
 		if( ! $emailto) return new Response();
 
 		// insert the new relationship
@@ -191,6 +197,9 @@ class Piropazo extends Service
 	 */
 	public function _parejas (Request $request)
 	{
+		// activate new users and people who left
+		$this->activatePiropazoUser($request->email);
+
 		// get list of people whom you liked or liked you
 		$connection = new Connection();
 		$matches = $connection->deepQuery("
@@ -261,6 +270,9 @@ class Piropazo extends Service
 			// get rid of unnecesary stuff
 			unset($match->email,$match->province,$match->country,$match->usstate,$match->city);
 		}
+
+		// mark the last time the system was used
+		$this->markLastTimeUsed($request->email);
 
 		// create response array
 		$responseArray = array(
@@ -519,5 +531,31 @@ class Piropazo extends Service
 			WHERE email='html@apretaste.com'
 			AND datediff(CURDATE(), crowned) < 3");
 		return $crowned[0]->crowned;
+	}
+
+	/**
+	 * Make active if the person uses Piropazo for the first time, or if it was inactive
+	 *
+	 * @author salvipascual
+	 * @param String $email
+	 */
+	private function activatePiropazoUser($email)
+	{
+		$connection = new Connection();
+		$crowned = $connection->deepQuery("
+			INSERT INTO _piropazo_people (email) VALUES('$email')
+			ON DUPLICATE KEY UPDATE active = 1");
+	}
+
+	/**
+	 * Mark the last time the system was used by a user
+	 *
+	 * @author salvipascual
+	 * @param String $email
+	 */
+	private function markLastTimeUsed($email)
+	{
+		$connection = new Connection();
+		$connection->deepQuery("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
 	}
 }
