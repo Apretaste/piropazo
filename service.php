@@ -479,6 +479,38 @@ class Piropazo extends Service
 	}
 
 	/**
+	 * Get the list of prices, items and descriptions from the store
+	 *
+	 * @api
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _store (Request $request)
+	{
+		// get the path to the images
+		$di = \Phalcon\DI\FactoryDefault::getDefault();
+		$path = $di->get('path')['http'] . "/piropazo/";
+
+		// get the description in the language of the user
+		// @TODO
+
+		// create the json response
+		$json = '{
+			"code":"ok",
+			"revision":"1",
+			"products": [
+				{"code":"FLOWER", "price":"2.00", "image":"'.$path.'flower.png", "description":"When you send a flower, we tell the recepient about you true feelings, plus give them seven more days to respond to your request."},
+				{"code":"CROWN", "price":"3.00", "image":"'.$path.'crown.png", "description":"A crown shows on your head for three days, making your picture to shown more often to other people and increasing your chances to get requests."},
+				{"code":"PACK_ONE", "price":"10.00", "image":"'.$path.'pack_one.png", "description":"Two crowns and five flowers, with a 30% discount. You know we have your back so you only have to fall in love."}
+			]}';
+
+		// respond back to the API
+		$response = new Response();
+		return $response->createFromJSON($json);
+	}
+
+	/**
 	 * Asigns a purchase to the user profile
 	 *
 	 * @api
