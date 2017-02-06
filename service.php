@@ -461,7 +461,7 @@ class Piropazo extends Service
 			WHERE email = '{$request->email}'");
 
 		// ensure the user exists
-		if(empty($profile) || empty($piropazo)) die('{"code":"ERROR"}');
+		if(empty($profile) || empty($piropazo)) die('{"code":"fail"}');
 
 		// create the response object
 		$jsonResponse = array(
@@ -476,6 +476,41 @@ class Piropazo extends Service
 		// respond back to the API
 		$response = new Response();
 		return $response->createFromJSON(json_encode($jsonResponse));
+	}
+
+	/**
+	 * Asigns a purchase to the user profile
+	 *
+	 * @api
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _pay (Request $request)
+	{
+		// get the code from the query and the amount
+		$order = explode(" ", $request->query);
+		$code = $order[0];
+		$amount = isset($order[1]) ? $order[1] : 1;
+
+		// get the number of articles purchased
+		$flowers = 0; $crowns = 0;
+		if($code == "FLOWER") $flowers = $amount;
+		if($code == "CROWN") $crowns = $amount;
+		if($code == "PACK_ONE") {$flowers = $amount*3; $crowns = $amount*2;}
+
+		// do not allow wrong codes
+		if($flowers + $crowns == 0) die('{"code":"fail", "message":"not valid codes or amounts"}');
+
+		// save the articles in the database
+		$connection = new Connection();
+		$connection->deepQuery("
+			UPDATE _piropazo_people
+			SET flowers=flowers+$flowers, crowns=crowns+$crowns
+			WHERE email='{$request->email}'");
+
+		// return ok response
+		die('{"code":"ok"}');
 	}
 
 	/**
@@ -598,5 +633,32 @@ class Piropazo extends Service
 	{
 		$connection = new Connection();
 		$connection->deepQuery("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
+	}
+
+	/**
+	 * Function executed when a payment is finalized
+	 * Add new flowers and crowns to the database
+	 *
+	 *  @author salvipascual
+	 */
+	public function payment(Payment $payment)
+	{
+		// get the number of articles purchased
+		$flowers = 0; $crowns = 0;
+		if($payment->code == "FLOWER") $flowers = 1;
+		if($payment->code == "CROWN") $crowns = 1;
+		if($payment->code == "PACK_ONE") {$flowers = 3; $crowns = 2;}
+
+		// do not allow wrong codes
+		if(empty($flowers) || empty($crowns)) return false;
+
+		// save the articles in the database
+		$connection = new Connection();
+		$connection->deepQuery("
+			UPDATE _piropazo_people
+			SET flowers=flowers+$flowers, crowns=crowns+$crowns
+			WHERE email='{$payment->buyer}'");
+
+		return true;
 	}
 }
