@@ -387,7 +387,7 @@ class Piropazo extends Service
 	/**
 	 * Get all unread notes, likes and flowers up to a timestamp.
 	 * Useful for real-time conversations in the API
-	 * Pass the time as YYYY-MM-DDTHH:MM:SS
+	 * Pass the LAST_ID to read messages from that ID only
 	 *
 	 * @api
 	 * @author salvipascual
@@ -439,6 +439,46 @@ class Piropazo extends Service
 	}
 
 	/**
+	 * Get info about your own profile, useful for the API
+	 *
+	 * @api
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _profile (Request $request)
+	{
+		// get the full profile for the person, and remove unused fields
+		$profile = $this->utils->getPerson($request->email);
+		unset($profile->email,$profile->insertion_date,$profile->last_access,$profile->credit,$profile->active,$profile->mail_list,$profile->last_update_date,$profile->updated_by_user,$profile->source,$profile->blocked,$profile->notifications,$profile->raffle_tickets);
+
+		// check the specific values of piropazo
+		$connection = new Connection();
+		$piropazo = $connection->deepQuery("
+			SELECT flowers, crowns,
+			(IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) as crowned
+			FROM _piropazo_people
+			WHERE email = '{$request->email}'");
+
+		// ensure the user exists
+		if(empty($profile) || empty($piropazo)) die('{"code":"ERROR"}');
+
+		// create the response object
+		$jsonResponse = array(
+			"code" => "ok",
+			"username" => $profile->username,
+			"flowers" => $piropazo[0]->flowers,
+			"crowns" => $piropazo[0]->crowns,
+			"crowned" => $piropazo[0]->crowned,
+			"profile" => $profile
+		);
+
+		// respond back to the API
+		$response = new Response();
+		return $response->createFromJSON(json_encode($jsonResponse));
+	}
+
+	/**
 	 * Get the list of matches solely by popularity
 	 *
 	 * @author salvipascual
@@ -458,6 +498,7 @@ class Piropazo extends Service
 			RIGHT JOIN _piropazo_people B
 			ON A.email = B.email
 			WHERE A.picture = 1
+			AND A.email <> '{$user->email}'
 			AND A.gender <> '{$user->gender}'
 			ORDER BY popularity DESC
 			LIMIT $limit");
