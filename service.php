@@ -479,38 +479,6 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Get the list of prices, items and descriptions from the store
-	 *
-	 * @api
-	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
-	 */
-	public function _store (Request $request)
-	{
-		// get the path to the images
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$path = $di->get('path')['http'] . "/piropazo/";
-
-		// get the description in the language of the user
-		// @TODO
-
-		// create the json response
-		$json = '{
-			"code":"ok",
-			"revision":"1",
-			"products": [
-				{"code":"FLOWER", "price":"2.00", "image":"'.$path.'flower.png", "description":"When you send a flower, we tell the recepient about you true feelings, plus give them seven more days to respond to your request."},
-				{"code":"CROWN", "price":"3.00", "image":"'.$path.'crown.png", "description":"A crown shows on your head for three days, making your picture to shown more often to other people and increasing your chances to get requests."},
-				{"code":"PACK_ONE", "price":"10.00", "image":"'.$path.'pack_one.png", "description":"Two crowns and five flowers, with a 30% discount. You know we have your back so you only have to fall in love."}
-			]}';
-
-		// respond back to the API
-		$response = new Response();
-		return $response->createFromJSON($json);
-	}
-
-	/**
 	 * Asigns a purchase to the user profile
 	 *
 	 * @api
@@ -518,21 +486,18 @@ class Piropazo extends Service
 	 * @param Request $request
 	 * @return Response
 	 */
-	public function _pay (Request $request)
+	public function _confirm (Request $request)
 	{
-		// get the code from the query and the amount
-		$order = explode(" ", $request->query);
-		$code = $order[0];
-		$amount = isset($order[1]) ? $order[1] : 1;
-
 		// get the number of articles purchased
 		$flowers = 0; $crowns = 0;
-		if($code == "FLOWER") $flowers = $amount;
-		if($code == "CROWN") $crowns = $amount;
-		if($code == "PACK_ONE") {$flowers = $amount*3; $crowns = $amount*2;}
+		if($request->query == "3FLOWERS") $flowers = 3;
+		if($request->query == "1CROWN") $crowns = 1;
+		if($request->query == "PACK_SMALL") {$flowers = 5; $crowns = 1;}
+		if($request->query == "PACK_MEDIUM") {$flowers = 10; $crowns = 2;}
+		if($request->query == "PACK_LARGE") {$flowers = 15; $crowns = 3;}
 
 		// do not allow wrong codes
-		if($flowers + $crowns == 0) die('{"code":"fail", "message":"not valid codes or amounts"}');
+		if($flowers + $crowns == 0) die('{"code":"fail", "message":"invalid code"}');
 
 		// save the articles in the database
 		$connection = new Connection();
@@ -542,7 +507,7 @@ class Piropazo extends Service
 			WHERE email='{$request->email}'");
 
 		// return ok response
-		die('{"code":"ok"}');
+		die('{"code":"ok", "flower":"'.$flowers.'", "crowns","'.$crowns.'"}');
 	}
 
 	/**
