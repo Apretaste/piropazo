@@ -1,3 +1,12 @@
+{if not $people}
+	<h1>Por ahora no tiene parejas</h1>
+	<p>Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido.</p>
+	<center>
+		<p>No se desanime, hay muchos peces en el oc&eacute;ano.</p>
+		{button href="PIROPAZO" caption="Buscar Pareja"}
+	</center>
+{/if}
+
 {if $waitingCounter gt 0}
 	<h1>Esperando por ti</h1>
 	<p><small>Estas personas dijeron que les gustas y est&aacute;n esperando por tu respuesta.</small></p>
@@ -25,7 +34,7 @@
 				</td>
 				<td valign="middle" align="right">
 					{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008; No" color="red" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
@@ -62,7 +71,7 @@
 				</td>
 				<td valign="middle" align="right">
 					{button href="NOTA @{$person->username}" caption="Chat" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="Borrar" color="red" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
@@ -99,7 +108,7 @@
 				</td>
 				<td valign="middle" align="right">
 					{button href="PIROPAZO FLOR @{$person->username}" caption="&#9880; Flor" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="Borrar" color="red" size="small"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>

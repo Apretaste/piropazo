@@ -168,29 +168,6 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Unmatch you from another person
-	 *
-	 * @param Request $request
-	 * @return Response
-	 */
-	public function _borrar (Request $request)
-	{
-		// get the emails from and to
-		$emailfrom = $request->email;
-		$emailto = $this->utils->getEmailFromUsername($request->query);
-		if( ! $emailto) return new Response();
-
-		// insert the new relationship
-		$connection = new Connection();
-		$connection->deepQuery("
-			UPDATE _piropazo_relationships
-			SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP
-			WHERE (email_from='$emailto' AND email_to='$emailfrom')
-			OR (email_from='$emailfrom' AND email_to='$emailto')");
-		return new Response();
-	}
-
-	/**
 	 * Get the list of matches for your user
 	 *
 	 * @param Request $request
@@ -282,6 +259,13 @@ class Piropazo extends Service
 			"waitingCounter" => $waitingCounter,
 			"matchCounter" => $matchCounter,
 			"people"=>$matches);
+		// create response array
+		$responseArray = array(
+			"code" => "ok",
+			"likeCounter" => 0,
+			"waitingCounter" => 0,
+			"matchCounter" => 0,
+			"people"=>array());
 
 		// Building the response
 		$response = new Response();
@@ -695,7 +679,8 @@ class Piropazo extends Service
 		$flowers = 0; $crowns = 0;
 		if($payment->code == "FLOWER") $flowers = 1;
 		if($payment->code == "CROWN") $crowns = 1;
-		if($payment->code == "PACK_ONE") {$flowers = 5; $crowns = 2;}
+		if($payment->code == "PACK_ONE") {$flowers = 7; $crowns = 2;}
+		if($payment->code == "PACK_TWO") {$flowers = 15; $crowns = 4;}
 
 		// do not allow wrong codes
 		if(empty($flowers) || empty($crowns)) return false;

@@ -9,20 +9,26 @@
 
 <table border=0 width="100%">
 	<tr>
-		<td align="center"><font color="green" size="20"><b>&#9880;</b></font></td>
+		<td align="center"><font color="green" size="20">&#9880;</font></td>
 		<td><small>Despu&eacute;s que diga "S&iacute;" a alguien, ellos tienen tres d&iacute;as para contestar. M&aacute;ndeles una flor atraer su atenci&oacute;n y agregar una semana al tiempo de espera.</small></td>
 		<td>{button href="CREDITO COMPRAR FLOWER" caption="Pagar &sect;0.5" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
-		<td align="center"><font color="orange" size="20"><b>&#9813;</b></font></td>
+		<td align="center"><font color="orange" size="20">&#9813;</font></td>
 		<td><small>Una corona se le mostrar&aacute; en su cabeza por los pr&oacute;ximos tres d&iacute;as, adem&aacute;s har&aacute; que su perfil se muestre a otros con mucha mayor frecuencia.</small></td>
 		<td>{button href="CREDITO COMPRAR CROWN" caption="Pagar &sect;2" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
-		<td align="center"><font color="green"><b>&#9880;</b></font><font color="orange"><b>&#9813;</b></font></td>
+		<td align="center"><font color="green">&#9880;</font><font color="orange">&#9813;</font></td>
 		<td><small>7 flores y 2 coronas, la oferta perfecta para que empieces a enlazar corazones como todo un profesional.</small></td>
 		<td>{button href="CREDITO COMPRAR PACK_ONE" caption="Pagar &sect;5" size="small"}</td>
+	</tr>
+	<tr><td colspan="3"><hr/></td></tr>
+	<tr>
+		<td align="center"><font color="green">&#9880;</font><font color="orange">&#9813;</font></td>
+		<td><small>15 flores y 4 coronas, este especial te convertir&aacute; en todo un Romeo. La opci&oacute;n que te permite sacar el mayor beneficio de Piropazo.</small></td>
+		<td>{button href="CREDITO COMPRAR PACK_TWO" caption="Pagar &sect;10" size="small"}</td>
 	</tr>
 </table>

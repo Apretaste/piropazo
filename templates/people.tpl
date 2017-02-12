@@ -90,7 +90,6 @@
 	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
 	{button href="PIROPAZO" caption="Ver m&aacute;s" color="green"}
 	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="blue"}
-	{button href="PIROPAZO TIENDA" caption="Comprar" color="grey"}
 </center>
 
 {space30}
@@ -100,11 +99,12 @@
 	<p>Una corona se le mostrar&aacute; en su cabeza por los pr&oacute;ximos tres d&iacute;as, adem&aacute;s har&aacute; que su perfil se muestre a otros con mucha mayor frecuencia.</p>
 	<center>
 		{button href="PIROPAZO CORONA" caption="&#9813; Usar Corona"}
-	<center>
+	</center>
 	{space30}
 {/if}
 
-<ol>
-	<li><small>Si estas personas no le agradan, asegure que {link href="PERFIL EDITAR" caption="su perfil"} est&eacute; completo.</small></li>
-	<li><small>Si ya encontr&oacute; a su media naranja, {link href="PIROPAZO SALIR" caption="salga de Piropazo"} para no mostrar su perfil.</small></li>
-</ol>
+<small>
+	1. Si estas personas no le agradan, complete {link href="PERFIL EDITAR" caption="su perfil"}<br/>
+	2. Si ya encontr&oacute; a su media naranja, puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}<br/>
+	3. Compre m&aacute;s Flores y Coronas en {link href="PIROPAZO TIENDA" caption="nuestra tienda"}
+</small>
