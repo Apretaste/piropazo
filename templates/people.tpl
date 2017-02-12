@@ -89,7 +89,7 @@
 <center>
 	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
 	{button href="PIROPAZO" caption="Ver m&aacute;s" color="green"}
-	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="blue"}
+	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="grey"}
 </center>
 
 {space30}
@@ -105,6 +105,6 @@
 
 <small>
 	1. Si estas personas no le agradan, complete {link href="PERFIL EDITAR" caption="su perfil"}<br/>
-	2. Si ya encontr&oacute; a su media naranja, puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}<br/>
-	3. Compre m&aacute;s Flores y Coronas en {link href="PIROPAZO TIENDA" caption="nuestra tienda"}
+	2. Compre m&aacute;s Flores y Coronas en {link href="PIROPAZO TIENDA" caption="nuestra tienda"}<br/>
+	3. Si ya encontr&oacute; a su media naranja, puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}<br/>
 </small>

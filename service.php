@@ -259,13 +259,6 @@ class Piropazo extends Service
 			"waitingCounter" => $waitingCounter,
 			"matchCounter" => $matchCounter,
 			"people"=>$matches);
-		// create response array
-		$responseArray = array(
-			"code" => "ok",
-			"likeCounter" => 0,
-			"waitingCounter" => 0,
-			"matchCounter" => 0,
-			"people"=>array());
 
 		// Building the response
 		$response = new Response();
@@ -683,7 +676,7 @@ class Piropazo extends Service
 		if($payment->code == "PACK_TWO") {$flowers = 15; $crowns = 4;}
 
 		// do not allow wrong codes
-		if(empty($flowers) || empty($crowns)) return false;
+		if(empty($flowers) && empty($crowns)) return false;
 
 		// save the articles in the database
 		$connection = new Connection();
