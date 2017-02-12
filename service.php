@@ -83,6 +83,7 @@ class Piropazo extends Service
 
 		// Building response
 		$response = new Response();
+		$response->setEmailLayout('email_piropazo.tpl');
 		$response->setResponseSubject('Personas de tu interes');
 		$response->createFromTemplate('people.tpl', $responseContent, $images);
 		return $response;
@@ -284,6 +285,7 @@ class Piropazo extends Service
 
 		// Building the response
 		$response = new Response();
+		$response->setEmailLayout('email_piropazo.tpl');
 		$response->setResponseSubject('Tu lista de parejas');
 		$response->createFromTemplate('matches.tpl', $responseArray, $images);
 		return $response;
@@ -307,7 +309,17 @@ class Piropazo extends Service
 
 		// check if you have enought flowers to send
 		$flowers = $connection->deepQuery("SELECT email FROM _piropazo_people WHERE email='$sender' AND flowers>0");
-		if(empty($flowers)) return $response->createFromJSON('{"code":"ERROR", "message":"Not enought flowers"}');
+
+		// return error response if the user has no crowns
+		if(empty($flowers))
+		{
+			$values = array("code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores");
+			$response = new Response();
+			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setResponseSubject('No tiene suficientes flores');
+			$response->createFromTemplate('need_more.tpl', $values);
+			return $response;
+		}
 
 		// ensure the relation exists and it is a "like"
 		$relation = $connection->deepQuery("SELECT status FROM _piropazo_relationships WHERE email_from='$sender' AND email_to='$receiver'");
@@ -330,7 +342,7 @@ class Piropazo extends Service
 		// send an email to the user
 		$response = new Response();
 		$response->setResponseEmail($receiver);
-		$response->setEmailLayout("email_simple.tpl");
+		$response->setEmailLayout('email_piropazo.tpl');
 		$response->setResponseSubject("@$username le ha mandado una flor");
 		$response->createFromTemplate('flower.tpl', array("username"=>$username));
 		return $response;
@@ -345,14 +357,22 @@ class Piropazo extends Service
 	 */
 	public function _corona (Request $request)
 	{
-		$connection = new Connection();
-		$response = new Response();
-
 		// check if you have enought crowns
+		$connection = new Connection();
 		$crowns = $connection->deepQuery("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
-		if(empty($crowns)) return $response->createFromJSON('{"code":"ERROR", "message":"Not enought crowns"}');
 
-		// send the flower
+		// return error response if the user has no crowns
+		if(empty($crowns))
+		{
+			$values = array("code"=>"ERROR", "message"=>"Not enought crowns", "items"=>"coronas");
+			$response = new Response();
+			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setResponseSubject('No tiene suficientes coronas');
+			$response->createFromTemplate('need_more.tpl', $values);
+			return $response;
+		}
+
+		// set the crown
 		$connection->deepQuery("
 			START TRANSACTION;
 			INSERT INTO _piropazo_crowns (email) VALUES ('{$request->email}');
@@ -362,8 +382,39 @@ class Piropazo extends Service
 		// post a notification for the user
 		$this->utils->addNotification($request->email, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
 
-		// do not return any response to the user
-		return new Response();
+		// Building the response
+		$response = new Response();
+		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setResponseSubject('Usted ha sido coronado');
+		$response->createFromTemplate('crowned.tpl', array());
+		return $response;
+	}
+
+	/**
+	 * Open the store
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _tienda (Request $request)
+	{
+		// get the number of flowers and cowns
+		$connection = new Connection();
+		$person = $connection->deepQuery("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
+
+		// create response
+		$responseContent = array(
+			"flowers" => $person[0]->flowers,
+			"crowns" => $person[0]->crowns
+		);
+
+		// Building response
+		$response = new Response();
+		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setResponseSubject('Tienda de Piropazo');
+		$response->createFromTemplate('store.tpl', $responseContent);
+		return $response;
 	}
 
 	/**
@@ -599,10 +650,10 @@ class Piropazo extends Service
 	{
 		$connection = new Connection();
 		$crowned = $connection->deepQuery("
-			SELECT COUNT(id) AS crowned
-			FROM _piropazo_crowns
-			WHERE email='html@apretaste.com'
-			AND datediff(CURDATE(), crowned) < 3");
+			SELECT COUNT(email) AS crowned
+			FROM _piropazo_people
+			WHERE email='$email'
+			AND datediff(CURRENT_TIMESTAMP, crowned) <= 3");
 		return $crowned[0]->crowned;
 	}
 
@@ -644,7 +695,7 @@ class Piropazo extends Service
 		$flowers = 0; $crowns = 0;
 		if($payment->code == "FLOWER") $flowers = 1;
 		if($payment->code == "CROWN") $crowns = 1;
-		if($payment->code == "PACK_ONE") {$flowers = 3; $crowns = 2;}
+		if($payment->code == "PACK_ONE") {$flowers = 5; $crowns = 2;}
 
 		// do not allow wrong codes
 		if(empty($flowers) || empty($crowns)) return false;

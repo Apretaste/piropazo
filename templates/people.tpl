@@ -88,22 +88,23 @@
 
 <center>
 	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
-	{button href="PIROPAZO" caption="Ver otros" color="green"}
-	{button href="PIROPAZO parejas" caption="Ver parejas" color="grey"}
+	{button href="PIROPAZO" caption="Ver m&aacute;s" color="green"}
+	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="blue"}
+	{button href="PIROPAZO TIENDA" caption="Comprar" color="grey"}
 </center>
 
 {space30}
 
-{if $crowned}
+{if not $crowned}
 	<h1>P&oacute;ngase una corona</h1>
 	<p>Una corona se le mostrar&aacute; en su cabeza por los pr&oacute;ximos tres d&iacute;as, adem&aacute;s har&aacute; que su perfil se muestre a otros con mucha mayor frecuencia.</p>
-	<spam style="color:orange;"><b><big><big>&#9813;</b></big></big></spam> x $1 &nbsp;&nbsp;
-	{button href="COMPRAR XXX" caption="Comprar" color="grey" size="small"}
+	<center>
+		{button href="PIROPAZO CORONA" caption="&#9813; Usar Corona"}
+	<center>
 	{space30}
 {/if}
 
 <ol>
 	<li><small>Si estas personas no le agradan, asegure que {link href="PERFIL EDITAR" caption="su perfil"} est&eacute; completo.</small></li>
-	<li><small>Si quiere que tu perfil sea visto por muchas m&aacute;s personas, {link href="" caption="c&oacute;mprese una corona"}.</small></li>
 	<li><small>Si ya encontr&oacute; a su media naranja, {link href="PIROPAZO SALIR" caption="salga de Piropazo"} para no mostrar su perfil.</small></li>
 </ol>

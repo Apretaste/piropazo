@@ -1,8 +1,8 @@
-{if $likeCounter gt 0}
+{if $waitingCounter gt 0}
 	<h1>Esperando por ti</h1>
 	<p><small>Estas personas dijeron que les gustas y est&aacute;n esperando por tu respuesta.</small></p>
 	{foreach item=person from=$people}
-		{if $person->type neq "LIKE"}{continue}{/if}
+		{if $person->type neq "WAITING"}{continue}{/if}
 		<table width="100%" cellspacing="0" cellspadding="0" border=0>
 			<tr>
 				<td width="50" valign="middle" align="center">
@@ -72,11 +72,11 @@
 
 {space15}
 
-{if $waitingCounter gt 0}
+{if $likeCounter gt 0}
 	<h1>Esperando por ellos</h1>
 	<p><small>Usted dijo "S&iacute;" a estas personas y ahora estamos esperando su respuesta. Si el tiempo de espera vence desapareceran de su lista. Mandeles flores para agregar una semana al tiempo de espera.</small></p>
 	{foreach item=person from=$people}
-		{if $person->type neq "WAITING"}{continue}{/if}
+		{if $person->type neq "LIKE"}{continue}{/if}
 		<table width="100%" cellspacing="0" cellspadding="0" border=0>
 			<tr>
 				<td width="50" valign="middle" align="center">
