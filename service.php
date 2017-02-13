@@ -412,6 +412,32 @@ class Piropazo extends Service
 		return $response;
 	}
 
+	//
+	// Methods for the Phone App
+	//
+
+	/**
+	 * Unmatch you from another person
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _borrar (Request $request)
+	{
+		// get the emails from and to
+		$emailfrom = $request->email;
+		$emailto = $this->utils->getEmailFromUsername($request->query);
+		if( ! $emailto) return new Response();
+		// insert the new relationship
+		$connection = new Connection();
+		$connection->deepQuery("
+			UPDATE _piropazo_relationships
+			SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP
+			WHERE (email_from='$emailto' AND email_to='$emailfrom')
+			OR (email_from='$emailfrom' AND email_to='$emailto')");
+		return new Response();
+	}
+
 	/**
 	 * Get all unread notes, likes and flowers up to a timestamp.
 	 * Useful for real-time conversations in the API
