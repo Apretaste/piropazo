@@ -575,6 +575,10 @@ class Piropazo extends Service
 	 */
 	private function getMatchesByPopularity ($user, $limit)
 	{
+		// select the people that you liked/disliked before
+		$emailsToHide = "SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}'
+			UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}'";
+
 		// get the list of people
 		$connection = new Connection();
 		return $connection->deepQuery("
@@ -587,6 +591,7 @@ class Piropazo extends Service
 			WHERE A.picture = 1
 			AND A.email <> '{$user->email}'
 			AND A.gender <> '{$user->gender}'
+			AND A.email NOT IN ($emailsToHide)
 			ORDER BY popularity DESC
 			LIMIT $limit");
 	}
@@ -601,9 +606,13 @@ class Piropazo extends Service
 	 */
 	private function getMatchesByUserFit ($user, $limit)
 	{
+		// select the people that you liked/disliked before
+		$emailsToHide = "SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}'
+			UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}'";
+
 		// create the where clause for the query
 		$where  = "A.email <> '{$user->email}' ";
-		$where .= "AND A.email NOT IN (SELECT email_to FROM _piropazo_relationships WHERE email_from = '{$user->email}') ";
+		$where .= "AND A.email NOT IN ($emailsToHide) ";
 		if ($user->sexual_orientation == 'HETERO') $where .= "AND gender <> '{$user->gender}' AND sexual_orientation <> 'HOMO' ";
 		if ($user->sexual_orientation == 'HOMO') $where .= "AND gender = '{$user->gender}' AND sexual_orientation <> 'HETERO' ";
 		if ($user->sexual_orientation == 'BI') $where .= " AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}')) ";
