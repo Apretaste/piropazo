@@ -288,7 +288,7 @@ class Piropazo extends Service
 		// check if you have enought flowers to send
 		$flowers = $connection->deepQuery("SELECT email FROM _piropazo_people WHERE email='$sender' AND flowers>0");
 
-		// return error response if the user has no crowns
+		// return error response if the user has no flowers
 		if(empty($flowers))
 		{
 			$values = array("code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores");
@@ -299,18 +299,12 @@ class Piropazo extends Service
 			return $response;
 		}
 
-		// ensure the relation exists and it is a "like"
-		$relation = $connection->deepQuery("SELECT status FROM _piropazo_relationships WHERE email_from='$sender' AND email_to='$receiver'");
-		if(empty($relation)) return $response->createFromJSON('{"code":"ERROR", "message":"No relationship exist"}');
-		if($relation[0]->status != "like") return $response->createFromJSON('{"code":"ERROR", "message":"Wrong relationship type"}');
-
-		// send the flower
-		$newExpire = date('Y-m-d', strtotime('+7 days'));
+		// send the flower and expand response time 7 days
 		$connection->deepQuery("
 			START TRANSACTION;
 			INSERT INTO _piropazo_flowers (sender,receiver) VALUES ('$sender','$receiver');
 			UPDATE _piropazo_people SET flowers=flowers-1 WHERE email='$sender';
-			UPDATE _piropazo_relationships SET expires_matched_blocked='$newExpire' WHERE email_from='$sender' AND email_to='$receiver';
+			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE email_from = '$sender' AND email_to = '$receiver';
 			COMMIT");
 
 		// post a notification for the user
