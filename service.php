@@ -12,7 +12,8 @@ class Piropazo extends Service
 	{
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
-		$limit = empty($request->query) ? 5 : $request->query;
+		$limit = empty(intval($request->query)) ? 5 : $request->query;
+		if($limit > 50) $limit = 50;
 
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->email);
