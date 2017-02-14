@@ -1,5 +1,11 @@
 <service>
 	<serviceName>piropazo</serviceName>
+	<serviceAliases>
+		<alias>cupido</alias>
+		<alias>cupid</alias>
+		<alias>amor</alias>
+		<alias>parejas</alias>
+	</serviceAliases>
 	<serviceDescription><![CDATA[Le ayuda en la ardua b&uacute;squeda de su media naranja. Encuentra personas afines con usted tomando como referencia los datos de su perfil]]></serviceDescription>
 	<creatorEmail>salvi@apretaste.com</creatorEmail>
 	<serviceCategory>social</serviceCategory>
@@ -14,6 +20,4 @@
 			Recibir&aacute; una lista de las personas m&aacute;s afines a usted. Diga si o no y le dejaremos saber a esa persona.
 		]]>
 	</serviceUsage>
-	<listed>0</listed>
-	<showAds>0</showAds>
 </service>
