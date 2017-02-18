@@ -18,35 +18,20 @@ class Piropazo extends Service
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->email);
 
-		// get the completion percentage of your profile
-		$completion = $this->utils->getProfileCompletion($request->email);
-
 		// get best matches for you
-		if($completion < 85) $matches = $this->getMatchesByPopularity($user, $limit);
+		if($user->completion < 85) $matches = $this->getMatchesByPopularity($user, $limit);
 		else $matches = $this->getMatchesByUserFit($user, $limit);
 
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$wwwhttp = $di->get('path')['http'];
-		$wwwroot = $di->get('path')['root'];
-		$social = new Social();
+		// organize list of matches and get images
 		$images = array();
-
-		// organize list of matches
+		$social = new Social();
 		foreach ($matches as $match)
 		{
-			// create the about me section for those without it
-			if (empty($match->about_me)) $match->about_me = $social->profileToText($match, $user->lang);
+			// get the full profile
+			$match = $social->prepareUserProfile($match);
 
-			// calculate the location
-			$location = $match->country;
-			if($match->city) $location = $match->city;
-			if($match->usstate) $location = $match->usstate;
-			if($match->province) $location = $match->province;
-			$location = str_replace("_", " ", $location);
-			$match->location = ucwords(strtolower($location));
-
-			// calculate the age
-			$match->age = empty($match->date_of_birth) ? "" : date_diff(date_create($match->date_of_birth), date_create('today'))->y;
+			// get the link to the image
+			if($match->picture) $images[] = $match->picture_internal;
 
 			// calculate the tags
 			$match->tags = array();
@@ -54,16 +39,6 @@ class Piropazo extends Service
 			if($match->religion && ($match->religion == $user->religion)) $match->tags[] = "RELIGION";
 			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $match->tags[] = "NEARBY";
 			// @TODO missing tag SIMILAR for similar interests
-
-			// get the link to the image
-			if($match->picture)
-			{
-				$match->pictureURL = "$wwwhttp/profile/thumbnail/{$match->email}.jpg";
-				$images[] = "$wwwroot/public/profile/thumbnail/{$match->email}.jpg";
-			}
-
-			// get rid of the pin and other unnecesary stuff
-			unset($match->pin,$match->email,$match->credit,$match->lang,$match->active,$match->mail_list,$match->last_update_date,$match->updated_by_user,$match->cupido,$match->sexual_orientation,$match->religion,$match->source,$match->blocked,$match->notifications,$match->city_proximity,$match->province_proximity,$match->state_proximity,$match->country_proximity,$match->percent_single,$match->popularity,$match->same_skin,$match->having_picture,$match->age_proximity,$match->same_body_type,$match->same_religion,$match->percent_match,$match->insertion_date,$match->last_access,$match->first_name,$match->middle_name,$match->last_name,$match->mother_name,$match->date_of_birth,$match->phone,$match->cellphone,$match->eyes,$match->skin,$match->body_type,$match->hair,$match->highest_school_level,$match->occupation,$match->marital_status,$match->usstate,$match->province,$match->city);
 		}
 
 		// mark the last time the system was used
@@ -74,10 +49,10 @@ class Piropazo extends Service
 
 		// create response
 		$responseContent = array(
-			"noProfilePic" => empty($user->thumbnail),
+			"noProfilePic" => empty($user->picture),
 			"noProvince" => empty($user->province),
-			"fewInterests" => count($user->interests) <= 10,
-			"completion" => $completion,
+			"fewInterests" => count($user->interests) <= 5,
+			"completion" => $user->completion,
 			"crowned" => $crowned,
 			"people" => $matches
 		);
@@ -434,60 +409,6 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Get all unread notes, likes and flowers up to a timestamp.
-	 * Useful for real-time conversations in the API
-	 * Pass the LAST_ID to read messages from that ID only
-	 *
-	 * @api
-	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
-	 */
-	public function _unread (Request $request)
-	{
-		// get current time and date
-		if(empty($request->query)) $currentTime = strtotime("-1 month");
-		else $currentTime = $request->query;
-		$currentDateTime = date("Y-m-d H:i:s", $currentTime);
-
-		// get the state of the system
-		$connection = new Connection();
-		$state = $connection->deepQuery("
-			SELECT * FROM (
-				SELECT 'NOTE' as type, B.username, MAX(send_date) as sent, COUNT(B.username) as counter
-				FROM _note A LEFT JOIN person B
-				ON A.from_user = B.email
-				WHERE to_user = '{$request->email}'
-				AND send_date > '$currentDateTime'
-				GROUP BY B.username
-				UNION
-				SELECT 'LIKE' as type, B.username, A.inserted as sent, '1' as counter
-				FROM _piropazo_relationships A LEFT JOIN person B
-				ON A.email_from = B.email
-				WHERE email_to = '{$request->email}'
-				AND A.inserted > '$currentDateTime'
-				UNION
-				SELECT 'FLOWER' as type, B.username, MAX(A.sent) as sent, COUNT(B.username) as counter
-				FROM _piropazo_flowers A LEFT JOIN person B
-				ON A.sender = B.email
-				WHERE receiver = '{$request->email}'
-				AND A.sent > '$currentDateTime'
-				GROUP BY B.username) C
-			ORDER BY sent DESC");
-
-		// create the response object
-		$jsonResponse = array(
-			"last" => mktime(),
-			"code" => "ok",
-			"items" => $state
-		);
-
-		// respond back to the API
-		$response = new Response();
-		return $response->createFromJSON(json_encode($jsonResponse));
-	}
-
-	/**
 	 * Get info about your own profile, useful for the API
 	 *
 	 * @api
@@ -499,7 +420,7 @@ class Piropazo extends Service
 	{
 		// get the full profile for the person, and remove unused fields
 		$profile = $this->utils->getPerson($request->email);
-		unset($profile->email,$profile->insertion_date,$profile->last_access,$profile->credit,$profile->active,$profile->mail_list,$profile->last_update_date,$profile->updated_by_user,$profile->source,$profile->blocked,$profile->notifications,$profile->raffle_tickets);
+		unset($profile->email,$profile->insertion_date,$profile->last_access,$profile->credit,$profile->active,$profile->mail_list,$profile->last_update_date,$profile->updated_by_user,$profile->source,$profile->blocked,$profile->notifications);
 
 		// check the specific values of piropazo
 		$connection = new Connection();

@@ -56,7 +56,7 @@
 					{noimage width="100" height="100" text="Tristemente<br/>aun sin foto<br/>:'-("}
 				{else}
 					<table cellpadding="3"><tr><td bgcolor="#202020">
-					{img src="{$person->pictureURL}" alt="Picture" width="100"}
+					{img src="{$person->picture_internal}" alt="Picture" width="100"}
 					</td></tr></table>
 				{/if}
 
