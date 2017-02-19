@@ -277,7 +277,7 @@ class Piropazo extends Service
 		$response = new Response();
 		$response->setResponseEmail($receiver);
 		$response->setEmailLayout('email_piropazo.tpl');
-		$response->setResponseSubject("@$username le ha mandado una flor");
+		$response->setResponseSubject("El usuario @$username le ha mandado una flor");
 		$response->createFromTemplate('flower.tpl', array("username"=>$username));
 		return $response;
 	}
