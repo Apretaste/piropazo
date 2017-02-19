@@ -18,7 +18,7 @@
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="50"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>
@@ -55,7 +55,7 @@
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="50"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>
@@ -92,7 +92,7 @@
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->pictureURL}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="50"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>

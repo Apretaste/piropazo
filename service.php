@@ -157,7 +157,7 @@ class Piropazo extends Service
 		// get list of people whom you liked or liked you
 		$connection = new Connection();
 		$matches = $connection->deepQuery("
-			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'LIKE' as type, email_to as email, B.picture, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.*, 'LIKE' as type, A.email_to as email, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_to = B.email
@@ -165,7 +165,7 @@ class Piropazo extends Service
 			AND status = 'like'
 			AND email_from = '{$request->email}'
 			UNION
-			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'WAITING' as type, email_from as email, B.picture, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.*, 'WAITING' as type, A.email_from as email, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_from = B.email
@@ -173,32 +173,28 @@ class Piropazo extends Service
 			AND status = 'like'
 			AND email_to = '{$request->email}'
 			UNION
-			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'MATCH' as type, email_from as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.*, 'MATCH' as type, A.email_from as email, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_from = B.email
 			WHERE status = 'match'
 			AND email_to = '{$request->email}'
 			UNION
-			SELECT B.username, B.gender, B.province, B.city, B.usstate, B.country, YEAR(CURDATE())-YEAR(B.date_of_birth) AS age, 'MATCH' as type, email_to as email, B.picture, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.*, 'MATCH' as type, A.email_to as email, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.email_to = B.email
 			WHERE status = 'match'
 			AND email_from = '{$request->email}'");
 
-		// get values to construct the image path
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$wwwhttp = $di->get('path')['http'];
-		$wwwroot = $di->get('path')['root'];
-		$images = array();
-
 		// initialize counters
 		$likeCounter = 0;
 		$waitingCounter = 0;
 		$matchCounter = 0;
+		$images = array();
 
 		// organize list of matches
+		$social = new Social();
 		foreach ($matches as $match)
 		{
 			// count the number of each
@@ -206,23 +202,14 @@ class Piropazo extends Service
 			if($match->type == "WAITING") $waitingCounter++;
 			if($match->type == "MATCH") $matchCounter++;
 
-			// calculate the location
-			$location = $match->country;
-			if($match->city) $location = $match->city;
-			if($match->usstate) $location = $match->usstate;
-			if($match->province) $location = $match->province;
-			$location = str_replace("_", " ", $location);
-			$match->location = ucwords(strtolower($location));
+			// get the full profile
+			$match = $social->prepareUserProfile($match);
 
 			// get the link to the image
-			if($match->picture)
-			{
-				$match->pictureURL = "$wwwhttp/profile/thumbnail/{$match->email}.jpg";
-				$images[] = "$wwwroot/public/profile/thumbnail/{$match->email}.jpg";
-			}
+			if($match->picture) $images[] = $match->picture_internal;
 
 			// get rid of unnecesary stuff
-			unset($match->email,$match->province,$match->country,$match->usstate,$match->city);
+			unset($match->email);
 		}
 
 		// mark the last time the system was used
