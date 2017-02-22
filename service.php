@@ -273,6 +273,11 @@ class Piropazo extends Service
 		$username = $this->utils->getUsernameFromEmail($sender);
 		$this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
 
+		// send push notification for users with the App
+		$pushNotification = new PushNotification();
+		$appid = $pushNotification->getAppId($receiver, "piropazo");
+		if($appid) $pushNotification->sendPush($appid, "Has recibido una flor", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas");
+
 		// send an email to the user
 		$response = new Response();
 		$response->setResponseEmail($receiver);
