@@ -39,6 +39,10 @@ class Piropazo extends Service
 			if($match->religion && ($match->religion == $user->religion)) $match->tags[] = "RELIGION";
 			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $match->tags[] = "NEARBY";
 			// @TODO missing tag SIMILAR for similar interests
+
+			// erase unwanted properties in the object
+			$properties = array("username","gender","interests","about_me","picture","picture_external","picture_internal","crown","country","location","age","tags");
+			$match = $this->cleanObject($properties, $match);
 		}
 
 		// mark the last time the system was used
@@ -208,8 +212,9 @@ class Piropazo extends Service
 			// get the link to the image
 			if($match->picture) $images[] = $match->picture_internal;
 
-			// get rid of unnecesary stuff
-			unset($match->email);
+			// erase unwanted properties in the object
+			$properties = array("username","gender","age","type","location","picture","picture_external","picture_internal","matched_on","time_left");
+			$match = $this->cleanObject($properties, $match);
 		}
 
 		// mark the last time the system was used
@@ -601,6 +606,24 @@ class Piropazo extends Service
 	{
 		$connection = new Connection();
 		$connection->deepQuery("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
+	}
+
+	/**
+	 * Clean an object based on an array of properties
+	 *
+	 * @author salvipascual
+	 * @param Array $properties, array of poperties to keep
+	 * @param Object $object, object to clean
+	 * @return Object, clean object
+	 */
+	private function cleanObject($properties, $object)
+	{
+		$objProperties = get_object_vars($object);
+		foreach($objProperties as $prop=>$value)
+		{
+			if( ! in_array($prop, $properties)) unset($object->$prop);
+		}
+		return $object;
 	}
 
 	/**
