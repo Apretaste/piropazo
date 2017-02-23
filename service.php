@@ -41,7 +41,7 @@ class Piropazo extends Service
 			// @TODO missing tag SIMILAR for similar interests
 
 			// erase unwanted properties in the object
-			$properties = array("username","gender","interests","about_me","picture","picture_external","picture_internal","crown","country","location","age","tags");
+			$properties = array("username","gender","interests","about_me","picture","picture_public","picture_internal","crown","country","location","age","tags");
 			$match = $this->cleanObject($properties, $match);
 		}
 
@@ -213,7 +213,7 @@ class Piropazo extends Service
 			if($match->picture) $images[] = $match->picture_internal;
 
 			// erase unwanted properties in the object
-			$properties = array("username","gender","age","type","location","picture","picture_external","picture_internal","matched_on","time_left");
+			$properties = array("username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left");
 			$match = $this->cleanObject($properties, $match);
 		}
 
@@ -500,7 +500,7 @@ class Piropazo extends Service
 			FROM person A
 			RIGHT JOIN _piropazo_people B
 			ON A.email = B.email
-			WHERE A.picture = 1
+			WHERE A.picture IS NOT NULL
 			AND A.email <> '{$user->email}'
 			AND A.gender <> '{$user->gender}'
 			AND A.email NOT IN ($emailsToHide)
@@ -543,7 +543,7 @@ class Piropazo extends Service
 		$subsql .= "(select IFNULL(marital_status, '') = 'SOLTERO') * 20 as percent_single, ";
 		$subsql .= "(select B.likes*B.likes/(B.likes+B.dislikes)) as popularity, ";
 		$subsql .= "(select IFNULL(skin, '') = '{$user->skin}') * 5 as same_skin, ";
-		$subsql .= "(select picture = 1) * 30 as having_picture, ";
+		$subsql .= "(select picture IS NOT NULL) * 30 as having_picture, ";
 		$subsql .= "(ABS(IFNULL(YEAR(CURDATE()) - YEAR(date_of_birth), 0) - {$user->age}) < 20) * 15 as age_proximity,  ";
 		$subsql .= "(select IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown, ";
 		$subsql .= "(select IFNULL(body_type, '') = '{$user->body_type}') * 5 as same_body_type, ";
