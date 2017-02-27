@@ -42,7 +42,7 @@ class Piropazo extends Service
 
 			// erase unwanted properties in the object
 			$properties = array("username","gender","interests","about_me","picture","picture_public","picture_internal","crown","country","location","age","tags");
-			$match = $this->cleanObject($properties, $match);
+			$match = $this->filterObjectProperties($properties, $match);
 		}
 
 		// mark the last time the system was used
@@ -214,7 +214,7 @@ class Piropazo extends Service
 
 			// erase unwanted properties in the object
 			$properties = array("username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left");
-			$match = $this->cleanObject($properties, $match);
+			$match = $this->filterObjectProperties($properties, $match);
 		}
 
 		// mark the last time the system was used
@@ -417,7 +417,10 @@ class Piropazo extends Service
 	{
 		// get the full profile for the person, and remove unused fields
 		$profile = $this->utils->getPerson($request->email);
-		unset($profile->email,$profile->insertion_date,$profile->last_access,$profile->credit,$profile->active,$profile->mail_list,$profile->last_update_date,$profile->updated_by_user,$profile->source,$profile->blocked,$profile->notifications);
+
+		// erase unwanted properties in the object
+		$properties = array('username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public');
+		$profile = $this->filterObjectProperties($properties, $profile);
 
 		// check the specific values of piropazo
 		$connection = new Connection();
@@ -535,6 +538,7 @@ class Piropazo extends Service
 		// @TODO this is very important, but I dont have the time now
 
 		// create subquery to calculate the percentages
+		if(empty($user->age)) $user->age = 0;
 		$subsql  = "SELECT A.*, ";
 		$subsql .= "(select IFNULL(city, '') = '{$user->city}') * 60 as city_proximity, ";
 		$subsql .= "(select IFNULL(province, '') = '{$user->province}') * 50 as province_proximity, ";
@@ -609,14 +613,14 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Clean an object based on an array of properties
+	 * Remov all properties in an object except the ones passes in the array
 	 *
 	 * @author salvipascual
 	 * @param Array $properties, array of poperties to keep
 	 * @param Object $object, object to clean
 	 * @return Object, clean object
 	 */
-	private function cleanObject($properties, $object)
+	private function filterObjectProperties($properties, $object)
 	{
 		$objProperties = get_object_vars($object);
 		foreach($objProperties as $prop=>$value)
