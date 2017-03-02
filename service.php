@@ -87,6 +87,9 @@ class Piropazo extends Service
 		$connection = new Connection();
 		$record = $connection->deepQuery("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
 
+		// get the person From from the database
+		$personFrom = $this->utils->getPerson($emailfrom);
+
 		// if they liked you, like too, if they dislike you, block
 		if( ! empty($record))
 		{
@@ -98,8 +101,7 @@ class Piropazo extends Service
 				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "NOTA @$username");
 
 				// let the other person know of the match
-				$usernameFrom = $this->utils->getPerson($emailfrom)->username;
-				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @$usernameFrom se han gustado, ahora pueden chatear", "NOTA @$usernameFrom");
+				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "NOTA @{$personFrom->username}");
 			}
 
 			// if they dislike you, block that match
@@ -120,11 +122,7 @@ class Piropazo extends Service
 		$appid = $pushNotification->getAppId($emailto, "piropazo");
 
 		// send push notification for users with the App
-		if($appid)
-		{
-			$person = $this->utils->getPerson($emailfrom);
-			$pushNotification->piropazoFlowerPush($appid, $person);
-		}
+		if($appid) $pushNotification->piropazoLikePush($appid, $personFrom);
 		// post an internal notification for the user
 		else $this->utils->addNotification($emailto, "piropazo", "El usuario @$username ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
@@ -290,7 +288,11 @@ class Piropazo extends Service
 		$username = $this->utils->getUsernameFromEmail($sender);
 
 		// send push notification for users with the App
-		if($appid) $pushNotification->piropazoFlowerPush($appid, $sender);
+		if($appid)
+		{
+			$person = $this->utils->getPerson($sender);
+			$pushNotification->piropazoFlowerPush($appid, $person);
+		}
 		// post an internal notification for the user
 		else $this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
 
