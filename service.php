@@ -115,8 +115,18 @@ class Piropazo extends Service
 			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','like','$threeDaysForward');
 			COMMIT");
 
-		// Generate a notification
-		$this->utils->addNotification($emailto, "piropazo", "El usuario @$username ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
+		// prepare notification
+		$pushNotification = new PushNotification();
+		$appid = $pushNotification->getAppId($emailto, "piropazo");
+
+		// send push notification for users with the App
+		if($appid)
+		{
+			$person = $this->utils->getPerson($emailfrom);
+			$pushNotification->piropazoFlowerPush($appid, $person);
+		}
+		// post an internal notification for the user
+		else $this->utils->addNotification($emailto, "piropazo", "El usuario @$username ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
 		// do not return anything
 		return new Response();
@@ -274,14 +284,15 @@ class Piropazo extends Service
 			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE email_from = '$sender' AND email_to = '$receiver';
 			COMMIT");
 
-		// post a notification for the user
-		$username = $this->utils->getUsernameFromEmail($sender);
-		$this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
-
-		// send push notification for users with the App
+		// prepare notification
 		$pushNotification = new PushNotification();
 		$appid = $pushNotification->getAppId($receiver, "piropazo");
-		if($appid) $pushNotification->sendPush($appid, "Has recibido una flor", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas");
+		$username = $this->utils->getUsernameFromEmail($sender);
+
+		// send push notification for users with the App
+		if($appid) $pushNotification->piropazoFlowerPush($appid, $sender);
+		// post an internal notification for the user
+		else $this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
 
 		// send an email to the user
 		$response = new Response();
