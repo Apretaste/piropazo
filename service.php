@@ -494,6 +494,40 @@ class Piropazo extends Service
 	}
 
 	/**
+	 * Return the count of all unread notes. Useful for the API
+	 *
+	 * @api
+	 * @author salvipascual
+	 * @param Request
+	 * @return Response
+	 */
+	public function _unread(Request $request)
+	{
+		// get count of unread notes
+		$connection = new Connection();
+		$notes = $connection->deepQuery("
+			SELECT B.username, MAX(send_date) as sent, COUNT(B.username) as counter
+			FROM _note A LEFT JOIN person B
+			ON A.from_user = B.email
+			WHERE to_user = '{$request->email}'
+			AND read_date IS NULL
+			AND B.email IN (
+				SELECT email_to as email FROM _piropazo_relationships WHERE status = 'match' AND email_from = '{$request->email}'
+				UNION
+				SELECT email_from as email FROM _piropazo_relationships WHERE status = 'match' AND email_to = '{$request->email}')
+			GROUP BY B.username");
+
+		// get the total counter
+		$total = 0;
+		foreach ($notes as $note) $total += $note->counter;
+
+		// respond back to the API
+		$response = new Response();
+		$jsonResponse = array("code" => "ok", "total"=>$total, "items" => $notes);
+		return $response->createFromJSON(json_encode($jsonResponse));
+	}
+
+	/**
 	 * Get the list of matches solely by popularity
 	 *
 	 * @author salvipascual
