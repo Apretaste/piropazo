@@ -65,10 +65,7 @@
 			<td>&nbsp;&nbsp;</td>
 			<td valign="top">
 				{foreach item=tag from=$person->tags}
-					{if $tag eq "SIMILAR"}<small style="background-color:#DFF0D8;"><font color="#3C763D"><nobr>&nbsp;intereses comunes&nbsp;</nobr></font></small>{/if}
-					{if $tag eq "NEARBY"}<small style="background-color:#FCF8E3;"><font color="#8A6D65"><nobr>&nbsp;viven cerca&nbsp;</nobr></font></small>{/if}
-					{if $tag eq "POPULAR"}<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;super popular&nbsp;</nobr></font></small>{/if}
-					{if $tag eq "RELIGION"}<small style="background-color:#F2DEDE;"><font color="#CF5C42"><nobr>&nbsp;misma religi&oacute;n&nbsp;</nobr></font></small>{/if}
+					<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
 				{/foreach}
 
  	 			<p>{link href="PERFIL {$person->username}" caption="@{$person->username}"}: {$person->about_me}</p>

@@ -34,11 +34,15 @@ class Piropazo extends Service
 			if($match->picture) $images[] = $match->picture_internal;
 
 			// calculate the tags
-			$match->tags = array();
-			if($match->popularity > 70) $match->tags[] = "POPULAR";
-			if($match->religion && ($match->religion == $user->religion)) $match->tags[] = "RELIGION";
-			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $match->tags[] = "NEARBY";
-			// @TODO missing tag SIMILAR for similar interests
+			$tags = array();
+			if(array_intersect($match->interests, $user->interests)) die("tagg");//$tags[] = $this->int18("tag_interests");
+			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = $this->int18("tag_nearby");
+			if($match->popularity > 70) $tags[] = $this->int18("tag_popular");
+			if(abs($match->age - $user->age) <= 3) $tags[] = $this->int18("tag_same_age");
+			if($match->religion && ($match->religion == $user->religion)) $tags[] = $this->int18("tag_religion");
+			if($match->highest_school_level && ($match->highest_school_level == $user->highest_school_level)) $tags[] = $this->int18("tag_same_education");
+			if($match->body_type == "ATLETICO") $tags[] = $this->int18("tag_hot");
+			$match->tags = array_slice($tags, 0, 2); // show only two tags
 
 			// erase unwanted properties in the object
 			$properties = array("username","gender","interests","about_me","picture","picture_public","picture_internal","crown","country","location","age","tags");
@@ -256,6 +260,7 @@ class Piropazo extends Service
 		$connection = new Connection();
 		$response = new Response();
 
+		// get the receiver's email
 		$sender = $request->email;
 		$receiver = $this->utils->getEmailFromUsername($request->query);
 		if(empty($receiver)) return $response->createFromJSON('{"code":"ERROR", "message":"Wrong username"}');
@@ -267,7 +272,6 @@ class Piropazo extends Service
 		if(empty($flowers))
 		{
 			$values = array("code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores");
-			$response = new Response();
 			$response->setEmailLayout('email_piropazo.tpl');
 			$response->setResponseSubject('No tiene suficientes flores');
 			$response->createFromTemplate('need_more.tpl', $values);
@@ -293,15 +297,19 @@ class Piropazo extends Service
 			$person = $this->utils->getPerson($sender);
 			$pushNotification->piropazoFlowerPush($appid, $person);
 		}
-		// post an internal notification for the user
-		else $this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
+		// send emails for users using the email service
+		else
+		{
+			// post an internal notification for the user
+			$this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
 
-		// send an email to the user
-		$response = new Response();
-		$response->setResponseEmail($receiver);
-		$response->setEmailLayout('email_piropazo.tpl');
-		$response->setResponseSubject("El usuario @$username le ha mandado una flor");
-		$response->createFromTemplate('flower.tpl', array("username"=>$username));
+			// send an email to the user
+			$response->setResponseEmail($receiver);
+			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setResponseSubject("El usuario @$username le ha mandado una flor");
+			$response->createFromTemplate('flower.tpl', array("username"=>$username));
+		}
+
 		return $response;
 	}
 
@@ -660,7 +668,7 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Remov all properties in an object except the ones passes in the array
+	 * Removs all properties in an object except the ones passes in the array
 	 *
 	 * @author salvipascual
 	 * @param Array $properties, array of poperties to keep
@@ -675,6 +683,24 @@ class Piropazo extends Service
 			if( ! in_array($prop, $properties)) unset($object->$prop);
 		}
 		return $object;
+	}
+
+	/**
+	 * Get a language tag text on a language
+	 *
+	 * @author salvipascual
+	 * @param String $tag
+	 * @param String $lang
+	 * @return String
+	 */
+	private function int18($tag, $lang="ES")
+	{
+		// only allow known languages
+		if( ! in_array($lang, ["ES","EN"])) return false;
+
+		// return the tag name
+		require "$this->pathToService/lang.php";
+		return $language[$tag][$lang];
 	}
 
 	/**
