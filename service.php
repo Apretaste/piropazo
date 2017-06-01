@@ -67,7 +67,7 @@ class Piropazo extends Service
 
 		// Building response
 		$response = new Response();
-		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Personas de tu interes');
 		$response->createFromTemplate('people.tpl', $responseContent, $images);
 		return $response;
@@ -242,7 +242,7 @@ class Piropazo extends Service
 
 		// Building the response
 		$response = new Response();
-		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Tu lista de parejas');
 		$response->createFromTemplate('matches.tpl', $responseArray, $images);
 		return $response;
@@ -272,7 +272,7 @@ class Piropazo extends Service
 		if(empty($flowers))
 		{
 			$values = array("code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores");
-			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setEmailLayout('piropazo.tpl');
 			$response->setResponseSubject('No tiene suficientes flores');
 			$response->createFromTemplate('need_more.tpl', $values);
 			return $response;
@@ -305,7 +305,7 @@ class Piropazo extends Service
 
 			// send an email to the user
 			$response->setResponseEmail($receiver);
-			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setEmailLayout('piropazo.tpl');
 			$response->setResponseSubject("El usuario @$username le ha mandado una flor");
 			$response->createFromTemplate('flower.tpl', array("username"=>$username));
 		}
@@ -331,7 +331,7 @@ class Piropazo extends Service
 		{
 			$values = array("code"=>"ERROR", "message"=>"Not enought crowns", "items"=>"coronas");
 			$response = new Response();
-			$response->setEmailLayout('email_piropazo.tpl');
+			$response->setEmailLayout('piropazo.tpl');
 			$response->setResponseSubject('No tiene suficientes coronas');
 			$response->createFromTemplate('need_more.tpl', $values);
 			return $response;
@@ -349,7 +349,7 @@ class Piropazo extends Service
 
 		// Building the response
 		$response = new Response();
-		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Usted ha sido coronado');
 		$response->createFromTemplate('crowned.tpl', array());
 		return $response;
@@ -376,7 +376,7 @@ class Piropazo extends Service
 
 		// Building response
 		$response = new Response();
-		$response->setEmailLayout('email_piropazo.tpl');
+		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Tienda de Piropazo');
 		$response->createFromTemplate('store.tpl', $responseContent);
 		return $response;
