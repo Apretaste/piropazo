@@ -35,7 +35,7 @@ class Piropazo extends Service
 
 			// calculate the tags
 			$tags = array();
-			if(array_intersect($match->interests, $user->interests)) die("tagg");//$tags[] = $this->int18("tag_interests");
+			if(array_intersect($match->interests, $user->interests)) $tags[] = $this->int18("tag_interests");
 			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = $this->int18("tag_nearby");
 			if($match->popularity > 70) $tags[] = $this->int18("tag_popular");
 			if(abs($match->age - $user->age) <= 3) $tags[] = $this->int18("tag_same_age");
