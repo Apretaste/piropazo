@@ -89,7 +89,7 @@ class Piropazo extends Service
 
 		// check if there is any previous record between you and that person
 		$connection = new Connection();
-		$record = $connection->deepQuery("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
+		$record = $connection->query("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
 
 		// get the person From from the database
 		$personFrom = $this->utils->getPerson($emailfrom);
@@ -101,7 +101,7 @@ class Piropazo extends Service
 			if($record[0]->status == "like")
 			{
 				// update to create a match and let you know of the match
-				$connection->deepQuery("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
+				$connection->query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
 				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "NOTA @$username");
 
 				// let the other person know of the match
@@ -109,13 +109,13 @@ class Piropazo extends Service
 			}
 
 			// if they dislike you, block that match
-			if($record[0]->status == "dislike") $connection->deepQuery("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
+			if($record[0]->status == "dislike") $connection->query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
 			return new Response();
 		}
 
 		// insert the new relationship
 		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
-		$connection->deepQuery("
+		$connection->query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE email_from='$emailfrom' AND email_to='$emailto';
 			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','like','$threeDaysForward');
@@ -149,7 +149,7 @@ class Piropazo extends Service
 
 		// insert the new relationship
 		$connection = new Connection();
-		$connection->deepQuery("
+		$connection->query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
 			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
@@ -172,7 +172,7 @@ class Piropazo extends Service
 
 		// get list of people whom you liked or liked you
 		$connection = new Connection();
-		$matches = $connection->deepQuery("
+		$matches = $connection->query("
 			SELECT B.*, 'LIKE' as type, A.email_to as email, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
@@ -266,7 +266,7 @@ class Piropazo extends Service
 		if(empty($receiver)) return $response->createFromJSON('{"code":"ERROR", "message":"Wrong username"}');
 
 		// check if you have enought flowers to send
-		$flowers = $connection->deepQuery("SELECT email FROM _piropazo_people WHERE email='$sender' AND flowers>0");
+		$flowers = $connection->query("SELECT email FROM _piropazo_people WHERE email='$sender' AND flowers>0");
 
 		// return error response if the user has no flowers
 		if(empty($flowers))
@@ -279,7 +279,7 @@ class Piropazo extends Service
 		}
 
 		// send the flower and expand response time 7 days
-		$connection->deepQuery("
+		$connection->query("
 			START TRANSACTION;
 			INSERT INTO _piropazo_flowers (sender,receiver) VALUES ('$sender','$receiver');
 			UPDATE _piropazo_people SET flowers=flowers-1 WHERE email='$sender';
@@ -324,7 +324,7 @@ class Piropazo extends Service
 	{
 		// check if you have enought crowns
 		$connection = new Connection();
-		$crowns = $connection->deepQuery("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
+		$crowns = $connection->query("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
 
 		// return error response if the user has no crowns
 		if(empty($crowns))
@@ -338,7 +338,7 @@ class Piropazo extends Service
 		}
 
 		// set the crown
-		$connection->deepQuery("
+		$connection->query("
 			START TRANSACTION;
 			INSERT INTO _piropazo_crowns (email) VALUES ('{$request->email}');
 			UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE email='{$request->email}';
@@ -366,7 +366,7 @@ class Piropazo extends Service
 	{
 		// get the number of flowers and cowns
 		$connection = new Connection();
-		$person = $connection->deepQuery("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
+		$person = $connection->query("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
 
 		// create response
 		$responseContent = array(
@@ -392,7 +392,7 @@ class Piropazo extends Service
 	public function _salir (Request $request)
 	{
 		$connection = new Connection();
-		$connection->deepQuery("UPDATE _piropazo_people SET active=0 WHERE email='{$request->email}'");
+		$connection->query("UPDATE _piropazo_people SET active=0 WHERE email='{$request->email}'");
 
 		$response = new Response();
 		$response->setResponseSubject('Haz salido de Piropazo');
@@ -418,7 +418,7 @@ class Piropazo extends Service
 		if( ! $emailto) return new Response();
 		// insert the new relationship
 		$connection = new Connection();
-		$connection->deepQuery("
+		$connection->query("
 			UPDATE _piropazo_relationships
 			SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP
 			WHERE (email_from='$emailto' AND email_to='$emailfrom')
@@ -445,7 +445,7 @@ class Piropazo extends Service
 
 		// check the specific values of piropazo
 		$connection = new Connection();
-		$piropazo = $connection->deepQuery("
+		$piropazo = $connection->query("
 			SELECT flowers, crowns,
 			(IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) as crowned
 			FROM _piropazo_people
@@ -492,13 +492,13 @@ class Piropazo extends Service
 
 		// save the articles in the database
 		$connection = new Connection();
-		$connection->deepQuery("
+		$connection->query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$crowns
 			WHERE email='{$request->email}'");
 
 		// return ok response
-		die('{"code":"ok", "flower":"'.$flowers.'", "crowns","'.$crowns.'"}');
+		die('{"code":"ok", "flower":"'.$flowers.'", "crowns":"'.$crowns.'"}');
 	}
 
 	/**
@@ -513,7 +513,7 @@ class Piropazo extends Service
 	{
 		// get count of unread notes
 		$connection = new Connection();
-		$notes = $connection->deepQuery("
+		$notes = $connection->query("
 			SELECT B.username, MAX(send_date) as sent, COUNT(B.username) as counter
 			FROM _note A LEFT JOIN person B
 			ON A.from_user = B.email
@@ -551,7 +551,7 @@ class Piropazo extends Service
 
 		// get the list of people
 		$connection = new Connection();
-		return $connection->deepQuery("
+		return $connection->query("
 			SELECT
 				A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
 				(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
@@ -618,7 +618,7 @@ class Piropazo extends Service
 
 		// Executing the query
 		$connection = new Connection();
-		$people = $connection->deepQuery(trim($sql));
+		$people = $connection->query(trim($sql));
 
 		return $people;
 	}
@@ -633,7 +633,7 @@ class Piropazo extends Service
 	private function checkUserIsCrowned($email)
 	{
 		$connection = new Connection();
-		$crowned = $connection->deepQuery("
+		$crowned = $connection->query("
 			SELECT COUNT(email) AS crowned
 			FROM _piropazo_people
 			WHERE email='$email'
@@ -650,7 +650,7 @@ class Piropazo extends Service
 	private function activatePiropazoUser($email)
 	{
 		$connection = new Connection();
-		$crowned = $connection->deepQuery("
+		$crowned = $connection->query("
 			INSERT INTO _piropazo_people (email) VALUES('$email')
 			ON DUPLICATE KEY UPDATE active = 1");
 	}
@@ -664,7 +664,7 @@ class Piropazo extends Service
 	private function markLastTimeUsed($email)
 	{
 		$connection = new Connection();
-		$connection->deepQuery("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
+		$connection->query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
 	}
 
 	/**
@@ -723,7 +723,7 @@ class Piropazo extends Service
 
 		// save the articles in the database
 		$connection = new Connection();
-		$connection->deepQuery("
+		$connection->query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$crowns
 			WHERE email='{$payment->buyer}'");
