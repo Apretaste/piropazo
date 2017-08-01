@@ -2,8 +2,10 @@
 	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
 		<td width="1">&nbsp;</td>
 		<td><small><font color="#A94442">No tiene foto de perfil. Usuarios con foto reciben 70% m&aacute;s atenci&oacute;n</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{if $notFromApp}
+			<td width="1">&nbsp;</td>
+			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{/if}
 	</tr></table>
 	{space10}
 {/if}
@@ -12,8 +14,10 @@
 	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
 		<td width="1">&nbsp;</td>
 		<td><small><font color="#A94442">Solo ha llenado el <b>{$completion|number_format}%</b> de su perfil. Complete al menos el 85% de su perfil para sugerirle personas m&aacute;s afines a usted</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Completar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{if $notFromApp}
+			<td width="1">&nbsp;</td>
+			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Completar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{/if}
 	</tr></table>
 	{space10}
 {/if}
@@ -22,8 +26,10 @@
 	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
 		<td width="1">&nbsp;</td>
 		<td><small><font color="#A94442">No ha agregado su provincia en su perfil. Agregue su provincia para poder sugerirle personas cercanas a usted</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Incluir" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{if $notFromApp}
+			<td width="1">&nbsp;</td>
+			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Incluir" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{/if}
 	</tr></table>
 	{space10}
 {/if}
@@ -32,8 +38,10 @@
 	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
 		<td width="1">&nbsp;</td>
 		<td><small><font color="#A94442">Agregue 10 &oacute; m&aacute;s intereses o m&aacute;s en su perfil para poder encontrarle su pareja ideal</font></small></td>
-		<td width="1">&nbsp;</td>
-		<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{if $notFromApp}
+			<td width="1">&nbsp;</td>
+			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+		{/if}
 	</tr></table>
 	{space10}
 {/if}
@@ -70,8 +78,8 @@
 
  	 			<p>{link href="PERFIL {$person->username}" caption="@{$person->username}"}: {$person->about_me}</p>
 
- 	 			{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small"}
-				{button href="PIROPAZO NO @{$person->username}" caption="&#10008; No" color="red" size="small"}
+ 	 			{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small" wait="false"}
+				{button href="PIROPAZO NO @{$person->username}" caption="&#10008; No" color="red" size="small" wait="false"}
 			</td>
 		</tr>
 
@@ -101,7 +109,7 @@
 {/if}
 
 <small>
-	1. Si estas personas no le agradan, complete {link href="PERFIL EDITAR" caption="su perfil"}<br/>
+	1. Si estas personas no le agradan, complete {if $notFromApp}{link href="PERFIL EDITAR" caption="su perfil"}{else}su perfil{/if}<br/>
 	2. Compre m&aacute;s Flores y Coronas en {link href="PIROPAZO TIENDA" caption="nuestra tienda"}<br/>
 	3. Si ya encontr&oacute; a su media naranja, puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}<br/>
 </small>

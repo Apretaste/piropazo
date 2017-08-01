@@ -7,8 +7,8 @@
 {space10}
 
 <center>
-	{button href="PIROPAZO SI @{$username}" caption="Decir S&Iacute;" color="green"}
-	{button href="PIROPAZO NO @{$username}" caption="Decir NO" color="grey"}
+	{button href="PIROPAZO SI @{$username}" caption="Decir S&Iacute;" color="green" wait="false"}
+	{button href="PIROPAZO NO @{$username}" caption="Decir NO" color="grey" wait="false"}
 </center>
 
 {space10}

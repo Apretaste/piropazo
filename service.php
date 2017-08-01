@@ -55,12 +55,17 @@ class Piropazo extends Service
 		// check if your user has been crowned
 		$crowned = $this->checkUserIsCrowned($request->email);
 
+		// check if the user is connecting via the app or email
+		$di = \Phalcon\DI\FactoryDefault::getDefault();
+		$notFromApp = $di->get('environment') != "app";
+
 		// create response
 		$responseContent = array(
 			"noProfilePic" => empty($user->picture),
 			"noProvince" => empty($user->province),
 			"fewInterests" => count($user->interests) <= 5,
 			"completion" => $user->completion,
+			"notFromApp" => $notFromApp,
 			"crowned" => $crowned,
 			"people" => $matches
 		);
@@ -556,7 +561,7 @@ class Piropazo extends Service
 				A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
 				(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
 			FROM person A
-			RIGHT JOIN _piropazo_people B
+			LEFT JOIN _piropazo_people B
 			ON A.email = B.email
 			WHERE A.picture IS NOT NULL
 			AND A.email <> '{$user->email}'

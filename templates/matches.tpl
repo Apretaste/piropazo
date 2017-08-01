@@ -33,8 +33,8 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
+					{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small" wait="false"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
@@ -71,7 +71,7 @@
 				</td>
 				<td valign="middle" align="right">
 					{button href="NOTA @{$person->username}" caption="Chat" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
