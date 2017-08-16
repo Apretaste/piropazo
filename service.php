@@ -133,7 +133,7 @@ class Piropazo extends Service
 		// send push notification for users with the App
 		if($appid) $pushNotification->piropazoLikePush($appid, $personFrom);
 		// post an internal notification for the user
-		else $this->utils->addNotification($emailto, "piropazo", "El usuario @$username ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
+		else $this->utils->addNotification($emailto, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
 		// do not return anything
 		return new Response();
