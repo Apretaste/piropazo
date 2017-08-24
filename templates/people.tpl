@@ -93,7 +93,7 @@
 
 <center>
 	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
-	{button href="PIROPAZO" caption="Ver m&aacute;s" color="green"}
+	{button href="PIROPAZO {$offsetNext},{$limit}" caption="Ver m&aacute;s" color="green"}
 	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="grey"}
 </center>
 

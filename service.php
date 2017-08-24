@@ -12,6 +12,17 @@ class Piropazo extends Service
 	{
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
+		$request->query = trim($request->query);
+		
+		// detecting offset (subject = PIROPAZO OFFSET, LIMIT)
+		$offset = 0;
+		$parts = explode(',', $request->query);
+		if (isset($parts[1]))
+		{
+			$offset = intval($parts[0]);
+			$request->query = trim($parts[1]);
+		}
+		
 		$limit = empty(intval($request->query)) ? 5 : $request->query;
 		if($limit > 50) $limit = 50;
 
@@ -19,8 +30,8 @@ class Piropazo extends Service
 		$this->activatePiropazoUser($request->email);
 
 		// get best matches for you
-		if($user->completion < 85) $matches = $this->getMatchesByPopularity($user, $limit);
-		else $matches = $this->getMatchesByUserFit($user, $limit);
+		if($user->completion < 85) $matches = $this->getMatchesByPopularity($user, $limit, $offset);
+		else $matches = $this->getMatchesByUserFit($user, $limit, $offset);
 
 		// organize list of matches and get images
 		$images = array();
@@ -67,7 +78,10 @@ class Piropazo extends Service
 			"completion" => $user->completion,
 			"notFromApp" => $notFromApp,
 			"crowned" => $crowned,
-			"people" => $matches
+			"people" => $matches,
+			"offset" => $offset,
+			"limit" => $limit,
+			"offsetNext" => $offset + $limit
 		);
 
 		// Building response
@@ -546,9 +560,10 @@ class Piropazo extends Service
 	 * @author salvipascual
 	 * @param Object $user, the person to match against
 	 * @param Int $limit, returning number
+     * @param Int $offset
 	 * @return Array of People
 	 */
-	private function getMatchesByPopularity ($user, $limit)
+	private function getMatchesByPopularity ($user, $limit, $offset = 0)
 	{
 		// select the people that you liked/disliked before
 		$emailsToHide = "SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}'
@@ -568,7 +583,7 @@ class Piropazo extends Service
 			AND A.gender <> '{$user->gender}'
 			AND A.email NOT IN ($emailsToHide)
 			ORDER BY popularity DESC
-			LIMIT $limit");
+			LIMIT $offset, $limit");
 	}
 
 	/**
@@ -577,9 +592,10 @@ class Piropazo extends Service
 	 * @author salvipascual
 	 * @param Object $user, the person to match against
 	 * @param Int $limit, returning number
+     * @param Int $offset
 	 * @return Array of People
 	 */
-	private function getMatchesByUserFit ($user, $limit)
+	private function getMatchesByUserFit ($user, $limit, $offset = 0)
 	{
 		// select the people that you liked/disliked before
 		$emailsToHide = "SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}'
@@ -619,7 +635,7 @@ class Piropazo extends Service
 		$sql  = "SELECT *, percent_single + city_proximity + province_proximity + state_proximity + country_proximity + same_skin + having_picture + age_proximity + same_body_type + same_religion + crown*50 as percent_match ";
 		$sql .= "FROM ($subsql) as subq2 ";
 		$sql .= "ORDER BY percent_match DESC, email ASC ";
-		$sql .= "LIMIT $limit; ";
+		$sql .= "LIMIT $offset,$limit; ";
 
 		// Executing the query
 		$connection = new Connection();
