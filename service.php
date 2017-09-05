@@ -165,6 +165,35 @@ class Piropazo extends Service
 	}
 
 	/**
+	 * Flag a user's profile
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _reportar (Request $request)
+	{
+		// get the parts of the report
+		$parts = explode(" ", $request->query);
+		$username = $parts[0];
+		$type = $parts[1];
+
+		// only acept the types allowed
+		$type = strtoupper($type);
+		if( ! in_array($type, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return new Response();
+
+		// get email of the person to report
+		$emailto = $this->utils->getEmailFromUsername($username);
+
+		// save the report
+		$connection = new Connection();
+		$connection->query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailto','$type')");
+
+		// say NO to the user
+		$request->query = $username;
+		return $this->_no($request);
+	}
+
+	/**
 	 * Get the list of matches for your user
 	 *
 	 * @param Request $request
