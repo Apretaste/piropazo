@@ -59,3 +59,18 @@ CREATE TABLE IF NOT EXISTS `_piropazo_relationships` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=13 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `_piropazo_reports`
+--
+
+CREATE TABLE IF NOT EXISTS `_piropazo_reports` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `creator` char(100) NOT NULL COMMENT 'The one who reports',
+  `user` char(100) NOT NULL COMMENT 'Person reported',
+  `type` enum('OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT') NOT NULL,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
