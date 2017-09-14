@@ -13,15 +13,17 @@ class Piropazo extends Service
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
 		$request->query = trim($request->query);
-		
-		// detecting offset (subject = PIROPAZO OFFSET, LIMIT)
 		$offset = 0;
+		
+		// OLD: detecting offset (subject = PIROPAZO OFFSET, LIMIT)
+		/*
 		$parts = explode(',', $request->query);
 		if (isset($parts[1]))
 		{
 			$offset = intval($parts[0]);
 			$request->query = trim($parts[1]);
 		}
+		*/
 		
 		$limit = empty(intval($request->query)) ? 5 : $request->query;
 		if($limit > 50) $limit = 50;
@@ -36,6 +38,8 @@ class Piropazo extends Service
 		// organize list of matches and get images
 		$images = array();
 		$social = new Social();
+		
+		$inlineUsernames = '';
 		foreach ($matches as $match)
 		{
 			// get the full profile
@@ -58,6 +62,7 @@ class Piropazo extends Service
 			// erase unwanted properties in the object
 			$properties = array("username","gender","interests","about_me","picture","picture_public","picture_internal","crown","country","location","age","tags");
 			$match = $this->filterObjectProperties($properties, $match);
+			$inlineUsernames .= $match->username.' ';
 		}
 
 		// mark the last time the system was used
@@ -79,9 +84,10 @@ class Piropazo extends Service
 			"notFromApp" => $notFromApp,
 			"crowned" => $crowned,
 			"people" => $matches,
-			"offset" => $offset,
+			//"offset" => $offset,
 			"limit" => $limit,
-			"offsetNext" => $offset + $limit
+			//"offsetNext" => $offset + $limit,
+			"inlineUsernames" => $inlineUsernames
 		);
 
 		// Building response
@@ -153,6 +159,53 @@ class Piropazo extends Service
 		return new Response();
 	}
 
+	/**
+	 * Say No to all
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _otros (Request $request)
+	{
+		// get the emails from and to
+		$emailfrom = $request->email;
+		
+		$users = explode(" ", $request->query);
+		$emails = [];
+		foreach ($users as $user)
+		{
+			$user = trim($user);
+			if ($user == '') continue;
+		
+			$emailto = $this->utils->getEmailFromUsername($request->query);
+			if( ! $emailto) continue;
+			
+			$emails[$emailto] = $emailto;
+		}
+		
+		if (count($emails)==0)
+			return new Response();
+		
+		// insert the new relationships
+		$connection = new Connection();
+		$sql = "
+			START TRANSACTION;";
+			foreach ($emails as $emailto){
+				$sql .="
+				DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
+				INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
+				";
+			}
+		$sql .= "COMMIT";
+	
+		$connection->query($sql);
+		
+		$request->query = "";
+		
+		// return main response
+		return $this->_main($request);
+	}
+	
 	/**
 	 * Say No to a match
 	 *
