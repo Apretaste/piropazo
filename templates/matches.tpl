@@ -70,7 +70,7 @@
 					<font color="gray"><small>Se conocieron el {$person->matched_on|date_format:"%d/%m/%Y"}</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="NOTA @{$person->username}" caption="Chat" color="green" size="small"}
+					{button href="CHAT @{$person->username}" caption="Chat" color="green" size="small"}
 					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
@@ -107,8 +107,8 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO FLOR @{$person->username}" caption="&#9880; Flor" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon"}
+					{button href="PIROPAZO FLOR @{$person->username}" caption="&#9880; Flor" color="green" size="small" wait="false"}
+					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>

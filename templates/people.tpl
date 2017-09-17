@@ -94,7 +94,7 @@
 <center>
 	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
 	{button href="PIROPAZO OTROS {foreach name=people item=person from=$people}@{$person->username} {/foreach}" caption="Ver m&aacute;s" color="green"}
-	{button href="PIROPAZO PAREJAS" caption="Ver parejas" color="grey"}
+	{button href="PIROPAZO PAREJAS" caption="Mis parejas" color="grey"}
 </center>
 
 {space30}

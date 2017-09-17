@@ -192,23 +192,23 @@ class Piropazo extends Service
 	{
 		// get the emails from and to
 		$emailfrom = $request->email;
-		
+
 		$users = explode(" ", $request->query);
 		$emails = [];
 		foreach ($users as $user)
 		{
 			$user = trim($user);
 			if ($user == '') continue;
-		
+
 			$emailto = $this->utils->getEmailFromUsername($request->query);
 			if( ! $emailto) continue;
-			
+
 			$emails[$emailto] = $emailto;
 		}
-		
+
 		if (count($emails)==0)
 			return new Response();
-		
+
 		// insert the new relationships
 		$sql = "
 			START TRANSACTION;";
@@ -219,15 +219,15 @@ class Piropazo extends Service
 				";
 			}
 		$sql .= "COMMIT";
-	
+
 		$this->q($sql);
-		
+
 		$request->query = "";
-		
+
 		// return main response
 		return $this->_main($request);
 	}
-	
+
 	/**
 	 * Say No to a match
 	 *
@@ -423,10 +423,11 @@ class Piropazo extends Service
 			$this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
 
 			// send an email to the user
-			$response->setResponseEmail($receiver);
-			$response->setEmailLayout('piropazo.tpl');
-			$response->setResponseSubject("El usuario @$username le ha mandado una flor");
-			$response->createFromTemplate('flower.tpl', array("username"=>$username));
+// 			@TODO I dont know how to send the email now
+//			$response->setResponseEmail($receiver);
+//			$response->setEmailLayout('piropazo.tpl');
+//			$response->setResponseSubject("El usuario @$username le ha mandado una flor");
+//			$response->createFromTemplate('flower.tpl', array("username"=>$username));
 		}
 
 		return $response;
@@ -647,7 +648,7 @@ class Piropazo extends Service
 		$jsonResponse = array("code" => "ok", "total" => $total, "items" => $notes);
 		return $response->createFromJSON(json_encode($jsonResponse));
 	}
-	
+
 	/**
 	 * Get comma separated list of emails to hide
 	 *
@@ -665,7 +666,7 @@ class Piropazo extends Service
 		if (is_array($r)) foreach($r as $item) $emailsToHide[] = $item->email;
 		$emailsToHideCount = count($emailsToHide);
 		$emailsToHide = "'".implode("','", $emailsToHide)."'";
-		
+
 		return $emailsToHide;
 	}
 
@@ -683,7 +684,7 @@ class Piropazo extends Service
 		// select the people that you liked/disliked before
 		$emailsToHideCount = 0;
 		$emailsToHide = $this->getEmailsToHide($user, $emailsToHideCount);
-			
+
 		// get the list of people
 		return $this->q("
 			SELECT
@@ -715,7 +716,7 @@ class Piropazo extends Service
 		// select the people that you liked/disliked before
 		$emailsToHideCount = 0;
 		$emailsToHide = $this->getEmailsToHide($user, $emailsToHideCount);
-			
+
 		// create the where clause for the query
 		$where  = "A.email <> '{$user->email}' ";
 		$where .= ($emailsToHideCount > 0 ? " AND A.email NOT IN ($emailsToHide)":"")." ";
