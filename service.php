@@ -16,9 +16,7 @@ class Piropazo extends Service
 	 */
 	private function connection()
 	{
-		if (is_null($this->connection))
-			$this->connection = new Connection();
-
+		if (is_null($this->connection)) $this->connection = new Connection();
 		return $this->connection;
 	}
 
@@ -118,7 +116,6 @@ class Piropazo extends Service
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Personas de tu interes');
 		$response->createFromTemplate('people.tpl', $responseContent, $images);
-
 		return $response;
 	}
 
@@ -568,7 +565,10 @@ class Piropazo extends Service
 			WHERE email = '{$request->email}'");
 
 		// ensure the user exists
-		if(empty($profile) || empty($piropazo)) die('{"code":"fail"}');
+		if(empty($profile) || empty($piropazo)) {
+			$response = new Response();
+			return $response->createFromJSON('{"code":"fail"}');
+		}
 
 		// create the response object
 		$jsonResponse = array(
@@ -604,7 +604,10 @@ class Piropazo extends Service
 		if($request->query == "PACK_LARGE") {$flowers = 15; $crowns = 3;}
 
 		// do not allow wrong codes
-		if($flowers + $crowns == 0) die('{"code":"fail", "message":"invalid code"}');
+		if($flowers + $crowns == 0) {
+			$response = new Response();
+			return $response->createFromJSON('{"code":"fail", "message":"invalid code"}');
+		}
 
 		// save the articles in the database
 		$this->q("
@@ -613,7 +616,8 @@ class Piropazo extends Service
 			WHERE email='{$request->email}'");
 
 		// return ok response
-		die('{"code":"ok", "flower":"'.$flowers.'", "crowns":"'.$crowns.'"}');
+		$response = new Response();
+		return $response->createFromJSON('{"code":"ok", "flower":"'.$flowers.'", "crowns":"'.$crowns.'"}');
 	}
 
 	/**

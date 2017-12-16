@@ -4,7 +4,7 @@
 		<td><small><font color="#A94442">No tiene foto de perfil. Usuarios con foto reciben 70% m&aacute;s atenci&oacute;n</font></small></td>
 		{if $notFromApp}
 			<td width="1">&nbsp;</td>
-			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
+			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta para ver su perfil en modo de edicion."}</td>
 		{/if}
 	</tr></table>
 	{space10}
