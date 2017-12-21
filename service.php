@@ -47,6 +47,7 @@ class Piropazo extends Service
 		$offset = 0;
 
 		$limit = empty(intval($request->query)) ? 5 : $request->query;
+		$limit = intval($limit);
 		if($limit > 50) $limit = 50;
 
 		// activate new users and people who left
