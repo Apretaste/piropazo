@@ -1,115 +1,71 @@
 {if $noProfilePic}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">No tiene foto de perfil. Usuarios con foto reciben 70% m&aacute;s atenci&oacute;n</font></small></td>
-		{if $notFromApp}
-			<td width="1">&nbsp;</td>
-			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar foto" body="Envie este email tal y como esta para ver su perfil en modo de edicion."}</td>
-		{/if}
-	</tr></table>
-	{space10}
+	<div class="notice">Agregue su foto de perfil para recibir 70% m&aacute;s atenci&oacute;n</div>
 {/if}
 
 {if $completion lt 85}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">Solo ha llenado el <b>{$completion|number_format}%</b> de su perfil. Complete al menos el 85% de su perfil para sugerirle personas m&aacute;s afines a usted</font></small></td>
-		{if $notFromApp}
-			<td width="1">&nbsp;</td>
-			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Completar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-		{/if}
-	</tr></table>
-	{space10}
+	<div class="notice">Complete 85% o mas de su perfil para encontrar su pareja ideal</div>
 {/if}
 
 {if $noProvince}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">No ha agregado su provincia en su perfil. Agregue su provincia para poder sugerirle personas cercanas a usted</font></small></td>
-		{if $notFromApp}
-			<td width="1">&nbsp;</td>
-			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Incluir" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-		{/if}
-	</tr></table>
-	{space10}
+	<div class="notice">Agregue su pais o provincia para encontrar gente cercana</div>
 {/if}
 
 {if $fewInterests}
-	<table width="100%" cellpadding="0" cellspacing="0"><tr bgcolor="#F2DEDE">
-		<td width="1">&nbsp;</td>
-		<td><small><font color="#A94442">Agregue 10 &oacute; m&aacute;s intereses o m&aacute;s en su perfil para poder encontrarle su pareja ideal</font></small></td>
-		{if $notFromApp}
-			<td width="1">&nbsp;</td>
-			<td align="right" valign="middle">{button href="PERFIL EDITAR" size="small" caption="Agregar" body="Envie este email tal y como esta. Recibira como respuesta su perfil en modo de edicion."}</td>
-		{/if}
-	</tr></table>
-	{space10}
+	<div class="notice">Agregue 10 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
 {/if}
 
 <h1>Diga S&iacute; o No</h1>
 
-<p>Si usted dice "S&iacute;" a alguien, y esa persona dice "S&iacute;" a usted, podr&aacute;n chatear. Termine con esta lista y vea m&aacute;s, o valla a su lista de parejas en el bot&oacute;n al final.</p>
-
-{space10}
-
-{foreach name=people item=person from=$people}
-	<table width="100%" cellspacing="0" cellspadding="0" border=0>
-		<tr>
-			<td width="100" valign="middle" align="center">
-				{if $person->crown}
-					<spam style="color:orange;"><big><big><b>&#9813;</b></big></big><spam><br/>
-				{/if}
-
-				{if empty($person->picture)}
-					{noimage width="100" height="100" text="Tristemente<br/>aun sin foto<br/>:'-("}
-				{else}
-					<table cellpadding="3"><tr><td bgcolor="#202020">
-					{img src="{$person->picture_internal}" alt="Picture" width="100"}
-					</td></tr></table>
-				{/if}
-
-				<small style="color:#202020"><nobr>&nbsp;{$person->location}&nbsp;</nobr></small>
-			</td>
-			<td>&nbsp;&nbsp;</td>
-			<td valign="top">
-				{foreach item=tag from=$person->tags}
-					<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
-				{/foreach}
-
- 	 			<p>{link href="PERFIL {$person->username}" caption="@{$person->username}"}: {$person->about_me}</p>
-
- 	 			{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small" wait="false"}
-				{button href="PIROPAZO NO @{$person->username}" caption="&#10008; No" color="red" size="small" wait="false"}
-			</td>
-		</tr>
-
-		{if not $smarty.foreach.people.last}
-			<tr><td colspan=3><hr/></td></tr>
-		{/if}
-	</table>
-{/foreach}
-
-{space30}
+{space5}
 
 <center>
-	<p><small>Si ya dijo S&iacute; o No a todos, &iquest;Que m&aacute;s quiere hacer?</small></p>
-	{button href="PIROPAZO OTROS {foreach name=people item=person from=$people}@{$person->username} {/foreach}" caption="Ver m&aacute;s" color="green"  wait="false"}
-	{button href="PIROPAZO PAREJAS" caption="Mis parejas" color="grey"}
+	<!--CROWN-->
+	{if $people[0]->crown}
+		<spam style="color:orange; font-size:30px;" class="emogi">&#x1F451;</spam><br/>
+	{/if}
+
+	<!--COLOR BASED ON GENDER-->
+	{assign var="color" value="gray"}
+	{if $people[0]->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+	{if $people[0]->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+
+	<!--PICTURE-->
+	{if $people[0]->picture}
+		{img src="{$people[0]->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
+	{else}
+		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
+	{/if}<br/>
+
+	<!--TAGS-->
+	{foreach item=tag from=$people[0]->tags}
+		<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
+	{/foreach}
+
+	<!--FLAG AND LOCATION-->
+	<p style="font-size:small;">
+		{link href="PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
+		&nbsp;<b>&middot;</b>&nbsp;
+		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+			<img class="flag" src="/images/flags/{$people[0]->country|lower}.png" alt="{$people[0]->country}"/>
+		{/if}
+		{$people[0]->location}
+	</p>
+
+	<p>
+		<!--ABOUT ME-->
+		{$people[0]->about_me}
+
+		<!--INTERESTS-->
+		{if $people[0]->interests}
+			Me motiva:
+			{foreach $people[0]->interests as $interest}
+				{$interest}{if not $interest@last},{/if}
+			{/foreach}
+		{/if}
+	</p>
+
+	<!--BUTTONS-->
+	{space5}
+	{button href="PIROPAZO SI @{$people[0]->username}" caption="&hearts; S&iacute;" color="green"}
+	{button href="PIROPAZO NO @{$people[0]->username}" caption="&#10008; No" color="red"}
 </center>
-
-{space30}
-
-{if not $crowned}
-	<h1>P&oacute;ngase una corona</h1>
-	<p>Una corona se le mostrar&aacute; en su cabeza por los pr&oacute;ximos tres d&iacute;as, adem&aacute;s har&aacute; que su perfil se muestre a otros con mucha mayor frecuencia.</p>
-	<center>
-		{button href="PIROPAZO CORONA" caption="&#9813; Usar Corona"}
-	</center>
-	{space30}
-{/if}
-
-<small>
-	1. Si estas personas no le agradan, complete {if $notFromApp}{link href="PERFIL EDITAR" caption="su perfil"}{else}su perfil{/if}<br/>
-	2. Compre m&aacute;s Flores y Coronas en {link href="PIROPAZO TIENDA" caption="nuestra tienda"}<br/>
-	3. Si ya encontr&oacute; a su media naranja, puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}<br/>
-</small>

@@ -1,14 +1,29 @@
-<h1>@{$username} le ha mandado una flor</h1>
-<center>
-	<div style="color:green; font-size:200px; margin:20px 0px;">&#9880;</div>
-</center>
-<p>Este es un s&iacute;ntoma inequ&iacute;voco de que @{$username} ha visto algo diferente en t&iacute;, y deber&iacute;as {link href="PERFIL @{$username}" caption="revisar su perfil"}. Con esta flor, @{$username} te quiere dejar saber que le encantar&iacute;a chatear contigo y conocerse mejor. &iquest;Aceptar&iacute;as?</p>
-
 {space10}
-
 <center>
-	{button href="PIROPAZO SI @{$username}" caption="Decir S&Iacute;" color="green" wait="false"}
-	{button href="PIROPAZO NO @{$username}" caption="Decir NO" color="grey" wait="false"}
-</center>
+	<!--COLOR BASED ON GENDER-->
+	{assign var="color" value="gray"}
+	{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+	{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-{space10}
+	<!--PICTURE-->
+	<span style="color:green; font-size:80px; vertical-align:top;" class="emogi">
+		&#x1F339;
+		{if $person->picture}
+			{img src="{$person->picture_internal}" alt="Picture" width="80" height="80" style="border-radius:100px; border:3px solid {$color};"}
+		{else}
+			{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
+		{/if}
+	</span>
+
+	<p>@{$person->username} le ha mandado una flor porque ha visto algo especial en t&iacute; y quisiera conocerte mejor.</p>
+
+	<!--MESSAGE-->
+	{if $message}
+		<p><b>{$message}</b></p>
+	{/if}
+
+	<p><small>&iquest;Te gustar&iacute;a chatear con @{$person->username}?</small></p>
+	{button href="PIROPAZO SI @{$person->username}" caption="Decir SI" color="green" size="small"}
+	{button href="PIROPAZO NO @{$person->username}" caption="Decir NO" color="red" size="small"}
+	{button href="PIROPAZO PERFIL @{$person->username}" caption="Ver perfil" size="small" color="grey"}
+</center>

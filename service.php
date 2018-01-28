@@ -7,32 +7,6 @@
  */
 class Piropazo extends Service
 {
-	private $connection = null;
-	/**
-	 * Singleton connection to db
-	 *
-	 * @author kuma
-	 * @return Connection
-	 */
-	private function connection()
-	{
-		if (is_null($this->connection)) $this->connection = new Connection();
-		return $this->connection;
-	}
-
-	/**
-	 * Query assistant
-	 *
-	 * @author kuma
-	 * @example $this->q("SELECT * FROM TABLE"); // (more readable / SQL is autodescriptive)
-	 * @param string $sql
-	 * @return array
-	 */
-	private function q($sql)
-	{
-		return $this->connection()->query($sql);
-	}
-
 	/**
 	 * Function executed when the service is called
 	 *
@@ -46,7 +20,7 @@ class Piropazo extends Service
 		$request->query = trim($request->query);
 		$offset = 0;
 
-		$limit = empty(intval($request->query)) ? 5 : $request->query;
+		$limit = empty(intval($request->query)) ? 1 : $request->query;
 		$limit = intval($limit);
 		if($limit > 50) $limit = 50;
 
@@ -56,6 +30,14 @@ class Piropazo extends Service
 		// get best matches for you
 		if($user->completion < 85) $matches = $this->getMatchesByPopularity($user, $limit, $offset);
 		else $matches = $this->getMatchesByUserFit($user, $limit, $offset);
+
+		// if no matches, let the user know
+		if(empty($matches)) {
+			$response = new Response();
+			$response->setEmailLayout('piropazo.tpl');
+			$response->createFromTemplate('empty.tpl', []);
+			return $response;
+		}
 
 		// organize list of matches and get images
 		$images = array();
@@ -82,7 +64,7 @@ class Piropazo extends Service
 			$match->tags = array_slice($tags, 0, 2); // show only two tags
 
 			// erase unwanted properties in the object
-			$properties = array("username","gender","interests","about_me","picture","picture_public","picture_internal","crown","country","location","age","tags");
+			$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture_internal","crown","country","location","age","tags"];
 			$match = $this->filterObjectProperties($properties, $match);
 			$inlineUsernames .= $match->username.' ';
 		}
@@ -93,22 +75,15 @@ class Piropazo extends Service
 		// check if your user has been crowned
 		$crowned = $this->checkUserIsCrowned($request->email);
 
-		// check if the user is connecting via the app or email
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$notFromApp = $di->get('environment') != "app";
-
 		// create response
 		$responseContent = array(
 			"noProfilePic" => empty($user->picture),
 			"noProvince" => empty($user->province),
 			"fewInterests" => count($user->interests) <= 5,
 			"completion" => $user->completion,
-			"notFromApp" => $notFromApp,
 			"crowned" => $crowned,
 			"people" => $matches,
-			//"offset" => $offset,
 			"limit" => $limit,
-			//"offsetNext" => $offset + $limit,
 			"inlineUsernames" => $inlineUsernames
 		);
 
@@ -135,7 +110,7 @@ class Piropazo extends Service
 		if( ! $emailto) return new Response();
 
 		// check if there is any previous record between you and that person
-		$record = $this->q("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
+		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
 
 		// get the person From from the database
 		$personFrom = $this->utils->getPerson($emailfrom);
@@ -147,21 +122,21 @@ class Piropazo extends Service
 			if($record[0]->status == "like")
 			{
 				// update to create a match and let you know of the match
-				$this->q("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
-				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "NOTA @$username");
+				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
+				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "CHAT @$username");
 
 				// let the other person know of the match
-				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "NOTA @{$personFrom->username}");
+				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "CHAT @{$personFrom->username}");
 			}
 
 			// if they dislike you, block that match
-			if($record[0]->status == "dislike") $this->q("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
+			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
 			return new Response();
 		}
 
 		// insert the new relationship
 		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
-		$this->q("
+		Connection::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE email_from='$emailfrom' AND email_to='$emailto';
 			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','like','$threeDaysForward');
@@ -171,58 +146,16 @@ class Piropazo extends Service
 		$pushNotification = new PushNotification();
 		$appid = $pushNotification->getAppId($emailto, "piropazo");
 
-		// send push notification for users with the App
-		if($appid) $pushNotification->piropazoLikePush($appid, $personFrom);
+		// send push notification for users with the piropazo app
+		if($appid) {
+			$pushNotification->piropazoLikePush($appid, $personFrom);
+			return new Response();
+		}
+
 		// post an internal notification for the user
 		else $this->utils->addNotification($emailto, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
-		// do not return anything
-		return new Response();
-	}
-
-	/**
-	 * Say No to all
-	 *
-	 * @param Request $request
-	 * @return Response
-	 */
-	public function _otros (Request $request)
-	{
-		// get the emails from and to
-		$emailfrom = $request->email;
-
-		$users = explode(" ", $request->query);
-		$emails = [];
-		foreach ($users as $user)
-		{
-			$user = trim($user);
-			if ($user == '') continue;
-
-			$emailto = $this->utils->getEmailFromUsername($request->query);
-			if( ! $emailto) continue;
-
-			$emails[$emailto] = $emailto;
-		}
-
-		if (count($emails)==0)
-			return new Response();
-
-		// insert the new relationships
-		$sql = "
-			START TRANSACTION;";
-			foreach ($emails as $emailto){
-				$sql .="
-				DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
-				INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
-				";
-			}
-		$sql .= "COMMIT";
-
-		$this->q($sql);
-
-		$request->query = "";
-
-		// return main response
+		// return the next person
 		return $this->_main($request);
 	}
 
@@ -240,14 +173,14 @@ class Piropazo extends Service
 		if( ! $emailto) return new Response();
 
 		// insert the new relationship
-		$this->q("
+		Connection::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
 			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
 			COMMIT");
 
 		// do not return anything
-		return new Response();
+		return $this->_main($request);
 	}
 
 	/**
@@ -271,7 +204,7 @@ class Piropazo extends Service
 		$emailTo = $this->utils->getEmailFromUsername($username);
 
 		// save the report
-		$this->q("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailTo','$type')");
+		Connection::query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailTo','$type')");
 
 		// say NO to the user
 		$request->query = $username;
@@ -290,7 +223,7 @@ class Piropazo extends Service
 		$this->activatePiropazoUser($request->email);
 
 		// get list of people whom you liked or liked you
-		$matches = $this->q("
+		$matches = Connection::query("
 			SELECT B.*, 'LIKE' as type, A.email_to as email, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
@@ -343,7 +276,7 @@ class Piropazo extends Service
 			if($match->picture) $images[] = $match->picture_internal;
 
 			// erase unwanted properties in the object
-			$properties = array("username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left");
+			$properties = array("username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left","country");
 			$match = $this->filterObjectProperties($properties, $match);
 		}
 
@@ -375,59 +308,66 @@ class Piropazo extends Service
 	 */
 	public function _flor (Request $request)
 	{
-		$response = new Response();
+		// if coming as FLOR ID, open the flower
+		$flower = Connection::query("SELECT sender, message FROM _piropazo_flowers WHERE id='{$request->query}'");
+		if($flower) {
+			$person = $this->utils->getPerson($flower[0]->sender);
+			$message = $flower[0]->message;
 
-		// get the receiver's email
-		$sender = $request->email;
-		$receiver = $this->utils->getEmailFromUsername($request->query);
-		if(empty($receiver)) return $response->createFromJSON('{"code":"ERROR", "message":"Wrong username"}');
+			$response = new Response();
+			$response->setEmailLayout('piropazo.tpl');
+			$response->setResponseSubject('@$username le mando una flor');
+			$response->createFromTemplate('flower.tpl', ["person"=>$person, "message"=>$message]);
+			return $response;
+		}
+
+		// separate username and message
+		$arr = explode(" ", $request->query);
+		$username = str_replace("@", "", array_shift($arr));
+		$message = implode(" ", $arr);
+
+		// do not allow inexistant people
+		$receiver = $this->utils->getEmailFromUsername($username);
+		if(empty($receiver)) {
+			$response = new Response();
+			return $response->createFromJSON('{"code":"ERROR", "message":"Wrong username"}');
+		}
 
 		// check if you have enought flowers to send
-		$flowers = $this->q("SELECT email FROM _piropazo_people WHERE email='$sender' AND flowers>0");
-
-		// return error response if the user has no flowers
-		if(empty($flowers))
-		{
-			$values = array("code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores");
+		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE email='{$request->email}' AND flowers>0");
+		if(empty($flowers)) {
+			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
 			$response->setResponseSubject('No tiene suficientes flores');
-			$response->createFromTemplate('need_more.tpl', $values);
+			$response->createFromTemplate('store.tpl', ["code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores"]);
 			return $response;
 		}
 
 		// send the flower and expand response time 7 days
-		$this->q("
-			START TRANSACTION;
-			INSERT INTO _piropazo_flowers (sender,receiver) VALUES ('$sender','$receiver');
-			UPDATE _piropazo_people SET flowers=flowers-1 WHERE email='$sender';
-			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE email_from = '$sender' AND email_to = '$receiver';
-			COMMIT");
+		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (sender,receiver,message) VALUES ('{$request->email}','$receiver','$message')");
+		Connection::query("
+			UPDATE _piropazo_people SET flowers=flowers-1 WHERE email='{$request->email}';
+			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE email_from = '{$request->email}' AND email_to = '$receiver';");
 
 		// prepare notification
 		$pushNotification = new PushNotification();
 		$appid = $pushNotification->getAppId($receiver, "piropazo");
-		$username = $this->utils->getUsernameFromEmail($sender);
 
-		// send push notification for users with the App
-		if($appid)
-		{
-			$person = $this->utils->getPerson($sender);
+		// send push notification for users with Piropazo App
+		if($appid) {
+			$person = $this->utils->getPerson($request->email);
 			$pushNotification->piropazoFlowerPush($appid, $person);
-		}
-		// send emails for users using the email service
-		else
-		{
-			// post an internal notification for the user
-			$this->utils->addNotification($receiver, "piropazo", "Enhorabuena, @$username le ha mandado una flor. Este es un sintoma inequivoco de le gustas, y deberias revisar su perfil", "PIROPAZO PAREJAS");
-
-			// send an email to the user
-// 			@TODO I dont know how to send the email now
-//			$response->setResponseEmail($receiver);
-//			$response->setEmailLayout('piropazo.tpl');
-//			$response->setResponseSubject("El usuario @$username le ha mandado una flor");
-//			$response->createFromTemplate('flower.tpl', array("username"=>$username));
+			return new Response();
 		}
 
+		// send emails for users with app/email/web
+		$this->utils->addNotification($receiver, "Piropazo", "Enhorabuena, @{$request->username} le ha mandado una flor. Este es un sintoma inequivoco de le gustas", "PIROPAZO FLOR $flowerId");
+
+		// return message
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->setResponseSubject('Hemos mandado su flor');
+		$response->createFromTemplate('flower_sent.tpl', ["username"=>$username]);
 		return $response;
 	}
 
@@ -441,7 +381,7 @@ class Piropazo extends Service
 	public function _corona (Request $request)
 	{
 		// check if you have enought crowns
-		$crowns = $this->q("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
+		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
 
 		// return error response if the user has no crowns
 		if(empty($crowns))
@@ -455,7 +395,7 @@ class Piropazo extends Service
 		}
 
 		// set the crown
-		$this->q("
+		Connection::query("
 			START TRANSACTION;
 			INSERT INTO _piropazo_crowns (email) VALUES ('{$request->email}');
 			UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE email='{$request->email}';
@@ -482,7 +422,7 @@ class Piropazo extends Service
 	public function _tienda (Request $request)
 	{
 		// get the number of flowers and cowns
-		$person = $this->q("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
+		$person = Connection::query("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
 
 		// create response
 		$responseContent = array(
@@ -507,7 +447,7 @@ class Piropazo extends Service
 	 */
 	public function _salir (Request $request)
 	{
-		$this->q("UPDATE _piropazo_people SET active=0 WHERE email='{$request->email}'");
+		Connection::query("UPDATE _piropazo_people SET active=0 WHERE email='{$request->email}'");
 
 		$response = new Response();
 		$response->setResponseSubject('Haz salido de Piropazo');
@@ -533,7 +473,7 @@ class Piropazo extends Service
 		if( ! $emailto) return new Response();
 
 		// insert the new relationship
-		$this->q("
+		Connection::query("
 			UPDATE _piropazo_relationships
 			SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP
 			WHERE (email_from='$emailto' AND email_to='$emailfrom')
@@ -559,7 +499,7 @@ class Piropazo extends Service
 		$profile = $this->filterObjectProperties($properties, $profile);
 
 		// check the specific values of piropazo
-		$piropazo = $this->q("
+		$piropazo = Connection::query("
 			SELECT flowers, crowns,
 			(IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) as crowned
 			FROM _piropazo_people
@@ -611,7 +551,7 @@ class Piropazo extends Service
 		}
 
 		// save the articles in the database
-		$this->q("
+		Connection::query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$crowns
 			WHERE email='{$request->email}'");
@@ -632,7 +572,7 @@ class Piropazo extends Service
 	public function _unread(Request $request)
 	{
 		// get count of unread notes
-		$notes = $this->q("
+		$notes = Connection::query("
 			SELECT B.username, MAX(send_date) as sent, COUNT(B.username) as counter
 			FROM _note A LEFT JOIN person B
 			ON A.from_user = B.email
@@ -655,27 +595,6 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Get comma separated list of emails to hide
-	 *
-	 * @param object $user
-	 * @param integer $emailsToHideCount
-	 * @return string
-	 */
-	private function getEmailsToHide($user, &$emailsToHideCount = 0)
-	{
-		// select the people that you liked/disliked before
-		$r = $this->q("SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}'
-			UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}'");
-
-		$emailsToHide = [];
-		if (is_array($r)) foreach($r as $item) $emailsToHide[] = $item->email;
-		$emailsToHideCount = count($emailsToHide);
-		$emailsToHide = "'".implode("','", $emailsToHide)."'";
-
-		return $emailsToHide;
-	}
-
-	/**
 	 * Get the list of matches solely by popularity
 	 *
 	 * @author salvipascual
@@ -686,12 +605,8 @@ class Piropazo extends Service
 	 */
 	private function getMatchesByPopularity ($user, $limit, $offset = 0)
 	{
-		// select the people that you liked/disliked before
-		$emailsToHideCount = 0;
-		$emailsToHide = $this->getEmailsToHide($user, $emailsToHideCount);
-
 		// get the list of people
-		return $this->q("
+		return Connection::query("
 			SELECT
 				A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
 				(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
@@ -702,7 +617,7 @@ class Piropazo extends Service
 			AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
 			AND A.email <> '{$user->email}'
 			AND A.gender <> '{$user->gender}'
-			".($emailsToHideCount > 0 ? " AND A.email NOT IN ($emailsToHide)":"")."
+			AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
 			ORDER BY popularity DESC
 			LIMIT $offset, $limit");
 	}
@@ -718,13 +633,9 @@ class Piropazo extends Service
 	 */
 	private function getMatchesByUserFit ($user, $limit, $offset = 0)
 	{
-		// select the people that you liked/disliked before
-		$emailsToHideCount = 0;
-		$emailsToHide = $this->getEmailsToHide($user, $emailsToHideCount);
-
 		// create the where clause for the query
 		$where  = "A.email <> '{$user->email}' ";
-		$where .= ($emailsToHideCount > 0 ? " AND A.email NOT IN ($emailsToHide)":"")." ";
+		$where .= " AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')";
 		$where .= " AND (IFNULL(YEAR(CURDATE()) - YEAR(date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL) ";
 		if ($user->sexual_orientation == 'HETERO') $where .= "AND gender <> '{$user->gender}' AND sexual_orientation <> 'HOMO' ";
 		if ($user->sexual_orientation == 'HOMO') $where .= "AND gender = '{$user->gender}' AND sexual_orientation <> 'HETERO' ";
@@ -759,10 +670,8 @@ class Piropazo extends Service
 		$sql .= "ORDER BY percent_match DESC, email ASC ";
 		$sql .= "LIMIT $offset,$limit; ";
 
-		// Executing the query
-		$people = $this->q(trim($sql));
-
-		return $people;
+		// executing the query
+		return Connection::query(trim($sql));
 	}
 
 	/**
@@ -774,7 +683,7 @@ class Piropazo extends Service
 	 */
 	private function checkUserIsCrowned($email)
 	{
-		$crowned = $this->q("
+		$crowned = Connection::query("
 			SELECT COUNT(email) AS crowned
 			FROM _piropazo_people
 			WHERE email='$email'
@@ -790,8 +699,7 @@ class Piropazo extends Service
 	 */
 	private function activatePiropazoUser($email)
 	{
-		$this->q("INSERT INTO _piropazo_people (email) VALUES('$email')
-						ON DUPLICATE KEY UPDATE active = 1");
+		Connection::query("INSERT INTO _piropazo_people (email) VALUES('$email') ON DUPLICATE KEY UPDATE active = 1");
 	}
 
 	/**
@@ -802,7 +710,7 @@ class Piropazo extends Service
 	 */
 	private function markLastTimeUsed($email)
 	{
-		$this->q("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
+		Connection::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
 	}
 
 	/**
@@ -863,7 +771,7 @@ class Piropazo extends Service
 		if(empty($flowers) && empty($crowns)) return false;
 
 		// save the articles in the database
-		$this->q("
+		Connection::query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$crowns
 			WHERE email='{$payment->buyer}'");

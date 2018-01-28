@@ -7,28 +7,39 @@
 	</center>
 {/if}
 
+<!--WAITING FOR YOU-->
+
 {if $waitingCounter gt 0}
-	<h1>Esperando por ti</h1>
-	<p><small>Estas personas dijeron que les gustas y est&aacute;n esperando por tu respuesta.</small></p>
+	<center>
+		<h1>Esperando por ti</h1>
+		<p><small>Estas personas dijeron Si, y est&aacute;n esperando tu respuesta</small></p>
+	</center>
 	{foreach item=person from=$people}
 		{if $person->type neq "WAITING"}{continue}{/if}
+
+		<!--COLOR BASED ON GENDER-->
+		{assign var="color" value="gray"}
+		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+
 		<table width="100%" cellspacing="0" cellspadding="0" border=0>
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->picture_internal}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
-					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
-					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
-					{if $person->age}{$person->age} a&ntilde;os,{/if}
-					{if $person->location}{$person->location}{/if}
+					<small>
+						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if $person->location}{$person->location}{/if}
+					</small>
 					<br/>
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
@@ -40,32 +51,42 @@
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
 		</table>
 	{/foreach}
+	{space15}
 {/if}
 
-{space15}
+<!--YOUR MATCHES-->
 
 {if $matchCounter gt 0}
-	<h1>De pareja contigo</h1>
-	<p><small>Estas personas y usted se gustaron mutuamente y ahora pueden chatear.</small></p>
+	<center>
+		<h1>De pareja contigo</h1>
+		<p><small>Ambos dijeron Si y ahora pueden chatear</small></p>
+	</center>
 	{foreach item=person from=$people}
 		{if $person->type neq "MATCH"}{continue}{/if}
+
+		<!--COLOR BASED ON GENDER-->
+		{assign var="color" value="gray"}
+		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+
 		<table width="100%" cellspacing="0" cellspadding="0" border=0>
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->picture_internal}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
-					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
-					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
-					{if $person->age}{$person->age} a&ntilde;os,{/if}
-					{if $person->location}{$person->location}{/if}
+					<small>
+						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if $person->location}{$person->location}{/if}
+					</small>
 					<br/>
 					<font color="gray"><small>Se conocieron el {$person->matched_on|date_format:"%d/%m/%Y"}</small></font>
 				</td>
@@ -77,37 +98,47 @@
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
 		</table>
 	{/foreach}
+	{space15}
 {/if}
 
-{space15}
+<!--YOU ARE WAITING FOR THEM-->
 
 {if $likeCounter gt 0}
-	<h1>Esperando por ellos</h1>
-	<p><small>Usted dijo "S&iacute;" a estas personas y ahora estamos esperando su respuesta. Si el tiempo de espera vence desapareceran de su lista. Mandeles flores para agregar una semana al tiempo de espera.</small></p>
+	<center>
+		<h1>Esperando por ellos</h1>
+		<p><small>Mandando flores agregara una semana al tiempo de espera</small></p>
+	</center>
 	{foreach item=person from=$people}
 		{if $person->type neq "LIKE"}{continue}{/if}
+
+		<!--COLOR BASED ON GENDER-->
+		{assign var="color" value="gray"}
+		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+
 		<table width="100%" cellspacing="0" cellspadding="0" border=0>
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="50" height="100" text="No Foto"}
 					{else}
-						{img src="{$person->picture_internal}" alt="Picture" width="50"}
+						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}"}
-					{if $person->gender eq "M"}<font color="#4863A0">M</font>{/if}
-					{if $person->gender eq "F"}<font color=#F778A1>F</font>{/if}
+					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
-					{if $person->age}{$person->age} a&ntilde;os,{/if}
-					{if $person->location}{$person->location}{/if}
+					<small>
+						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if $person->location}{$person->location}{/if}
+					</small>
 					<br/>
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO FLOR @{$person->username}" caption="&#9880; Flor" color="green" size="small" wait="false"}
+					{button href="PIROPAZO FLOR @{$person->username}" caption="&#x1F33C; Flor" popup="true" desc="Mande a decir algo con su flor" color="green" size="small"}
 					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
