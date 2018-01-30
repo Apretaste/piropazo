@@ -16,7 +16,7 @@
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
-						{noimage width="50" height="100" text="No Foto"}
+						{noimage width="45" height="45" text="No Foto"}
 					{else}
 						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
@@ -62,7 +62,7 @@
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
-						{noimage width="50" height="100" text="No Foto"}
+						{noimage width="45" height="45" text="No Foto"}
 					{else}
 						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
@@ -108,7 +108,7 @@
 			<tr>
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
-						{noimage width="50" height="100" text="No Foto"}
+						{noimage width="45" height="45" text="No Foto"}
 					{else}
 						{img src="{$person->picture_internal}" alt="Picture" width="45" height="45" style="border-radius:100px; border:2px solid {$color}"}
 					{/if}
