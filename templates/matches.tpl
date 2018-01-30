@@ -1,14 +1,4 @@
-{if not $people}
-	<h1>Por ahora no tiene parejas</h1>
-	<p>Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido.</p>
-	<center>
-		<p>No se desanime, hay muchos peces en el oc&eacute;ano.</p>
-		{button href="PIROPAZO" caption="Buscar Pareja"}
-	</center>
-{/if}
-
 <!--WAITING FOR YOU-->
-
 {if $waitingCounter gt 0}
 	<center>
 		<h1>Esperando por ti</h1>
@@ -33,7 +23,7 @@
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
@@ -55,7 +45,6 @@
 {/if}
 
 <!--YOUR MATCHES-->
-
 {if $matchCounter gt 0}
 	<center>
 		<h1>De pareja contigo</h1>
@@ -80,7 +69,7 @@
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
@@ -102,7 +91,6 @@
 {/if}
 
 <!--YOU ARE WAITING FOR THEM-->
-
 {if $likeCounter gt 0}
 	<center>
 		<h1>Esperando por ellos</h1>
@@ -127,7 +115,7 @@
 				</td>
 				<td>&nbsp;</td>
 				<td valign="middle">
-					{link href="PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
 					<br/>
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}

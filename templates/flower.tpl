@@ -23,7 +23,7 @@
 	{/if}
 
 	<p><small>&iquest;Te gustar&iacute;a chatear con @{$person->username}?</small></p>
-	{button href="PIROPAZO SI @{$person->username}" caption="Decir SI" color="green" size="small"}
-	{button href="PIROPAZO NO @{$person->username}" caption="Decir NO" color="red" size="small"}
+	{button href="PIROPAZO SIMATCHES @{$person->username}" caption="Decir Si" color="green" size="small"}
+	{button href="PIROPAZO NOMATCHES @{$person->username}" caption="Decir No" color="red" size="small"}
 	{button href="PIROPAZO PERFIL @{$person->username}" caption="Ver perfil" size="small" color="grey"}
 </center>

@@ -33,9 +33,14 @@ class Piropazo extends Service
 
 		// if no matches, let the user know
 		if(empty($matches)) {
+			$content = [
+				"header"=>"No encontramos a nadie",
+				"icon"=>"&#x1F64D;",
+				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que valla con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
+				"button" => ["href"=>"PERFIL EDITAR", "caption"=>"Editar perfil"]];
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('empty.tpl', []);
+			$response->createFromTemplate('message.tpl', $content);
 			return $response;
 		}
 
@@ -76,22 +81,21 @@ class Piropazo extends Service
 		$crowned = $this->checkUserIsCrowned($request->email);
 
 		// create response
-		$responseContent = array(
+		$content = [
 			"noProfilePic" => empty($user->picture),
-			"noProvince" => empty($user->province),
+			"noProvince" => empty($user->country) || ($user->country=="US" && empty($user->usstate)) || ($user->country=="CU" && empty($user->province)),
 			"fewInterests" => count($user->interests) <= 5,
 			"completion" => $user->completion,
 			"crowned" => $crowned,
 			"people" => $matches,
 			"limit" => $limit,
-			"inlineUsernames" => $inlineUsernames
-		);
+			"inlineUsernames" => $inlineUsernames];
 
-		// Building response
+		// build the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Personas de tu interes');
-		$response->createFromTemplate('people.tpl', $responseContent, $images);
+		$response->createFromTemplate('people.tpl', $content, $images);
 		return $response;
 	}
 
@@ -151,12 +155,34 @@ class Piropazo extends Service
 			$pushNotification->piropazoLikePush($appid, $personFrom);
 			return new Response();
 		}
-
 		// post an internal notification for the user
 		else $this->utils->addNotification($emailto, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
-		// return the next person
+		return new Response();
+	}
+
+	/**
+	 * Say Yes to a match and return next match
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _siNext (Request $request)
+	{
+		$this->_si($request);
 		return $this->_main($request);
+	}
+
+	/**
+	 * Say Yes to a match and go to Matches
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _siMatches (Request $request)
+	{
+		$this->_si($request);
+		return $this->_parejas($request);
 	}
 
 	/**
@@ -180,7 +206,31 @@ class Piropazo extends Service
 			COMMIT");
 
 		// do not return anything
+		return new Response();
+	}
+
+	/**
+	 * Say No to a person and return next match
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _noNext (Request $request)
+	{
+		$this->_no($request);
 		return $this->_main($request);
+	}
+
+	/**
+	 * Say No to a person and go to Matches
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _noMatches (Request $request)
+	{
+		$this->_no($request);
+		return $this->_parejas($request);
 	}
 
 	/**
@@ -253,6 +303,19 @@ class Piropazo extends Service
 			ON A.email_to = B.email
 			WHERE status = 'match'
 			AND email_from = '{$request->email}'");
+
+		// if no matches, let the user know
+		if(empty($matches)) {
+			$content = [
+				"header"=>"Por ahora no tiene parejas",
+				"icon"=>"&#x1F64D;",
+				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
+				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar Pareja"]];
+			$response = new Response();
+			$response->setEmailLayout('piropazo.tpl');
+			$response->createFromTemplate('message.tpl', $content);
+			return $response;
+		}
 
 		// initialize counters
 		$likeCounter = 0;
@@ -336,10 +399,15 @@ class Piropazo extends Service
 		// check if you have enought flowers to send
 		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE email='{$request->email}' AND flowers>0");
 		if(empty($flowers)) {
+			$content = [
+				"code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores",
+				"header"=>"No tiene suficientes flores",
+				"icon"=>"&#x1F339;",
+				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
+				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
-			$response->setResponseSubject('No tiene suficientes flores');
-			$response->createFromTemplate('store.tpl', ["code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores"]);
+			$response->createFromTemplate('message.tpl', $content);
 			return $response;
 		}
 
@@ -364,10 +432,14 @@ class Piropazo extends Service
 		$this->utils->addNotification($receiver, "Piropazo", "Enhorabuena, @{$request->username} le ha mandado una flor. Este es un sintoma inequivoco de le gustas", "PIROPAZO FLOR $flowerId");
 
 		// return message
+		$content = [
+			"header"=>"Hemos enviado su flor a @$username",
+			"icon"=>"&#x1F339;",
+			"text" => "@$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
+			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
-		$response->setResponseSubject('Hemos mandado su flor');
-		$response->createFromTemplate('flower_sent.tpl', ["username"=>$username]);
+		$response->createFromTemplate('message.tpl', $content);
 		return $response;
 	}
 
@@ -384,13 +456,16 @@ class Piropazo extends Service
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
 
 		// return error response if the user has no crowns
-		if(empty($crowns))
-		{
-			$values = array("code"=>"ERROR", "message"=>"Not enought crowns", "items"=>"coronas");
+		if(empty($crowns)) {
+			$content = [
+				"code"=>"ERROR", "message"=>"Not enought crowns", "items"=>"coronas",
+				"header"=>"No tiene suficientes coronas",
+				"icon"=>"&#x1F451;",
+				"text" => "Actualmente usted no tiene suficientes coronas para usar. Puede comprar algunas coronas en la tienda de Piropazo.",
+				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
-			$response->setResponseSubject('No tiene suficientes coronas');
-			$response->createFromTemplate('need_more.tpl', $values);
+			$response->createFromTemplate('message.tpl', $content);
 			return $response;
 		}
 
@@ -404,11 +479,15 @@ class Piropazo extends Service
 		// post a notification for the user
 		$this->utils->addNotification($request->email, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
 
-		// Building the response
+		// build the response
+		$content = [
+			"header"=>"Usted ha sido coronado",
+			"icon"=>"&#x1F451;",
+			"text" => "Usted ha sido coronado, y en los proximos tres dias su perfil se mostrara muchas mas veces a otros usuarios, lo cual mejorara sus chances de recibir solicitudes y flores. Mantenganse revisando a diario su lista de parejas.",
+			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
-		$response->setResponseSubject('Usted ha sido coronado');
-		$response->createFromTemplate('crowned.tpl', array());
+		$response->createFromTemplate('message.tpl', $content);
 		return $response;
 	}
 
@@ -421,20 +500,14 @@ class Piropazo extends Service
 	 */
 	public function _tienda (Request $request)
 	{
-		// get the number of flowers and cowns
-		$person = Connection::query("SELECT flowers, crowns FROM _piropazo_people WHERE email='{$request->email}'");
+		// get the user credit
+		$credit = Connection::query("SELECT credit FROM person WHERE email = '{$request->email}'")[0]->credit;
 
-		// create response
-		$responseContent = array(
-			"flowers" => $person[0]->flowers,
-			"crowns" => $person[0]->crowns
-		);
-
-		// Building response
+		// build the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Tienda de Piropazo');
-		$response->createFromTemplate('store.tpl', $responseContent);
+		$response->createFromTemplate('store.tpl', ["credit"=>$credit]);
 		return $response;
 	}
 
@@ -482,6 +555,19 @@ class Piropazo extends Service
 	}
 
 	/**
+	 * Alias for subservice profile. We need profile for the app
+	 *
+	 * @api
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _perfil (Request $request)
+	{
+		return $this->_profile($request);
+	}
+
+	/**
 	 * Get info about your own profile, useful for the API
 	 *
 	 * @api
@@ -491,11 +577,13 @@ class Piropazo extends Service
 	 */
 	public function _profile (Request $request)
 	{
-		// get the full profile for the person, and remove unused fields
-		$profile = $this->utils->getPerson($request->email);
+		// get the user's profile
+		$email = Utils::getEmailFromUsername($request->query);
+		if(empty($email)) $email = $request->email;
+		$profile = Utils::getPerson($email);
 
 		// erase unwanted properties in the object
-		$properties = array('username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public');
+		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture_internal','location','age'];
 		$profile = $this->filterObjectProperties($properties, $profile);
 
 		// check the specific values of piropazo
@@ -503,7 +591,7 @@ class Piropazo extends Service
 			SELECT flowers, crowns,
 			(IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) as crowned
 			FROM _piropazo_people
-			WHERE email = '{$request->email}'");
+			WHERE email = '$email'");
 
 		// ensure the user exists
 		if(empty($profile) || empty($piropazo)) {
@@ -511,15 +599,44 @@ class Piropazo extends Service
 			return $response->createFromJSON('{"code":"fail"}');
 		}
 
+		// check if is my own profile
+		$isMyOwnProfile = $email == $request->email;
+
+		$percentageMatch = "100";
+		$status = "no_relationship";
+		if( ! $isMyOwnProfile) {
+			// check status of the relationship
+			$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='{$request->email}' AND email_to='$email'");
+			if($res) $status = $res[0]->status;
+			if($status == "like") $status = "you_like_them";
+			else {
+				$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='$email' AND email_to='{$request->email}'");
+				if($res && $res[0]->status == "like") $status = "they_like_you";
+				elseif($res) $status = $res[0]->status;
+			}
+
+			// get the percentage math for two profiles
+			$percentageMatch = $this->getPercentageMatch($email, $request->email);
+		}
+
 		// create the response object
-		$jsonResponse = array(
+		$content = [
 			"code" => "ok",
 			"username" => $profile->username,
 			"flowers" => $piropazo[0]->flowers,
 			"crowns" => $piropazo[0]->crowns,
 			"crowned" => $piropazo[0]->crowned,
-			"profile" => $profile
-		);
+			"isMyOwnProfile" => $isMyOwnProfile,
+			"percentageMatch" => $percentageMatch,
+			"status" => $status,
+			"profile" => $profile];
+
+		// Building response
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->setResponseSubject("Perfil de @{$profile->username}");
+		$response->createFromTemplate('profile.tpl', $content, [$profile->picture_internal]);
+		return $response;
 
 		// respond back to the API
 		$response = new Response();
@@ -600,7 +717,7 @@ class Piropazo extends Service
 	 * @author salvipascual
 	 * @param Object $user, the person to match against
 	 * @param Int $limit, returning number
-     * @param Int $offset
+	 * @param Int $offset
 	 * @return array of People
 	 */
 	private function getMatchesByPopularity ($user, $limit, $offset = 0)
@@ -628,7 +745,7 @@ class Piropazo extends Service
 	 * @author salvipascual
 	 * @param Object $user, the person to match against
 	 * @param Int $limit, returning number
-     * @param Int $offset
+	 * @param Int $offset
 	 * @return Array of People
 	 */
 	private function getMatchesByUserFit ($user, $limit, $offset = 0)
@@ -748,6 +865,49 @@ class Piropazo extends Service
 		$language = [$tag => [$lang => $tag]];
 		require "$this->pathToService/lang.php";
 		return $language[$tag][$lang];
+	}
+
+	/**
+	 * Get the percentage of match for two profiles
+	 *
+	 * @author salvipascual
+	 * @param String $emailOne
+	 * @param String $emailTwo
+	 * @return Number
+	 */
+	private function getPercentageMatch($emailOne, $emailTwo)
+	{
+		// get both profiles
+		$p = Connection::query("SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, date_of_birth FROM person WHERE email='$emailOne' OR email='$emailTwo'");
+		if(empty($p[0]) || empty($p[1])) return 0;
+
+		// calculate basic values
+		$percentage = 0;
+		if($p[0]->eyes == $p[1]->eyes) $percentage += 5;
+		if($p[0]->skin == $p[1]->skin) $percentage += 5;
+		if($p[0]->body_type == $p[1]->body_type) $percentage += 5;
+		if($p[0]->hair == $p[1]->hair) $percentage += 5;
+		if($p[0]->highest_school_level == $p[1]->highest_school_level) $percentage += 10;
+		if($p[0]->lang == $p[1]->lang) $percentage += 10;
+		if($p[0]->religion == $p[1]->religion) $percentage += 10;
+		if($p[0]->country == $p[1]->country) $percentage += 5;
+		if($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) $percentage += 10;
+
+		// calculate interests
+		$arrOne = explode(",", strtolower($p[0]->interests));
+		$arrTwo = explode(",", strtolower($p[1]->interests));
+		$intersect = array_intersect($arrOne, $arrTwo);
+		if($intersect) $percentage += 20;
+
+		// calculate age
+		$ageOne = date("Y") - date("Y", strtotime($p[0]->date_of_birth));
+		$ageTwo = date("Y") - date("Y", strtotime($p[1]->date_of_birth));
+		$diff = abs($ageOne - $ageTwo);
+		if($diff == 0) $percentage += 15;
+		if($diff >= 1 && $diff <= 5) $percentage += 10;
+		if($diff >= 6 && $diff <= 10) $percentage += 5;
+
+		return $percentage;
 	}
 
 	/**

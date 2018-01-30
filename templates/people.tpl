@@ -31,7 +31,9 @@
 
 	<!--PICTURE-->
 	{if $people[0]->picture}
-		{img src="{$people[0]->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
+		{link href="PIROPAZO PERFIL @{$people[0]->username}" style="text-decoration:none;" caption="
+			{img src="{$people[0]->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
+		"}
 	{else}
 		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
 	{/if}<br/>
@@ -43,29 +45,20 @@
 
 	<!--FLAG AND LOCATION-->
 	<p style="font-size:small;">
-		{link href="PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
+		{link href="PIROPAZO PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
 		&nbsp;<b>&middot;</b>&nbsp;
+		{if $people[0]->age}
+			{$people[0]->age} a&ntilde;os
+			&nbsp;<b>&middot;</b>&nbsp;
+		{/if}
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
 			<img class="flag" src="/images/flags/{$people[0]->country|lower}.png" alt="{$people[0]->country}"/>
 		{/if}
 		{$people[0]->location}
 	</p>
 
-	<p>
-		<!--ABOUT ME-->
-		{$people[0]->about_me}
-
-		<!--INTERESTS-->
-		{if $people[0]->interests}
-			Me motiva:
-			{foreach $people[0]->interests as $interest}
-				{$interest}{if not $interest@last},{/if}
-			{/foreach}
-		{/if}
-	</p>
-
 	<!--BUTTONS-->
 	{space5}
-	{button href="PIROPAZO SI @{$people[0]->username}" caption="&hearts; S&iacute;" color="green"}
-	{button href="PIROPAZO NO @{$people[0]->username}" caption="&#10008; No" color="red"}
+	{button href="PIROPAZO SINEXT @{$people[0]->username}" caption="&hearts; S&iacute;" color="green"}
+	{button href="PIROPAZO NONEXT @{$people[0]->username}" caption="&#10008; No" color="red"}
 </center>
