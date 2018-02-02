@@ -241,20 +241,27 @@ class Piropazo extends Service
 	 */
 	public function _reportar (Request $request)
 	{
-		// get the parts of the report
+		// get @username and text
 		$parts = explode(" ", $request->query);
-		$username = $parts[0];
-		$type = $parts[1];
+		$username = array_shift($parts);
+		$text = implode(" ", $parts);
+
+		// get code from text
+		if(php::exists($text, "ofensivo")) $text = "OFFENSIVE";
+		if(php::exists($text, "info")) $text = "FAKE";
+		if(php::exists($text, "no luce")) $text = "MISLEADING";
+		if(php::exists($text, "impersonando")) $text = "IMPERSONATING";
+		if(php::exists($text, "autor")) $text = "COPYRIGHT";
 
 		// only acept the types allowed
-		$type = strtoupper($type);
-		if( ! in_array($type, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return new Response();
+		$text = strtoupper($text);
+		if( ! in_array($text, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return new Response();
 
 		// get email of the person to report
 		$emailTo = $this->utils->getEmailFromUsername($username);
 
 		// save the report
-		Connection::query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailTo','$type')");
+		Connection::query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailTo','$text')");
 
 		// say NO to the user
 		$request->query = $username;

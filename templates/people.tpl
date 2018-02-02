@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 {if $noProfilePic}
 	<div class="notice">Agregue su foto de perfil para recibir 70% m&aacute;s atenci&oacute;n</div>
 {/if}

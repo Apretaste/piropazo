@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <h1>Tienda de Piropazo</h1>
 <p>En nuestra tienda encontrar&aacute; flores y coronas que le har&aacute;n m&aacute;s sencillo el arduo proceso de encontrar a su media naranja.</p>
 

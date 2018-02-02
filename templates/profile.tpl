@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <!--COLOR BASED ON GENDER-->
 {assign var="color" value="gray"}
 {if $profile->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
@@ -64,15 +66,23 @@
 
 	<!--BUTTONS-->
 	{if $isMyOwnProfile}
-		{button href="PERFIL EDITAR" caption="Editar perfil"}
+		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+			{button href="PERFIL EDITAR" caption="Editar perfil"}
+		{/if}
 	{elseif $status == "no_relationship" OR $status == "they_like_you"}
 		{button href="PIROPAZO SI @{$profile->username}" caption="Decir Si" color="green" wait="false"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="Decir No" color="red"}
 	{elseif $status == "you_like_them"}
-		{button href="PIROPAZO FLOR @{$profile->username}" caption="&#x1F33C; Flor" popup="true" desc="Mande a decir algo con su flor" color="green"}
+		{button href="PIROPAZO FLOR @{$profile->username}" caption="&#x1F33C; Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
 	{elseif $status == "match"}
 		{button href="CHAT @{$profile->username}" caption="Chatear" color="grey"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
+	{/if}
+
+	<!--DENOUNCE BUTTON-->
+	{if not $isMyOwnProfile}
+		{space5}
+		<p style="font-size:small; color:grey;">Si ve algun problema {link href="PIROPAZO REPORTAR @{$profile->username}" caption="denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="false" style="color:grey;"}</p>
 	{/if}
 </center>
