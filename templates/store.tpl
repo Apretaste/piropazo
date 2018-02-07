@@ -12,7 +12,7 @@
 <table width="100%" style="font-size:small;">
 	<tr>
 		<td align="center"><span style="color:green; font-size:30px;" class="emogi">&#x1F339;</span></td>
-		<td>Reg&aacute;lale una flor a sus citas para atraer su atenci&oacute;n y agregar una semana al tiempo de espera</td>
+		<td>Regale una flor para atraer su atenci&oacute;n y agregar una semana al tiempo de espera</td>
 		<td>{button href="CREDITO COMPRAR FLOWER" caption="Pagar &sect;0.5" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>

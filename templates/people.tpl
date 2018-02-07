@@ -5,7 +5,7 @@
 {/if}
 
 {if $completion lt 85}
-	<div class="notice">Complete 85% o mas de su perfil para encontrar su pareja ideal</div>
+	<div class="notice">Complete 85% del perfil para encontrar su pareja ideal</div>
 {/if}
 
 {if $noProvince}

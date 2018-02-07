@@ -13,7 +13,7 @@
 	{/if}
 
 	{if $profile->picture}
-		{img src="{$profile->picture_internal}" alt="Picture" width="200" style="border-radius:100px; border:3px solid {$color};"}
+		{img src="{$profile->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:100px; border:3px solid {$color};"}
 	{else}
 		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
 	{/if}
@@ -35,12 +35,12 @@
 	<!--FLAG AND LOCATION-->
 	<p style="font-size:small;">
 		<span style="color:{$color}">@{$profile->username}</span>
-		&nbsp;<b>&middot;</b>&nbsp;
 		{if $profile->age}
-			{$profile->age} a&ntilde;os
 			&nbsp;<b>&middot;</b>&nbsp;
+			{$profile->age} a&ntilde;os
 		{/if}
-		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+		{if {$APRETASTE_ENVIRONMENT} eq "web" AND $profile->country}
+			&nbsp;<b>&middot;</b>&nbsp;
 			<img class="flag" src="/images/flags/{$profile->country|lower}.png" alt="{$profile->country}"/>
 		{/if}
 		{$profile->location}
