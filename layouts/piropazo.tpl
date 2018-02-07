@@ -67,13 +67,6 @@
 				width:20px;
 				margin-right:3px;
 			}
-			.notice{
-				background-color:#F2DEDE;
-				color:#A94442;
-				padding:5px;
-				font-size:small;
-				margin-bottom: 10px;
-			}
 		</style>
 	</head>
 	<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="font-family:Arial;">
