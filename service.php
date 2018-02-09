@@ -127,10 +127,10 @@ class Piropazo extends Service
 			{
 				// update to create a match and let you know of the match
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
-				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "CHAT @$username");
+				$this->utils->addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "PIROPAZO CHAT @$username");
 
 				// let the other person know of the match
-				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "CHAT @{$personFrom->username}");
+				$this->utils->addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$personFrom->username}");
 			}
 
 			// if they dislike you, block that match
