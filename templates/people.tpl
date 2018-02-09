@@ -49,15 +49,15 @@
 		<!--USERNAME-->
 		{link href="PIROPAZO PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
 		{if $people[0]->online}&nbsp;<span class="online">ONLINE</span>{/if}
-		&nbsp;<b>&middot;</b>&nbsp;
 
 		<!--AGE-->
 		{if $people[0]->age}
-			{$people[0]->age} a&ntilde;os
 			&nbsp;<b>&middot;</b>&nbsp;
+			{$people[0]->age} a&ntilde;os
 		{/if}
 
 		<!--FLAG AND LOCATION-->
+		&nbsp;<b>&middot;</b>&nbsp;
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
 			<img class="flag" src="/images/flags/{$people[0]->country|lower}.png" alt="{$people[0]->country}"/>
 		{/if}
