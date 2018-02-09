@@ -1,4 +1,4 @@
-{include file="../layouts/appmenu.tpl"}
+{include file="../includes/appmenu.tpl"}
 
 <h1>Tienda de Piropazo</h1>
 <p>En nuestra tienda encontrar&aacute; flores y coronas que le har&aacute;n m&aacute;s sencillo el arduo proceso de encontrar a su media naranja.</p>
@@ -40,3 +40,12 @@
 		<td>{button href="CREDITO COMPRAR PACK_TWO" caption="Pagar &sect;10" size="small"}</td>
 	</tr>
 </table>
+
+<style type="text/css">
+	hr{
+		border: 0;
+		height: 0;
+		border-top: 1px solid rgba(0, 0, 0, 0.1);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+	}
+</style>

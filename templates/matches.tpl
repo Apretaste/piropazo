@@ -1,4 +1,4 @@
-{include file="../layouts/appmenu.tpl"}
+{include file="../includes/appmenu.tpl"}
 
 <!--WAITING FOR YOU-->
 {if $waitingCounter gt 0}
@@ -14,8 +14,9 @@
 		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
 		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
+				{if $APRETASTE_ENVIRONMENT eq "web"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -24,8 +25,11 @@
 					{/if}
 				</td>
 				<td>&nbsp;</td>
+				{/if}
+
 				<td valign="middle">
 					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{if $person->online}&nbsp;<span class="online">ONLINE</span>{/if}
 					<br/>
 					{if $person->age OR $person->location}
 					<small>
@@ -62,8 +66,9 @@
 		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
 		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
+				{if $APRETASTE_ENVIRONMENT eq "web"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -72,8 +77,11 @@
 					{/if}
 				</td>
 				<td>&nbsp;</td>
+				{/if}
+
 				<td valign="middle">
 					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{if $person->online}&nbsp;<span class="online">ONLINE</span>{/if}
 					<br/>
 					{if $person->age OR $person->location}
 					<small>
@@ -86,7 +94,7 @@
 					<font color="gray"><small>Se conocieron el {$person->matched_on|date_format:"%d/%m/%Y"}</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="CHAT @{$person->username}" caption="Chat" color="green" size="small"}
+					{button href="PIROPAZO CHAT @{$person->username}" caption="Chat" color="green" size="small"}
 					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
@@ -110,8 +118,9 @@
 		{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
 		{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-		<table width="100%" cellspacing="0" cellspadding="0" border=0>
+		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
+				{if $APRETASTE_ENVIRONMENT eq "web"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -120,8 +129,11 @@
 					{/if}
 				</td>
 				<td>&nbsp;</td>
+				{/if}
+
 				<td valign="middle">
 					{link href="PIROPAZO PERFIL {$person->username}" caption="@{$person->username}" style="color:{$color};"}
+					{if $person->online}&nbsp;<span class="online">ONLINE</span>{/if}
 					<br/>
 					{if $person->age OR $person->location}
 					<small>

@@ -6,13 +6,6 @@
 		text-align: center;
 		font-weight: normal;
 	}
-	h2{
-		color: #5DBB48;
-		text-transform: uppercase;
-		font-size: 16px;
-		margin-top: 30px;
-		font-weight: normal;
-	}
 	.notice{
 		background-color:#F2DEDE;
 		color:#A94442;
@@ -20,17 +13,23 @@
 		font-size:small;
 		margin-bottom: 10px;
 	}
-	hr{
-		border: 0;
-		height: 0;
-		border-top: 1px solid rgba(0, 0, 0, 0.1);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+	.online{
+		background-color:#74C365;
+		font-size:7px;
+		padding:2px;
+		border-radius:3px;
+		color:white;
+		font-weight:bold;
+	}
+	#menu td{
+		background-color:#F2F2F2;
+		border-radius:5px;
 	}
 </style>
 
-{if {$APRETASTE_ENVIRONMENT} eq "app"}
-	<table width="100%" cellspacing="10">
-		<tr align="center" style="background-color:#F2F2F2;">
+{if $APRETASTE_ENVIRONMENT eq "app"}
+	<table id="menu" width="100%" cellspacing="10">
+		<tr align="center">
 			<td>{link href="PIROPAZO" caption="💕" style="color:#5DBB48; text-decoration:none;"}</td>
 			<td>{link href="PIROPAZO PAREJAS" caption="💘" style="color:#5DBB48; text-decoration:none;"}</td>
 			<td>{link href="PIROPAZO PERFIL" caption="👤" style="color:#5DBB48; text-decoration:none;"}</td>

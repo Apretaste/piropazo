@@ -47,6 +47,13 @@
 				width:20px;
 				margin-right:3px;
 			}
+			.profile-small{
+				float:left;
+				width: 30px;
+				height:30px;
+				border-radius:100px;
+				margin-right:5px;
+			}
 		</style>
 	</head>
 	<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="font-family:Arial;">

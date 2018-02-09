@@ -1,4 +1,4 @@
-{include file="../layouts/appmenu.tpl"}
+{include file="../includes/appmenu.tpl"}
 
 {if $noProfilePic}
 	<div class="notice">Agregue su foto de perfil para recibir 70% m&aacute;s atenci&oacute;n</div>
@@ -45,14 +45,19 @@
 		<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
 	{/foreach}
 
-	<!--FLAG AND LOCATION-->
 	<p style="font-size:small;">
+		<!--USERNAME-->
 		{link href="PIROPAZO PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
+		{if $people[0]->online}&nbsp;<span class="online">ONLINE</span>{/if}
 		&nbsp;<b>&middot;</b>&nbsp;
+
+		<!--AGE-->
 		{if $people[0]->age}
 			{$people[0]->age} a&ntilde;os
 			&nbsp;<b>&middot;</b>&nbsp;
 		{/if}
+
+		<!--FLAG AND LOCATION-->
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
 			<img class="flag" src="/images/flags/{$people[0]->country|lower}.png" alt="{$people[0]->country}"/>
 		{/if}

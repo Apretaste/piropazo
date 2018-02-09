@@ -69,7 +69,7 @@ class Piropazo extends Service
 			$match->tags = array_slice($tags, 0, 2); // show only two tags
 
 			// erase unwanted properties in the object
-			$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture_internal","crown","country","location","age","tags"];
+			$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture_internal","crown","country","location","age","tags","online"];
 			$match = $this->filterObjectProperties($properties, $match);
 			$inlineUsernames .= $match->username.' ';
 		}
@@ -346,7 +346,7 @@ class Piropazo extends Service
 			if($match->picture) $images[] = $match->picture_internal;
 
 			// erase unwanted properties in the object
-			$properties = array("username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left","country");
+			$properties = ["username","gender","age","type","location","picture","picture_public","picture_internal","matched_on","time_left","country","online"];
 			$match = $this->filterObjectProperties($properties, $match);
 		}
 
@@ -515,6 +515,39 @@ class Piropazo extends Service
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject('Tienda de Piropazo');
 		$response->createFromTemplate('store.tpl', ["credit"=>$credit]);
+		return $response;
+	}
+
+	/**
+	 * Chat with somebody
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _chat(Request $request)
+	{
+		// get person to chat
+		$friendEmail = $this->utils->getEmailFromUsername($request->query);
+		if( ! $friendEmail) return new Response();
+
+		// show list of chats for a person
+		$di = \Phalcon\DI\FactoryDefault::getDefault();
+		require_once $di->get('path')['root'] . "/services/chat/service.php";
+		$chats = Chat::getConversation($request->email, $friendEmail);
+
+		// add profiles to the list of notes
+		foreach($chats as $n) {
+			$email = $this->utils->getEmailFromUsername($n->username);
+			$n->profile = $this->utils->getPerson($email);
+			$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
+		}
+
+		// respond to the view
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->setResponseSubject("Charla con @".$request->query);
+		$response->createFromTemplate("conversation.tpl", ["username"=>str_replace("@", "", $request->query), "chats"=>$chats]);
 		return $response;
 	}
 

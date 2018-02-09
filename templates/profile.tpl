@@ -1,4 +1,4 @@
-{include file="../layouts/appmenu.tpl"}
+{include file="../includes/appmenu.tpl"}
 
 <!--COLOR BASED ON GENDER-->
 {assign var="color" value="gray"}
@@ -76,7 +76,7 @@
 		{button href="PIROPAZO FLOR @{$profile->username}" caption="&#x1F33C; Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
 	{elseif $status == "match"}
-		{button href="CHAT @{$profile->username}" caption="Chatear" color="grey"}
+		{button href="PIROPAZO CHAT @{$profile->username}" caption="Chatear" color="grey"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
 	{/if}
 

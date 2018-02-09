@@ -1,4 +1,4 @@
-{include file="../layouts/appmenu.tpl"}
+{include file="../includes/appmenu.tpl"}
 
 <h1>{$header}</h1>
 
