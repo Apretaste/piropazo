@@ -529,19 +529,11 @@ class Piropazo extends Service
 	{
 		// get person to chat
 		$friendEmail = $this->utils->getEmailFromUsername($request->query);
-		if( ! $friendEmail) return new Response();
+		if(empty($friendEmail)) return new Response();
 
-		// show list of chats for a person
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		require_once $di->get('path')['root'] . "/services/chat/service.php";
-		$chats = Chat::getConversation($request->email, $friendEmail);
-
-		// add profiles to the list of notes
-		foreach($chats as $n) {
-			$email = $this->utils->getEmailFromUsername($n->username);
-			$n->profile = $this->utils->getPerson($email);
-			$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
-		}
+		// get the list of people chating with you
+		$social = new Social();
+		$chats = $social->chatConversation($request->email, $friendEmail);
 
 		// respond to the view
 		$response = new Response();

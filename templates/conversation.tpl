@@ -9,18 +9,19 @@
 	{foreach item=item from=$chats}
 		<tr {if $username == $item->username}bgcolor="#F2F2F2"{/if}>
 			{assign var="color" value="black"}
-			{if $item->profile->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
-			{if $item->profile->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+			{if $item->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+			{if $item->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 			<td width="1" valign="top">
 				{if {$APRETASTE_ENVIRONMENT} eq "web"}
-					<img class="profile-small" src="{$item->picture}" title="@{$item->profile->username}" alt="@{$item->profile->username}"/>
+					<img class="profile-small" src="{$item->picture_public}" title="@{$item->username}" alt="@{$item->username}"/>
 				{/if}
 			</td>
 			<td>
-				<span style="color:grey; font-size:10px;">
-					{link href="PIZARRA PERFIL @{$item->profile->username}" caption="@{$item->profile->username}" style="color:{$color};"}
-					{$item->sent|date_format:"%e/%m/%Y %I:%M %p"}
+				<span style="font-size:10px;">
+					{link href="PIZARRA PERFIL @{$item->username}" caption="@{$item->username}" style="color:{$color};"}
+					<b>&middot;</b>
+					<span style="color:grey;">{$item->sent|date_format:"%e/%m/%Y %I:%M %p"}</span>
 				</span><br/>
 				<span style="color:{if $username == $item->username}#000000{else}#000066{/if};">{$item->text}</span>
 			</td>
