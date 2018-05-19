@@ -36,7 +36,7 @@ class Piropazo extends Service
 			$content = [
 				"header"=>"No encontramos a nadie",
 				"icon"=>"&#x1F64D;",
-				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que valla con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
+				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href"=>"PERFIL EDITAR", "caption"=>"Editar perfil"]];
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
@@ -84,7 +84,7 @@ class Piropazo extends Service
 		$content = [
 			"noProfilePic" => empty($user->picture),
 			"noProvince" => empty($user->country) || ($user->country=="US" && empty($user->usstate)) || ($user->country=="CU" && empty($user->province)),
-			"fewInterests" => count($user->interests) <= 5,
+			"fewInterests" => count($user->interests) <= 3,
 			"completion" => $user->completion,
 			"crowned" => $crowned,
 			"people" => $matches,
@@ -755,20 +755,60 @@ class Piropazo extends Service
 	private function getMatchesByPopularity ($user, $limit, $offset = 0)
 	{
 		// get the list of people
-		return Connection::query("
-			SELECT
-				A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
-				(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
-			FROM person A
-			LEFT JOIN _piropazo_people B
-			ON A.email = B.email
-			WHERE A.picture IS NOT NULL
-			AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
-			AND A.email <> '{$user->email}'
-			AND A.gender <> '{$user->gender}'
-			AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
-			ORDER BY popularity DESC
-			LIMIT $offset, $limit");
+		switch ($user->sexual_orientation) {
+			case 'HETERO':
+			return Connection::query("
+				SELECT
+					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
+					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+				FROM person A
+				LEFT JOIN _piropazo_people B
+				ON (A.email = B.email AND B.active=1)
+				WHERE A.picture IS NOT NULL
+				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
+				AND A.email <> '{$user->email}'
+				AND A.gender <> '{$user->gender}'
+				AND A.marital_status = 'SOLTERO'
+				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+				ORDER BY popularity DESC
+				LIMIT $offset, $limit");
+				break;
+			case 'HOMO':
+			return Connection::query("
+				SELECT
+					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
+					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+				FROM person A
+				LEFT JOIN _piropazo_people B
+				ON (A.email = B.email AND B.active=1)
+				WHERE A.picture IS NOT NULL
+				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
+				AND A.email <> '{$user->email}'
+				AND A.gender = '{$user->gender}'
+				AND A.marital_status = 'SOLTERO'
+				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+				ORDER BY popularity DESC
+				LIMIT $offset, $limit");
+				break;
+
+			case 'BI':
+			return Connection::query("
+				SELECT
+					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
+					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+				FROM person A
+				LEFT JOIN _piropazo_people B
+				ON (A.email = B.email AND B.active=1)
+				WHERE A.picture IS NOT NULL
+				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
+				AND A.email <> '{$user->email}'
+				AND A.marital_status = 'SOLTERO'
+				AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}'))
+				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+				ORDER BY popularity DESC
+				LIMIT $offset, $limit");
+				break;
+		}
 	}
 
 	/**
@@ -786,6 +826,7 @@ class Piropazo extends Service
 		$where  = "A.email <> '{$user->email}' ";
 		$where .= " AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')";
 		$where .= " AND (IFNULL(YEAR(CURDATE()) - YEAR(date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL) ";
+		$where .= " AND A.marital_status = 'SOLTERO' ";
 		if ($user->sexual_orientation == 'HETERO') $where .= "AND gender <> '{$user->gender}' AND sexual_orientation <> 'HOMO' ";
 		if ($user->sexual_orientation == 'HOMO') $where .= "AND gender = '{$user->gender}' AND sexual_orientation <> 'HETERO' ";
 		if ($user->sexual_orientation == 'BI') $where .= " AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}')) ";
@@ -810,7 +851,7 @@ class Piropazo extends Service
 		$subsql .= "(select IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown, ";
 		$subsql .= "(select IFNULL(body_type, '') = '{$user->body_type}') * 5 as same_body_type, ";
 		$subsql .= "(select IFNULL(religion, '') = '{$user->religion}') * 20 as same_religion ";
-		$subsql .= "FROM person A RIGHT JOIN _piropazo_people B ON A.email = B.email ";
+		$subsql .= "FROM person A RIGHT JOIN _piropazo_people B ON (A.email = B.email AND B.active=1) ";
 		$subsql .= "WHERE $where";
 
 		// create final query
