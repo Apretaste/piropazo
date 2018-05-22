@@ -41,7 +41,7 @@
 		{/if}
 		{if {$APRETASTE_ENVIRONMENT} eq "web" AND $profile->country}
 			&nbsp;<b>&middot;</b>&nbsp;
-			<img class="flag" src="/images/flags/{$profile->country|lower}.png" alt="{$profile->country}"/>
+			{img src="{$profile->country|lower}.png" alt="{$profile->country}" class="flag"}
 		{/if}
 		{$profile->location}
 	</p>

@@ -4,56 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<style type="text/css">
-			@font-face {
-				font-family: "emoji";
-				src: url('/fonts/seguiemj.ttf') format("truetype");
-			}
-			@media only screen and (max-width: 600px) {
-				#container {
-					width: 100%;
-				}
-			}
-			@media only screen and (max-width: 480px) {
-				.button {
-					display: block !important;
-				}
-				.button a {
-					display: block !important;
-					font-size: 18px !important; width: 100% !important;
-					max-width: 600px !important;
-				}
-				.section {
-					width: 100%;
-					margin: 2px 0px;
-					display: block;
-				}
-				.phone-block {
-					display: block;
-				}
-			}
-			body{
-				font-family: Arial;
-			}
-			.rounded{
-				border-radius: 10px;
-				background: white;
-				padding: 10px;
-			}
-			.emoji{
-				font-family: emoji;
-			}
-			.flag{
-				vertical-align:middle;
-				width:20px;
-				margin-right:3px;
-			}
-			.profile-small{
-				float:left;
-				width: 30px;
-				height:30px;
-				border-radius:100px;
-				margin-right:5px;
-			}
+			{include file="../includes/styles.css"}
 		</style>
 	</head>
 	<body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="font-family:Arial;">

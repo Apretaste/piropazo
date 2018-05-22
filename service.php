@@ -45,7 +45,7 @@ class Piropazo extends Service
 		}
 
 		// organize list of matches and get images
-		$images = array();
+		$images = [];
 		$social = new Social();
 
 		$inlineUsernames = '';
@@ -90,6 +90,13 @@ class Piropazo extends Service
 			"people" => $matches,
 			"limit" => $limit,
 			"inlineUsernames" => $inlineUsernames];
+
+		// get images for the web
+		if($request->environment == "web" && $matches[0]->country) {
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			$images[] = "$wwwroot/public/images/flags/".strtolower($matches[0]->country).".png";
+		}
 
 		// build the response
 		$response = new Response();
@@ -361,6 +368,15 @@ class Piropazo extends Service
 			"matchCounter" => $matchCounter,
 			"people"=>$matches);
 
+		// get flag images for the web
+		if($request->environment == "web") {
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			foreach ($matches as $match) {
+				if($match->country) $images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
+			}
+		}
+
 		// Building the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
@@ -535,11 +551,25 @@ class Piropazo extends Service
 		$social = new Social();
 		$chats = $social->chatConversation($request->email, $friendEmail);
 
+		// create content to send to the view
+		$content = [
+			"username"=>str_replace("@", "", $request->query),
+			"chats"=>$chats
+		];
+
+		// get images for the web
+		$images = [];
+		if($request->environment == "web") {
+			foreach ($chats as $chat) {
+				$images[] = $chat->picture_internal;
+			}
+		}
+
 		// respond to the view
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject("Charla con @".$request->query);
-		$response->createFromTemplate("conversation.tpl", ["username"=>str_replace("@", "", $request->query), "chats"=>$chats]);
+		$response->createFromTemplate("conversation.tpl", $content, $images);
 		return $response;
 	}
 
@@ -663,11 +693,19 @@ class Piropazo extends Service
 			"status" => $status,
 			"profile" => $profile];
 
+		// get images for the web
+		$images = [$profile->picture_internal];
+		if($request->environment == "web" && $profile->country) {
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			$images[] = "$wwwroot/public/images/flags/".strtolower($profile->country).".png";
+		}
+
 		// Building response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->setResponseSubject("Perfil de @{$profile->username}");
-		$response->createFromTemplate('profile.tpl', $content, [$profile->picture_internal]);
+		$response->createFromTemplate('profile.tpl', $content, $images);
 		return $response;
 
 		// respond back to the API

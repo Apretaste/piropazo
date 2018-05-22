@@ -34,7 +34,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>
@@ -86,7 +86,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>
@@ -138,7 +138,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if {$APRETASTE_ENVIRONMENT} eq "web"}<img class="flag" src="/images/flags/{$person->country|lower}.png" alt="{$person->country}"/>{/if}
+						{if {$APRETASTE_ENVIRONMENT} eq "web"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>

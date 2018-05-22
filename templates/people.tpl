@@ -59,7 +59,7 @@
 		<!--FLAG AND LOCATION-->
 		&nbsp;<b>&middot;</b>&nbsp;
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
-			<img class="flag" src="/images/flags/{$people[0]->country|lower}.png" alt="{$people[0]->country}"/>
+			{img src="{$people[0]->country|lower}.png" alt="{$people[0]->country}" class="flag"}
 		{/if}
 		{$people[0]->location}
 	</p>
