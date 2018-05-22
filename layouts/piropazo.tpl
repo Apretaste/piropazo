@@ -39,6 +39,7 @@
 				<!--footer-->
 				<tr>
 					<td align="center" colspan="3" bgcolor="#F2F2F2" style="padding: 20px 0px;">
+						<small>{link href="PIROPAZO SALIR" caption="Salir de Piropazo"}</small><br/>
 						<small>Piropazo &copy; {$smarty.now|date_format:"%Y"}. All rights reserved.</small><br/>
 						<small>Descarga nuestra app en <a target="_blank" href="http://piropazo.com">Piropazo.com</a></small>
 					</td>
