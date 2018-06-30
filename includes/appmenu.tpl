@@ -2,7 +2,7 @@
 	{include file="../includes/styles.css"}
 </style>
 
-{if $APRETASTE_ENVIRONMENT eq "app"}
+{if $APRETASTE_ENVIRONMENT eq "app" AND $APP_TYPE eq "original"}
 	<table id="menu" width="100%" cellspacing="10">
 		<tr align="center">
 			<td>{link href="PIROPAZO" caption="💕" style="color:#5DBB48; text-decoration:none;"}</td>
