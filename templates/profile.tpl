@@ -69,9 +69,14 @@
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
 			{button href="PERFIL EDITAR" caption="Editar perfil"}
 		{/if}
+		{button href="PERFIL DESCRIPCION" caption="Describirse" popup="true" desc="a:Describase a su gusto para que los demas lo conozcan, mínimo 100 caracteres*" wait="false"}
 	{elseif $status == "no_relationship" OR $status == "they_like_you"}
-		{button href="PIROPAZO SI @{$profile->username}" caption="Decir Si" color="green" wait="false"}
-		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="Decir No" color="red"}
+		{button href="PIROPAZO SINEXT @{$profile->username}" caption="Decir Si" color="green" wait="false"}
+		{if $status == "they_like_you"}
+			{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="Decir No" color="red"}
+		{else}
+			{button href="PIROPAZO NONEXT @{$profile->username}" caption="Decir No" color="red"}
+		{/if}
 	{elseif $status == "you_like_them"}
 		{button href="PIROPAZO FLOR @{$profile->username}" caption="&#x1F33C; Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green"}
 		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}

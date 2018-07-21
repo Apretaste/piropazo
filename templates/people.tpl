@@ -13,12 +13,8 @@
 {/if}
 
 {if $fewInterests}
-	<div class="notice">Agregue 10 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
+	<div class="notice">Agregue 3 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
 {/if}
-
-<h1>Diga S&iacute; o No</h1>
-
-{space5}
 
 <center>
 	<!--CROWN-->

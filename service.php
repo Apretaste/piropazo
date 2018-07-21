@@ -15,6 +15,17 @@ class Piropazo extends Service
 	 */
 	public function _main (Request $request)
 	{
+		// ensure your profile is completed
+		$person = Utils::getPerson($request->email);
+		if(
+			empty($person->date_of_birth) ||
+			$person->age < 10 || $person->age > 110 ||
+			empty($person->first_name) ||
+			empty($person->sexual_orientation) ||
+			empty($person->gender) ||
+			empty($person->province)
+		) return $this->_editProfile($request);
+
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
 		$request->query = trim($request->query);
@@ -1048,5 +1059,25 @@ class Piropazo extends Service
 			WHERE email='{$payment->buyer}'");
 
 		return true;
+	}
+
+	public function _editProfile(Request $request)
+	{
+		// get the person to edit profile
+		$person = $this->utils->getPerson($request->email);
+		if (empty($person)) return new Response();
+
+		// get the person's province
+		$person->province = str_replace("_", " ", $person->province);
+
+		// get the person's gender
+		if ($person->gender == 'M') $person->gender = "Masculino";
+		if ($person->gender == 'F') $person->gender = "Femenino";
+
+		// prepare response for the view
+		$response = new Response();
+		$response->setResponseSubject('Edite su perfil');
+		$response->createFromTemplate('editProfile.tpl', ["person"=>$person]);
+		return $response;
 	}
 }
