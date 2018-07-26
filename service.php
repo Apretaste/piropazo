@@ -848,58 +848,56 @@ class Piropazo extends Service
 	 }
  }
 
-	/**
-	 * Get the list of matches best fit to your profile
-	 *
-	 * @author salvipascual
-	 * @param Object $user, the person to match against
-	 * @param Int $limit, returning number
-	 * @param Int $offset
-	 * @return Array of People
-	 */
-	private function getMatchesByUserFit ($user)
-	{
-		// create the where clause for the query
-		$where  = "A.email <> '{$user->email}' ";
-		$where .= " AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')";
-		$where .= " AND (IFNULL(YEAR(CURDATE()) - YEAR(date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL) ";
-		$where .= " AND A.marital_status = 'SOLTERO' ";
-		if ($user->sexual_orientation == 'HETERO') $where .= "AND gender <> '{$user->gender}' AND sexual_orientation <> 'HOMO' ";
-		if ($user->sexual_orientation == 'HOMO') $where .= "AND gender = '{$user->gender}' AND sexual_orientation <> 'HETERO' ";
-		if ($user->sexual_orientation == 'BI') $where .= " AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}')) ";
-		$where .= "AND (marital_status <> 'CASADO' OR marital_status IS NULL) ";
-		$where .= "AND A.active=1 AND B.active=1";
+ /**
+	* Get the list of matches best fit to your profile
+	*
+	* @author salvipascual
+	* @param Object $user, the person to match against
+	* @return Array of People
+	*/
+ private function getMatchesByUserFit ($user)
+ {
+	 //create the clause for the sexual orientation
+	 switch ($user->sexual_orientation) {
+		 case 'HETERO':
+			 $orientationClause = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
+			 break;
+		 case 'HOMO':
+			 $orientationClause = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
+			 break;
+		 case 'BI':
+		 $orientationClause = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
+			 break;
+	 }
 
-		// @TODO find a way to calculate interests faster
-		// @TODO this is very important, but I dont have the time now
+	 //create the clause for the already voted users
+	 $C="SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '$user->email'";
 
-		// create subquery to calculate the percentages
-		if(empty($user->age)) $user->age = 0;
-		$subsql  = "SELECT A.*, ";
-		$subsql .= "(select IFNULL(city, '') = '{$user->city}') * 60 as city_proximity, ";
-		$subsql .= "(select IFNULL(province, '') = '{$user->province}') * 50 as province_proximity, ";
-		$subsql .= "(select IFNULL(usstate, '') = '{$user->usstate}') * 50 as state_proximity, ";
-		$subsql .= "(select IFNULL(country, '') = '{$user->country}') * 10 as country_proximity, ";
-		$subsql .= "(select IFNULL(marital_status, '') = 'SOLTERO') * 20 as percent_single, ";
-		$subsql .= "(select B.likes*B.likes/(B.likes+B.dislikes)) as popularity, ";
-		$subsql .= "(select IFNULL(skin, '') = '{$user->skin}') * 5 as same_skin, ";
-		$subsql .= "(select picture IS NOT NULL) * 30 as having_picture, ";
-		$subsql .= "(ABS(IFNULL(YEAR(CURDATE()) - YEAR(date_of_birth), 0) - {$user->age}) < 20) * 15 as age_proximity,  ";
-		$subsql .= "(select IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown, ";
-		$subsql .= "(select IFNULL(body_type, '') = '{$user->body_type}') * 5 as same_body_type, ";
-		$subsql .= "(select IFNULL(religion, '') = '{$user->religion}') * 20 as same_religion ";
-		$subsql .= "FROM person A RIGHT JOIN _piropazo_people B ON (A.email = B.email AND B.active=1) ";
-		$subsql .= "WHERE $where";
+	 // create the initial query with the clauses
+	 $subq="SELECT A.*,IFNULL(TIMESTAMPDIFF(DAY,B.crowned,NOW()),3)<3 AS crown FROM person A JOIN _piropazo_people B
+		 ON A.email=B.email AND B.email NOT IN ($C) AND A.active=1 AND B.active=1
+		 AND A.marital_status='SOLTERO' AND NOT ISNULL(A.picture)
+		 AND $orientationClause AND (IFNULL(TIMESTAMPDIFF(YEAR,date_of_birth,NOW()), 0) >= 17 OR A.date_of_birth IS NULL)
+		 AND NOT A.email='$user->email'";
 
-		// create final query
-		$sql  = "SELECT *, percent_single + city_proximity + province_proximity + state_proximity + country_proximity + same_skin + having_picture + age_proximity + same_body_type + same_religion + crown*50 as percent_match ";
-		$sql .= "FROM ($subsql) as subq2 ";
-		$sql .= "ORDER BY percent_match DESC, email ASC ";
-		$sql .= "LIMIT 10; ";
+	 // create final query with the match score
+	 $q="SELECT *,
+		 (IFNULL(city, 'No') = '$user->city') * 60 +
+		 (IFNULL(province, 'No') = '$user->province') * 50 +
+		 (IFNULL(usstate, 'No') = '$user->usstate') * 50 +
+		 (IFNULL(country, 'No') = '$user->country') * 10 +
+		 (IFNULL(skin, 'No') = '$user->skin') * 5 +
+		 (ABS(IFNULL(TIMESTAMPDIFF(YEAR,date_of_birth,NOW()), 0) - $user->age) <= 5) * 20 +
+		 crown*25 +
+		 (IFNULL(body_type, 'No') = '$user->body_type') * 5 +
+		 (IFNULL(religion, 'No') = '$user->religion') * 20
+		 AS percent_match
+		 FROM ($subq) AS results ORDER BY percent_match DESC
+		 LIMIT 5";
 
-		// executing the query
-		return Connection::query(trim($sql));
-	}
+	 // executing the query
+	 return Connection::query($q);
+ }
 
 	/**
 	 * Check if the user us crowned
