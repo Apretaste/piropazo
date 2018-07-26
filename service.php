@@ -28,19 +28,13 @@ class Piropazo extends Service
 
 		// get values from the response
 		$user = $this->utils->getPerson($request->email);
-		$request->query = trim($request->query);
-		$offset = 0;
-
-		$limit = empty(intval($request->query)) ? 1 : $request->query;
-		$limit = intval($limit);
-		if($limit > 50) $limit = 50;
 
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->email);
 
 		// get best matches for you
-		if($user->completion < 85) $matches = $this->getMatchesByPopularity($user, $limit, $offset);
-		else $matches = $this->getMatchesByUserFit($user, $limit, $offset);
+		if($user->completion < 65) $matches = $this->getMatchesByPopularity($user);
+		else $matches = $this->getMatchesByUserFit($user);
 
 		// if no matches, let the user know
 		if(empty($matches)) {
@@ -59,31 +53,29 @@ class Piropazo extends Service
 		$images = [];
 		$social = new Social();
 
+		$match=$matches[rand(0,count($matches)-1)];
+
 		$inlineUsernames = '';
-		foreach ($matches as $match)
-		{
-			// get the full profile
-			$match = $social->prepareUserProfile($match);
 
-			// get the link to the image
-			if($match->picture) $images[] = $match->picture_internal;
+		// get the full profile
+		$match = $social->prepareUserProfile($match);
+		// get the link to the image
+		if($match->picture) $images[] = $match->picture_internal;
 
-			// calculate the tags
-			$tags = array();
-			if(array_intersect($match->interests, $user->interests)) $tags[] = $this->int18("tag_interests");
-			if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = $this->int18("tag_nearby");
-			if($match->popularity > 70) $tags[] = $this->int18("tag_popular");
-			if(abs($match->age - $user->age) <= 3) $tags[] = $this->int18("tag_same_age");
-			if($match->religion && ($match->religion == $user->religion)) $tags[] = $this->int18("tag_religion");
-			if($match->highest_school_level && ($match->highest_school_level == $user->highest_school_level)) $tags[] = $this->int18("tag_same_education");
-			if($match->body_type == "ATLETICO") $tags[] = $this->int18("tag_hot");
-			$match->tags = array_slice($tags, 0, 2); // show only two tags
+		// calculate the tags
+		$tags = array();
+		if(array_intersect($match->interests, $user->interests)) $tags[] = $this->int18("tag_interests");
+		if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = $this->int18("tag_nearby");
+		if(abs($match->age - $user->age) <= 3) $tags[] = $this->int18("tag_same_age");
+		if($match->religion && ($match->religion == $user->religion)) $tags[] = $this->int18("tag_religion");
+		if($match->highest_school_level && ($match->highest_school_level == $user->highest_school_level)) $tags[] = $this->int18("tag_same_education");
+		if($match->body_type == "ATLETICO") $tags[] = $this->int18("tag_hot");
+		$match->tags = array_slice($tags, 0, 2); // show only two tags
 
-			// erase unwanted properties in the object
-			$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture_internal","crown","country","location","age","tags","online"];
-			$match = $this->filterObjectProperties($properties, $match);
-			$inlineUsernames .= $match->username.' ';
-		}
+		// erase unwanted properties in the object
+		$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture_internal","crown","country","location","age","tags","online"];
+		$match = $this->filterObjectProperties($properties, $match);
+		$inlineUsernames .= $match->username.' ';
 
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->email);
@@ -98,15 +90,14 @@ class Piropazo extends Service
 			"fewInterests" => count($user->interests) <= 3,
 			"completion" => $user->completion,
 			"crowned" => $crowned,
-			"people" => $matches,
-			"limit" => $limit,
+			"person" => $match,
 			"inlineUsernames" => $inlineUsernames];
 
 		// get images for the web
-		if($request->environment == "web" && $matches[0]->country) {
+		if($request->environment == "web" && $match->country) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/images/flags/".strtolower($matches[0]->country).".png";
+			$images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
 		}
 
 		// build the response
@@ -801,64 +792,61 @@ class Piropazo extends Service
 	 * @param Int $offset
 	 * @return array of People
 	 */
-	private function getMatchesByPopularity ($user, $limit, $offset = 0)
-	{
-		// get the list of people
-		switch ($user->sexual_orientation) {
-			case 'HETERO':
-			return Connection::query("
-				SELECT
-					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
-					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
-				FROM person A
-				LEFT JOIN _piropazo_people B
-				ON (A.email = B.email AND B.active=1)
-				WHERE A.picture IS NOT NULL
-				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
-				AND A.email <> '{$user->email}'
-				AND A.gender <> '{$user->gender}'
-				AND A.marital_status = 'SOLTERO'
-				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
-				ORDER BY popularity DESC
-				LIMIT $offset, $limit");
-				break;
-			case 'HOMO':
-			return Connection::query("
-				SELECT
-					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
-					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
-				FROM person A
-				LEFT JOIN _piropazo_people B
-				ON (A.email = B.email AND B.active=1)
-				WHERE A.picture IS NOT NULL
-				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
-				AND A.email <> '{$user->email}'
-				AND A.gender = '{$user->gender}'
-				AND A.marital_status = 'SOLTERO'
-				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
-				ORDER BY popularity DESC
-				LIMIT $offset, $limit");
-				break;
+	 /**
+	* Get the list of matches
+	*
+	* @author salvipascual
+	* @param Object $user, the person to match against
+	* @return array of People
+	*/
+ private function getMatchesByPopularity ($user){
+	 // get the list of people
+	 switch ($user->sexual_orientation) {
+		 case 'HETERO':
+		 return Connection::query("
+			 SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+			 FROM person A
+			 LEFT JOIN _piropazo_people B
+			 ON (A.email = B.email AND B.active=1)
+			 WHERE A.picture IS NOT NULL
+			 AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
+			 AND A.email <> '{$user->email}'
+			 AND A.gender <> '{$user->gender}'
+			 AND A.marital_status = 'SOLTERO'
+			 AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 LIMIT 25");
+			 break;
+		 case 'HOMO':
+		 return Connection::query("
+			 SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+			 FROM person A
+			 LEFT JOIN _piropazo_people B
+			 ON (A.email = B.email AND B.active=1)
+			 WHERE A.picture IS NOT NULL
+			 AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
+			 AND A.email <> '{$user->email}'
+			 AND A.gender = '{$user->gender}'
+			 AND A.marital_status = 'SOLTERO'
+			 AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 LIMIT 25");
+			 break;
 
-			case 'BI':
-			return Connection::query("
-				SELECT
-					A.*, B.likes*(B.likes/(B.likes+B.dislikes)) AS popularity,
-					(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
-				FROM person A
-				LEFT JOIN _piropazo_people B
-				ON (A.email = B.email AND B.active=1)
-				WHERE A.picture IS NOT NULL
-				AND (IFNULL(YEAR(CURDATE()) - YEAR(A.date_of_birth), 0) >= 17 OR A.date_of_birth IS NULL)
-				AND A.email <> '{$user->email}'
-				AND A.marital_status = 'SOLTERO'
-				AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}'))
-				AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
-				ORDER BY popularity DESC
-				LIMIT $offset, $limit");
-				break;
-		}
-	}
+		 case 'BI':
+		 return Connection::query("
+			 SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
+			 FROM person A
+			 LEFT JOIN _piropazo_people B
+			 ON (A.email = B.email AND B.active=1)
+			 WHERE A.picture IS NOT NULL
+			 AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
+			 AND A.email <> '{$user->email}'
+			 AND A.marital_status = 'SOLTERO'
+			 AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}'))
+			 AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 LIMIT 25");
+			 break;
+	 }
+ }
 
 	/**
 	 * Get the list of matches best fit to your profile
@@ -869,7 +857,7 @@ class Piropazo extends Service
 	 * @param Int $offset
 	 * @return Array of People
 	 */
-	private function getMatchesByUserFit ($user, $limit, $offset = 0)
+	private function getMatchesByUserFit ($user)
 	{
 		// create the where clause for the query
 		$where  = "A.email <> '{$user->email}' ";
@@ -907,7 +895,7 @@ class Piropazo extends Service
 		$sql  = "SELECT *, percent_single + city_proximity + province_proximity + state_proximity + country_proximity + same_skin + having_picture + age_proximity + same_body_type + same_religion + crown*50 as percent_match ";
 		$sql .= "FROM ($subsql) as subq2 ";
 		$sql .= "ORDER BY percent_match DESC, email ASC ";
-		$sql .= "LIMIT $offset,$limit; ";
+		$sql .= "LIMIT 10; ";
 
 		// executing the query
 		return Connection::query(trim($sql));

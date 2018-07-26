@@ -1,11 +1,11 @@
 {include file="../includes/appmenu.tpl"}
 
 {if $noProfilePic}
-	<div class="notice">Agregue su foto de perfil para recibir 70% m&aacute;s atenci&oacute;n</div>
+	<div class="notice">Agregue su foto de perfil para recibir m&aacute;s atenci&oacute;n</div>
 {/if}
 
-{if $completion lt 85}
-	<div class="notice">Complete 85% del perfil para encontrar su pareja ideal</div>
+{if $completion lt 65}
+	<div class="notice">Complete al menos el 65% del perfil para encontrar su pareja ideal</div>
 {/if}
 
 {if $noProvince}
@@ -18,50 +18,50 @@
 
 <center>
 	<!--CROWN-->
-	{if $people[0]->crown}
+	{if $person->crown}
 		<spam style="color:orange; font-size:30px;" class="emogi">&#x1F451;</spam><br/>
 	{/if}
 
 	<!--COLOR BASED ON GENDER-->
 	{assign var="color" value="gray"}
-	{if $people[0]->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
-	{if $people[0]->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
+	{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
+	{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 	<!--PICTURE-->
-	{if $people[0]->picture}
-		{link href="PIROPAZO PERFIL @{$people[0]->username}" style="text-decoration:none;" caption="
-			{img src="{$people[0]->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
+	{if $person->picture}
+		{link href="PIROPAZO PERFIL @{$person->username}" style="text-decoration:none;" caption="
+			{img src="{$person->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
 		"}
 	{else}
 		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
 	{/if}<br/>
 
 	<!--TAGS-->
-	{foreach item=tag from=$people[0]->tags}
+	{foreach item=tag from=$person->tags}
 		<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
 	{/foreach}
 
 	<p style="font-size:small;">
 		<!--USERNAME-->
-		{link href="PIROPAZO PERFIL @{$people[0]->username}" caption="@{$people[0]->username}" style="color:{$color}"}
-		{if $people[0]->online}&nbsp;<span class="online">ONLINE</span>{/if}
+		{link href="PIROPAZO PERFIL @{$person->username}" caption="@{$person->username}" style="color:{$color}"}
+		{if $person->online}&nbsp;<span class="online">ONLINE</span>{/if}
 
 		<!--AGE-->
-		{if $people[0]->age}
+		{if $person->age}
 			&nbsp;<b>&middot;</b>&nbsp;
-			{$people[0]->age} a&ntilde;os
+			{$person->age} a&ntilde;os
 		{/if}
 
 		<!--FLAG AND LOCATION-->
 		&nbsp;<b>&middot;</b>&nbsp;
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
-			{img src="{$people[0]->country|lower}.png" alt="{$people[0]->country}" class="flag"}
+			{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}
 		{/if}
-		{$people[0]->location}
+		{$person->location}
 	</p>
 
 	<!--BUTTONS-->
 	{space5}
-	{button href="PIROPAZO SINEXT @{$people[0]->username}" caption="&hearts; S&iacute;" color="green"}
-	{button href="PIROPAZO NONEXT @{$people[0]->username}" caption="&#10008; No" color="red"}
+	{button href="PIROPAZO SINEXT @{$person->username}" caption="&hearts; S&iacute;" color="green"}
+	{button href="PIROPAZO NONEXT @{$person->username}" caption="&#10008; No" color="red"}
 </center>

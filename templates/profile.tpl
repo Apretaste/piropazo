@@ -88,6 +88,6 @@
 	<!--DENOUNCE BUTTON-->
 	{if not $isMyOwnProfile}
 		{space5}
-		<p style="font-size:small; color:grey;">Si ve algun problema {link href="PIROPAZO REPORTAR @{$profile->username}" caption="denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="false" style="color:grey;"}</p>
+		<p style="font-size:small; color:grey;">Si ve algun problema {link href="PIROPAZO REPORTAR @{$profile->username}" caption="denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="true" style="color:grey;"}</p>
 	{/if}
 </center>
