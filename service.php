@@ -39,6 +39,7 @@ class Piropazo extends Service
 		// if no matches, let the user know
 		if(empty($matches)) {
 			$content = [
+				"environment" => $request->environment,
 				"header"=>"No encontramos a nadie",
 				"icon"=>"&#x1F64D;",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
@@ -85,6 +86,7 @@ class Piropazo extends Service
 
 		// create response
 		$content = [
+			"environment" => $request->environment,
 			"noProfilePic" => empty($user->picture),
 			"noProvince" => empty($user->country) || ($user->country=="US" && empty($user->usstate)) || ($user->country=="CU" && empty($user->province)),
 			"fewInterests" => count($user->interests) <= 3,
@@ -94,7 +96,7 @@ class Piropazo extends Service
 			"inlineUsernames" => $inlineUsernames];
 
 		// get images for the web
-		if($request->environment == "web" && $match->country) {
+		if(($request->environment == "web" || $request->environment == "appnet") && $match->country) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			$images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
@@ -323,6 +325,7 @@ class Piropazo extends Service
 		// if no matches, let the user know
 		if(empty($matches)) {
 			$content = [
+				"environment" => $request->environment,
 				"header"=>"Por ahora no tiene parejas",
 				"icon"=>"&#x1F64D;",
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
@@ -364,6 +367,7 @@ class Piropazo extends Service
 
 		// create response array
 		$responseArray = array(
+			"environment" => $request->environment,
 			"code" => "ok",
 			"likeCounter" => $likeCounter,
 			"waitingCounter" => $waitingCounter,
@@ -371,7 +375,7 @@ class Piropazo extends Service
 			"people"=>$matches);
 
 		// get flag images for the web
-		if($request->environment == "web") {
+		if(($request->environment == "web" || $request->environment == "appnet")) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			foreach ($matches as $match) {
@@ -425,6 +429,7 @@ class Piropazo extends Service
 		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE email='{$request->email}' AND flowers>0");
 		if(empty($flowers)) {
 			$content = [
+				"environment" => $request->environment,
 				"code"=>"ERROR", "message"=>"Not enought flowers", "items"=>"flores",
 				"header"=>"No tiene suficientes flores",
 				"icon"=>"&#x1F339;",
@@ -458,6 +463,7 @@ class Piropazo extends Service
 
 		// return message
 		$content = [
+			"environment" => $request->environment,
 			"header"=>"Hemos enviado su flor a @$username",
 			"icon"=>"&#x1F339;",
 			"text" => "@$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
@@ -483,6 +489,7 @@ class Piropazo extends Service
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
 			$content = [
+				"environment" => $request->environment,
 				"code"=>"ERROR", "message"=>"Not enought crowns", "items"=>"coronas",
 				"header"=>"No tiene suficientes coronas",
 				"icon"=>"&#x1F451;",
@@ -506,6 +513,7 @@ class Piropazo extends Service
 
 		// build the response
 		$content = [
+			"environment" => $request->environment,
 			"header"=>"Usted ha sido coronado",
 			"icon"=>"&#x1F451;",
 			"text" => "Usted ha sido coronado, y en los proximos tres dias su perfil se mostrara muchas mas veces a otros usuarios, lo cual mejorara sus chances de recibir solicitudes y flores. Mantenganse revisando a diario su lista de parejas.",
@@ -555,13 +563,14 @@ class Piropazo extends Service
 
 		// create content to send to the view
 		$content = [
+			"environment" => $request->environment,
 			"username"=>str_replace("@", "", $request->query),
 			"chats"=>$chats
 		];
 
 		// get images for the web
 		$images = [];
-		if($request->environment == "web") {
+		if(($request->environment == "web" || $request->environment == "appnet")) {
 			foreach ($chats as $chat) {
 				$images[] = $chat->picture_internal;
 			}
@@ -685,6 +694,7 @@ class Piropazo extends Service
 
 		// create the response object
 		$content = [
+			"environment" => $request->environment,
 			"code" => "ok",
 			"username" => $profile->username,
 			"flowers" => $piropazo[0]->flowers,
@@ -697,7 +707,7 @@ class Piropazo extends Service
 
 		// get images for the web
 		$images = [$profile->picture_internal];
-		if($request->environment == "web" && $profile->country) {
+		if(($request->environment == "web" || $request->environment == "appnet") && $profile->country) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			$images[] = "$wwwroot/public/images/flags/".strtolower($profile->country).".png";

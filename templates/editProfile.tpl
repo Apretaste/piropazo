@@ -1,7 +1,5 @@
 <h1>Edite su perfil</h1>
 
-<p>Para contestar encuestas primero complete su perfil. El perfil nos ayuda a interpretar los resultados. Su info nunca se comparte con terceros.</p>
-
 <table id="profile" width="100%" cellspacing="0">
 	<!-- NAME -->
 	<tr>

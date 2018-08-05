@@ -39,7 +39,7 @@
 			&nbsp;<b>&middot;</b>&nbsp;
 			{$profile->age} a&ntilde;os
 		{/if}
-		{if {$APRETASTE_ENVIRONMENT} eq "web" AND $profile->country}
+		{if ($environment eq "web" or $environment eq "appnet") and $profile->country}
 			&nbsp;<b>&middot;</b>&nbsp;
 			{img src="{$profile->country|lower}.png" alt="{$profile->country}" class="flag"}
 		{/if}
@@ -66,7 +66,7 @@
 
 	<!--BUTTONS-->
 	{if $isMyOwnProfile}
-		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+		{if $environment eq "web" or $environment eq "appnet"}
 			{button href="PERFIL EDITAR" caption="Editar perfil"}
 		{/if}
 		{button href="PERFIL DESCRIPCION" caption="Describirse" popup="true" desc="a:Describase a su gusto para que los demas lo conozcan, mínimo 100 caracteres*" wait="false"}
