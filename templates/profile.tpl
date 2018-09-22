@@ -71,7 +71,7 @@
 		{/if}
 		{button href="PERFIL DESCRIPCION" caption="Describirse" popup="true" desc="a:Describase a su gusto para que los demas lo conozcan, mínimo 100 caracteres*" wait="false"}
 	{elseif $status == "no_relationship" OR $status == "they_like_you"}
-		{button href="PIROPAZO SINEXT @{$profile->username}" caption="Decir Si" color="green" wait="false"}
+		{button href="PIROPAZO SINEXT @{$profile->username}" caption="Decir Si" color="green"}
 		{if $status == "they_like_you"}
 			{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="Decir No" color="red"}
 		{else}

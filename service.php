@@ -400,8 +400,9 @@ class Piropazo extends Service
 	 */
 	public function _flor (Request $request)
 	{
+		$arr = explode(" ", $request->query);
 		// if coming as FLOR ID, open the flower
-		$flower = Connection::query("SELECT sender, message FROM _piropazo_flowers WHERE id='{$request->query}'");
+		$flower = (strpos($arr[0],'@')>-1)?false:Connection::query("SELECT sender, message FROM _piropazo_flowers WHERE id='{$request->query}'");
 		if($flower) {
 			$person = $this->utils->getPerson($flower[0]->sender);
 			$message = $flower[0]->message;
@@ -414,9 +415,8 @@ class Piropazo extends Service
 		}
 
 		// separate username and message
-		$arr = explode(" ", $request->query);
 		$username = str_replace("@", "", array_shift($arr));
-		$message = implode(" ", $arr);
+		$message = Connection::escape(implode(" ", $arr),200);
 
 		// do not allow inexistant people
 		$receiver = $this->utils->getEmailFromUsername($username);
@@ -554,12 +554,11 @@ class Piropazo extends Service
 	public function _chat(Request $request)
 	{
 		// get person to chat
-		$friendEmail = $this->utils->getEmailFromUsername($request->query);
-		if(empty($friendEmail)) return new Response();
+		$friendId = $this->utils->getIdFromUsername($request->query);
+		if(empty($friendId)) return new Response();
 
 		// get the list of people chating with you
-		$social = new Social();
-		$chats = $social->chatConversation($request->email, $friendEmail);
+		$chats = $this->social->chatConversation($request->userId, $friendId);
 
 		// create content to send to the view
 		$content = [
