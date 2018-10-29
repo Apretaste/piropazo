@@ -16,21 +16,18 @@ class Piropazo extends Service
 	public function _main (Request $request)
 	{
 		// ensure your profile is completed
-		$person = Utils::getPerson($request->email);
+		$user = Utils::getPerson($request->userId);
 		if(
-			empty($person->picture) ||
-			empty($person->first_name) ||
-			empty($person->gender) ||
-			empty($person->sexual_orientation) ||
-			$person->age < 10 || $person->age > 110 ||
-			empty($person->country)
+			empty($user->picture) ||
+			empty($user->first_name) ||
+			empty($user->gender) ||
+			empty($user->sexual_orientation) ||
+			$user->age < 10 || $user->age > 110 ||
+			empty($user->country)
 		) return $this->_inicio($request);
 
-		// get values from the response
-		$user = Utils::getPerson($request->email);
-
 		// activate new users and people who left
-		$this->activatePiropazoUser($request->email);
+		$this->activatePiropazoUser($request->userId);
 
 		// get best matches for you
 		if($user->completion < 65) $matches = $this->getMatchesByPopularity($user);
@@ -79,10 +76,10 @@ class Piropazo extends Service
 		$inlineUsernames .= $match->username.' ';
 
 		// mark the last time the system was used
-		$this->markLastTimeUsed($request->email);
+		$this->markLastTimeUsed($request->userId);
 
 		// check if your user has been crowned
-		$crowned = $this->checkUserIsCrowned($request->email);
+		$crowned = $this->checkUserIsCrowned($request->userId);
 
 		// create response
 		$content = [
@@ -149,15 +146,15 @@ class Piropazo extends Service
 	{
 		// get the emails from and to
 		$username = str_replace("@", "", trim($request->query));
-		$emailfrom = $request->email;
-		$emailto = Utils::getEmailFromUsername($username);
-		if( ! $emailto) return new Response();
+		$idFrom = $request->userId;
+		$idTo = Utils::getIdFromUsername($username);
+		if( ! $idTo) return new Response();
 
 		// check if there is any previous record between you and that person
-		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='$emailto' AND email_to='$emailfrom'");
+		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 		// get the person From from the database
-		$personFrom = Utils::getPerson($emailfrom);
+		$personFrom = Utils::getPerson($idFrom);
 
 		// if they liked you, like too, if they dislike you, block
 		if( ! empty($record))
@@ -166,15 +163,15 @@ class Piropazo extends Service
 			if($record[0]->status == "like")
 			{
 				// update to create a match and let you know of the match
-				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
-				Utils::addNotification($emailfrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "PIROPAZO CHAT @$username");
+				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+				Utils::addNotification($idFrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "PIROPAZO CHAT @$username");
 
 				// let the other person know of the match
-				Utils::addNotification($emailto, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$personFrom->username}");
+				Utils::addNotification($idTo, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$personFrom->username}");
 			}
 
 			// if they dislike you, block that match
-			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE email_from='$emailto' AND email_to='$emailfrom'");
+			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 			return new Response();
 		}
 
@@ -182,13 +179,13 @@ class Piropazo extends Service
 		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
 		Connection::query("
 			START TRANSACTION;
-			DELETE FROM _piropazo_relationships WHERE email_from='$emailfrom' AND email_to='$emailto';
-			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','like','$threeDaysForward');
+			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
+			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
 			COMMIT");
 
 		// prepare notification
 		$pushNotification = new PushNotification();
-		$appid = $pushNotification->getAppId($emailto, "piropazo");
+		$appid = $pushNotification->getAppId($idTo, "piropazo");
 
 		// send push notification for users with the piropazo app
 		if($appid) {
@@ -196,7 +193,7 @@ class Piropazo extends Service
 			return new Response();
 		}
 		// post an internal notification for the user
-		else Utils::addNotification($emailto, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
+		else Utils::addNotification($idTo, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
 
 		return new Response();
 	}
@@ -233,16 +230,16 @@ class Piropazo extends Service
 	 */
 	public function _no (Request $request)
 	{
-		// get the emails from and to
-		$emailfrom = $request->email;
-		$emailto = Utils::getEmailFromUsername($request->query);
-		if( ! $emailto) return new Response();
+		// get the ids from and to
+		$idFrom = $request->userId;
+		$idTo = Utils::getIdFromUsername($request->query);
+		if( ! $idTo) return new Response();
 
 		// insert the new relationship
 		Connection::query("
 			START TRANSACTION;
-			DELETE FROM _piropazo_relationships WHERE (email_from='$emailfrom' AND email_to='$emailto') OR (email_to='$emailfrom' AND email_from='$emailto');
-			INSERT INTO _piropazo_relationships (email_from,email_to,status,expires_matched_blocked) VALUES ('$emailfrom','$emailto','dislike',CURRENT_TIMESTAMP);
+			DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
+			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
 			COMMIT");
 
 		// do not return anything
@@ -298,10 +295,10 @@ class Piropazo extends Service
 		if( ! in_array($text, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return new Response();
 
 		// get email of the person to report
-		$emailTo = Utils::getEmailFromUsername($username);
+		$idTo = Utils::getIdFromUsername($username);
 
 		// save the report
-		Connection::query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->email}','$emailTo','$text')");
+		Connection::query("INSERT INTO _piropazo_reports (creator,user,type) VALUES ('{$request->userId}','$idTo','$text')");
 
 		// say NO to the user
 		$request->query = $username;
@@ -317,39 +314,39 @@ class Piropazo extends Service
 	public function _parejas (Request $request)
 	{
 		// activate new users and people who left
-		$this->activatePiropazoUser($request->email);
+		$this->activatePiropazoUser($request->userId);
 
 		// get list of people whom you liked or liked you
 		$matches = Connection::query("
-			SELECT B.*, 'LIKE' as type, A.email_to as email, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.*, 'LIKE' as type, A.id_to as id, '' as matched_on,datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
-			ON A.email_to = B.email
+			ON A.id_to = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
-			AND email_from = '{$request->email}'
+			AND id_from = '{$request->userId}'
 			UNION
-			SELECT B.*, 'WAITING' as type, A.email_from as email, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
+			SELECT B.*, 'WAITING' as type, A.id_from as id, '' as matched_on, datediff(A.expires_matched_blocked, CURDATE()) as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
-			ON A.email_from = B.email
+			ON A.id_from = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
-			AND email_to = '{$request->email}'
+			AND id_to = '{$request->userId}'
 			UNION
-			SELECT B.*, 'MATCH' as type, A.email_from as email, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.*, 'MATCH' as type, A.id_from as id, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
-			ON A.email_from = B.email
+			ON A.id_from = B.id
 			WHERE status = 'match'
-			AND email_to = '{$request->email}'
+			AND id_to = '{$request->userId}'
 			UNION
-			SELECT B.*, 'MATCH' as type, A.email_to as email, A.expires_matched_blocked as matched_on, '' as time_left
+			SELECT B.*, 'MATCH' as type, A.id_to as id, A.expires_matched_blocked as matched_on, '' as time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
-			ON A.email_to = B.email
+			ON A.id_to = B.id
 			WHERE status = 'match'
-			AND email_from = '{$request->email}'");
+			AND id_from = '{$request->userId}'");
 
 		// if no matches, let the user know
 		if(empty($matches)) {
@@ -392,7 +389,7 @@ class Piropazo extends Service
 		}
 
 		// mark the last time the system was used
-		$this->markLastTimeUsed($request->email);
+		$this->markLastTimeUsed($request->userId);
 
 		// create response array
 		$responseArray = array(
@@ -448,14 +445,14 @@ class Piropazo extends Service
 		$message = Connection::escape(implode(" ", $arr),200);
 
 		// do not allow inexistant people
-		$receiver = Utils::getEmailFromUsername($username);
+		$receiver = Utils::getIdFromUsername($username);
 		if(empty($receiver)) {
 			$response = new Response();
 			return $response->createFromJSON('{"code":"ERROR", "message":"Wrong username"}');
 		}
 
 		// check if you have enought flowers to send
-		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE email='{$request->email}' AND flowers>0");
+		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE id_person='{$request->userId}' AND flowers>0");
 		if(empty($flowers)) {
 			$content = [
 				"environment" => $request->environment,
@@ -471,10 +468,10 @@ class Piropazo extends Service
 		}
 
 		// send the flower and expand response time 7 days
-		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (sender,receiver,message) VALUES ('{$request->email}','$receiver','$message')");
+		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (sender,receiver,message) VALUES ('{$request->userId}','$receiver','$message')");
 		Connection::query("
-			UPDATE _piropazo_people SET flowers=flowers-1 WHERE email='{$request->email}';
-			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE email_from = '{$request->email}' AND email_to = '$receiver';");
+			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->userId}';
+			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from = '{$request->userId}' AND id_to = '$receiver';");
 
 		// prepare notification
 		$pushNotification = new PushNotification();
@@ -482,7 +479,7 @@ class Piropazo extends Service
 
 		// send push notification for users with Piropazo App
 		if($appid) {
-			$person = Utils::getPerson($request->email);
+			$person = Utils::getPerson($request->userId);
 			$pushNotification->piropazoFlowerPush($appid, $person);
 			return new Response();
 		}
@@ -513,7 +510,7 @@ class Piropazo extends Service
 	public function _corona (Request $request)
 	{
 		// check if you have enought crowns
-		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE email='{$request->email}' AND crowns>0");
+		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->userId}' AND crowns>0");
 
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
@@ -533,12 +530,12 @@ class Piropazo extends Service
 		// set the crown
 		Connection::query("
 			START TRANSACTION;
-			INSERT INTO _piropazo_crowns (email) VALUES ('{$request->email}');
-			UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE email='{$request->email}';
+			INSERT INTO _piropazo_crowns (id_person) VALUES ('{$request->userId}');
+			UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person='{$request->userId}';
 			COMMIT");
 
 		// post a notification for the user
-		Utils::addNotification($request->email, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
+		Utils::addNotification($request->userId, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
 
 		// build the response
 		$content = [
@@ -563,7 +560,7 @@ class Piropazo extends Service
 	public function _tienda (Request $request)
 	{
 		// get the user credit
-		$credit = Connection::query("SELECT credit FROM person WHERE email = '{$request->email}'")[0]->credit;
+		$credit = Connection::query("SELECT credit FROM person WHERE id = '{$request->userId}'")[0]->credit;
 
 		// build the response
 		$response = new Response();
@@ -621,7 +618,7 @@ class Piropazo extends Service
 	 */
 	public function _salir (Request $request)
 	{
-		Connection::query("UPDATE _piropazo_people SET active=0 WHERE email='{$request->email}'");
+		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person='{$request->userId}'");
 
 		$response = new Response();
 		$response->setResponseSubject('Haz salido de Piropazo');
@@ -642,16 +639,16 @@ class Piropazo extends Service
 	public function _borrar (Request $request)
 	{
 		// get the emails from and to
-		$emailfrom = $request->email;
-		$emailto = Utils::getEmailFromUsername($request->query);
-		if( ! $emailto) return new Response();
+		$idFrom = $request->userId;
+		$idTo = Utils::getIdFromUsername($request->query);
+		if( ! $idTo) return new Response();
 
 		// insert the new relationship
 		Connection::query("
 			UPDATE _piropazo_relationships
 			SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP
-			WHERE (email_from='$emailto' AND email_to='$emailfrom')
-			OR (email_from='$emailfrom' AND email_to='$emailto')");
+			WHERE (id_from='$idTo' AND id_to='$idFrom')
+			OR (id_from='$idFrom' AND id_to='$idTo')");
 		return new Response();
 	}
 
@@ -679,9 +676,9 @@ class Piropazo extends Service
 	public function _profile (Request $request)
 	{
 		// get the user's profile
-		$email = Utils::getEmailFromUsername($request->query);
-		if(empty($email)) $email = $request->email;
-		$profile = Utils::getPerson($email);
+		$id = Utils::getIdFromUsername($request->query);
+		if(empty($id)) $id = $request->userId;
+		$profile = Utils::getPerson($id);
 
 		// erase unwanted properties in the object
 		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture_internal','location','age'];
@@ -692,7 +689,7 @@ class Piropazo extends Service
 			SELECT flowers, crowns,
 			(IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) as crowned
 			FROM _piropazo_people
-			WHERE email = '$email'");
+			WHERE id_person = '$id'");
 
 		// ensure the user exists
 		if(empty($profile) || empty($piropazo)) {
@@ -701,23 +698,23 @@ class Piropazo extends Service
 		}
 
 		// check if is my own profile
-		$isMyOwnProfile = $email == $request->email;
+		$isMyOwnProfile = $id == $request->userId;
 
 		$percentageMatch = "100";
 		$status = "no_relationship";
 		if( ! $isMyOwnProfile) {
 			// check status of the relationship
-			$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='{$request->email}' AND email_to='$email'");
+			$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='{$request->userId}' AND id_to='$id'");
 			if($res) $status = $res[0]->status;
 			if($status == "like") $status = "you_like_them";
 			else {
-				$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE email_from='$email' AND email_to='{$request->email}'");
+				$res = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$id' AND id_to='{$request->userId}'");
 				if($res && $res[0]->status == "like") $status = "they_like_you";
 				elseif($res) $status = $res[0]->status;
 			}
 
 			// get the percentage math for two profiles
-			$percentageMatch = $this->getPercentageMatch($email, $request->email);
+			$percentageMatch = $this->getPercentageMatch($id, $request->userId);
 		}
 
 		// create the response object
@@ -781,7 +778,7 @@ class Piropazo extends Service
 		Connection::query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$crowns
-			WHERE email='{$request->email}'");
+			WHERE id_person='{$request->userId}'");
 
 		// return ok response
 		$response = new Response();
@@ -802,13 +799,13 @@ class Piropazo extends Service
 		$notes = Connection::query("
 			SELECT B.username, MAX(send_date) as sent, COUNT(B.username) as counter
 			FROM _note A LEFT JOIN person B
-			ON A.from_user = B.email
-			WHERE to_user = '{$request->email}'
+			ON A.from_user = B.id
+			WHERE to_user = '{$request->userId}'
 			AND read_date IS NULL
-			AND B.email IN (
-				SELECT email_to as email FROM _piropazo_relationships WHERE status = 'match' AND email_from = '{$request->email}'
+			AND B.id IN (
+				SELECT id_to as id FROM _piropazo_relationships WHERE status = 'match' AND id_from = '{$request->userId}'
 				UNION
-				SELECT email_from as email FROM _piropazo_relationships WHERE status = 'match' AND email_to = '{$request->email}')
+				SELECT id_from as id FROM _piropazo_relationships WHERE status = 'match' AND id_to = '{$request->userId}')
 			GROUP BY B.username");
 
 		// get the total counter
@@ -830,8 +827,14 @@ class Piropazo extends Service
 	 * @param Int $offset
 	 * @return array of People
 	 */
-	private function getMatchesByPopularity ($user)
-	{
+	 /**
+	* Get the list of matches
+	*
+	* @author salvipascual
+	* @param Object $user, the person to match against
+	* @return array of People
+	*/
+ private function getMatchesByPopularity ($user){
 		// get the list of people
 		switch ($user->sexual_orientation) {
 			case 'HETERO':
@@ -839,28 +842,27 @@ class Piropazo extends Service
 					SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
 					FROM person A
 					LEFT JOIN _piropazo_people B
-					ON (A.email = B.email AND B.active=1)
+			 ON (A.id = B.id_person AND B.active=1)
 					WHERE A.picture IS NOT NULL
 					AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
-					AND A.email <> '{$user->email}'
+			 AND A.id <> '{$user->id}'
 					AND A.gender <> '{$user->gender}'
 					AND A.marital_status = 'SOLTERO'
-					AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 AND A.id NOT IN (SELECT id_to as id FROM _piropazo_relationships WHERE id_from = '{$user->id}' UNION SELECT id_from as id FROM _piropazo_relationships WHERE id_to = '{$user->id}')
 					LIMIT 25");
 				break;
-
 			case 'HOMO':
 				return Connection::query("
 					SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
 					FROM person A
 					LEFT JOIN _piropazo_people B
-					ON (A.email = B.email AND B.active=1)
+			 ON (A.id = B.id_person AND B.active=1)
 					WHERE A.picture IS NOT NULL
 					AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
-					AND A.email <> '{$user->email}'
+			 AND A.id <> '{$user->id}'
 					AND A.gender = '{$user->gender}'
 					AND A.marital_status = 'SOLTERO'
-					AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 AND A.id NOT IN (SELECT id_to as id FROM _piropazo_relationships WHERE id_from = '{$user->id}' UNION SELECT id_from as id FROM _piropazo_relationships WHERE id_to = '{$user->id}')
 					LIMIT 25");
 				break;
 
@@ -869,13 +871,13 @@ class Piropazo extends Service
 					SELECT A.*,(IFNULL(datediff(CURDATE(), B.crowned),99) < 3) as crown
 					FROM person A
 					LEFT JOIN _piropazo_people B
-					ON (A.email = B.email AND B.active=1)
+			 ON (A.id = B.id_person AND B.active=1)
 					WHERE A.picture IS NOT NULL
 					AND (TIMESTAMPDIFF(YEAR,A.date_of_birth,NOW()) >= 17 OR A.date_of_birth IS NULL)
-					AND A.email <> '{$user->email}'
+			 AND A.id <> '{$user->id}'
 					AND A.marital_status = 'SOLTERO'
 					AND (sexual_orientation = 'BI' OR (sexual_orientation = 'HOMO' AND gender = '{$user->gender}') OR (sexual_orientation = 'HETERO' AND gender <> '{$user->gender}'))
-					AND A.email NOT IN (SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '{$user->email}')
+			 AND A.id NOT IN (SELECT id_to as id FROM _piropazo_relationships WHERE id_from = '{$user->id}' UNION SELECT id_from as id FROM _piropazo_relationships WHERE id_to = '{$user->id}')
 					LIMIT 25");
 				break;
 		}
@@ -888,7 +890,7 @@ class Piropazo extends Service
 	 * @param Object $user, the person to match against
 	 * @return Array of People
 	 */
-	private function getMatchesByUserFit($user)
+ private function getMatchesByUserFit ($user)
 	{
 		//create the clause for the sexual orientation
 		switch ($user->sexual_orientation) {
@@ -904,14 +906,14 @@ class Piropazo extends Service
 		}
 
 		//create the clause for the already voted users
-		$C="SELECT email_to as email FROM _piropazo_relationships WHERE email_from = '{$user->email}' UNION SELECT email_from as email FROM _piropazo_relationships WHERE email_to = '$user->email'";
+	 $C="SELECT id_to as id FROM _piropazo_relationships WHERE id_from = '{$user->id}' UNION SELECT id_from as id FROM _piropazo_relationships WHERE id_to = '$user->id'";
 
 		// create the initial query with the clauses
 		$subq="SELECT A.*,IFNULL(TIMESTAMPDIFF(DAY,B.crowned,NOW()),3)<3 AS crown FROM person A JOIN _piropazo_people B
-		ON A.email=B.email AND B.email NOT IN ($C) AND A.active=1 AND B.active=1
+		 ON A.id=B.id_person AND B.id_person NOT IN ($C) AND A.active=1 AND B.active=1
 		AND A.marital_status='SOLTERO' AND NOT ISNULL(A.picture)
 		AND $orientationClause AND (IFNULL(TIMESTAMPDIFF(YEAR,date_of_birth,NOW()), 0) >= 17 OR A.date_of_birth IS NULL)
-		AND NOT A.email='$user->email'";
+		 AND NOT A.id='$user->id'";
 
 		// create final query with the match score
 		$q="SELECT *,
@@ -936,15 +938,15 @@ class Piropazo extends Service
 	 * Check if the user us crowned
 	 *
 	 * @author salvipascual
-	 * @param String $email
+	 * @param Int $id
 	 * @return Boolean
 	 */
-	private function checkUserIsCrowned($email)
+	private function checkUserIsCrowned($id)
 	{
 		$crowned = Connection::query("
-			SELECT COUNT(email) AS crowned
+			SELECT COUNT(id_person) AS crowned
 			FROM _piropazo_people
-			WHERE email='$email'
+			WHERE id_person='$id'
 			AND datediff(CURRENT_TIMESTAMP, crowned) <= 3");
 		return $crowned[0]->crowned;
 	}
@@ -953,22 +955,22 @@ class Piropazo extends Service
 	 * Make active if the person uses Piropazo for the first time, or if it was inactive
 	 *
 	 * @author salvipascual
-	 * @param String $email
+	 * @param Int $id
 	 */
-	private function activatePiropazoUser($email)
+	private function activatePiropazoUser($id)
 	{
-		Connection::query("INSERT INTO _piropazo_people (email) VALUES('$email') ON DUPLICATE KEY UPDATE active = 1");
+		Connection::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
 	}
 
 	/**
 	 * Mark the last time the system was used by a user
 	 *
 	 * @author salvipascual
-	 * @param String $email
+	 * @param Int $id
 	 */
-	private function markLastTimeUsed($email)
+	private function markLastTimeUsed($id)
 	{
-		Connection::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE email='$email'");
+		Connection::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
 	}
 
 	/**
@@ -1012,14 +1014,14 @@ class Piropazo extends Service
 	 * Get the percentage of match for two profiles
 	 *
 	 * @author salvipascual
-	 * @param String $emailOne
-	 * @param String $emailTwo
+	 * @param Int $idOne
+	 * @param Int $idTwo
 	 * @return Number
 	 */
-	private function getPercentageMatch($emailOne, $emailTwo)
+	private function getPercentageMatch($idOne, $idTwo)
 	{
 		// get both profiles
-		$p = Connection::query("SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, date_of_birth FROM person WHERE email='$emailOne' OR email='$emailTwo'");
+		$p = Connection::query("SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, date_of_birth FROM person WHERE id='$idOne' OR id='$idTwo'");
 		if(empty($p[0]) || empty($p[1])) return 0;
 
 		// calculate basic values
