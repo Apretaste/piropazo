@@ -9,7 +9,7 @@
 <center>
 	<!--CROWN OR PERCENTAGE-->
 	{if $crowned}
-		<span style="color:orange; font-size:50px;" class="emogi">&#x1F451;</span><br/>
+		<span style="color:orange; font-size:50px;" class="emoji">&#x1F451;</span><br/>
 	{/if}
 
 	{if $profile->picture}
@@ -22,9 +22,9 @@
 
 	<div style="font-size:30px;">
 		{if $isMyOwnProfile}
-			<span style="color:green;" class="emogi">&#x1F339; {$flowers}</span>
+			<span style="color:green;" class="emoji">&#x1F339; {$flowers}</span>
 			&nbsp;&nbsp;
-			{link href="PIROPAZO CORONA" caption="<span style='color:orange;' class='emogi'>&#x1F451; {$crowns}</span>" style="text-decoration:underline solid {$color};"}
+			{link href="PIROPAZO CORONA" caption="<span style='color:orange;' class='emoji'>&#x1F451; {$crowns}</span>" style="text-decoration:underline solid {$color};"}
 		{else}
 			<span style="color:{$color};">{$percentageMatch}% IGUALES<span>
 		{/if}
@@ -49,45 +49,36 @@
 	<!--ABOUT ME-->
 	<div>{$profile->about_me}</div>
 
-	{space5}
+	{space15}
 
 	<!--MY INTERESTS-->
 	{if $profile->interests|@count gt 0}
-	<div style="background-color:#F2F2F2; padding:10px;">
 		<span>MIS INTERESES</span>
 		{space5}
 		{foreach from=$profile->interests item=interest}
 			{tag caption="{$interest}"}
 		{/foreach}
-	</div>
-	{/if}
 
-	{space10}
+		{space15}
+	{/if}
 
 	<!--BUTTONS-->
 	{if $isMyOwnProfile}
-		{if $environment eq "web" or $environment eq "appnet"}
-			{button href="PERFIL EDITAR" caption="Editar perfil"}
-		{/if}
-		{button href="PERFIL DESCRIPCION" caption="Describirse" popup="true" desc="a:Describase a su gusto para que los demas lo conozcan, mínimo 100 caracteres*" wait="false"}
-	{elseif $status == "no_relationship" OR $status == "they_like_you"}
-		{button href="PIROPAZO SINEXT @{$profile->username}" caption="Decir Si" color="green"}
-		{if $status == "they_like_you"}
-			{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="Decir No" color="red"}
-		{else}
-			{button href="PIROPAZO NONEXT @{$profile->username}" caption="Decir No" color="red"}
-		{/if}
-	{elseif $status == "you_like_them"}
-		{button href="PIROPAZO FLOR @{$profile->username}" caption="&#x1F33C; Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green"}
-		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
-	{elseif $status == "match"}
-		{button href="PIROPAZO CHAT @{$profile->username}" caption="Chatear" color="grey"}
-		{button href="PIROPAZO NOMATCHES @{$profile->username}" caption="&#10008; Bloquear" color="red"}
+		{button href="PIROPAZO EDITAR" caption="Editar Perfil"}
+	{else}
+		{button href="PIROPAZO {$returnTo}" caption="Atr&aacute;s" color="grey"}
 	{/if}
 
 	<!--DENOUNCE BUTTON-->
 	{if not $isMyOwnProfile}
 		{space5}
-		<p style="font-size:small; color:grey;">Si ve algun problema {link href="PIROPAZO REPORTAR @{$profile->username}" caption="denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="true" style="color:grey;"}</p>
+		<p id="value_report" style="font-size:small; color:grey;">{button class="empty" href="PIROPAZO REPORTAR @{$profile->username}|" caption="Denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="false" style="color:grey; text-decoration:underline;" callback="reloadReport"}</p>
 	{/if}
 </center>
+
+<script>
+	function reloadReport(values) { 
+		document.getElementById('value_report').innerHTML = "Este usuario ha sido reportado";
+		document.getElementById('value_report').style.color = "red";
+	}
+</script>

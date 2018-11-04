@@ -6,7 +6,7 @@
 	{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 	<!--PICTURE-->
-	<span style="color:green; font-size:80px; vertical-align:top;" class="emogi">
+	<span style="color:green; font-size:80px; vertical-align:top;" class="emoji">
 		&#x1F339;
 		{if $person->picture}
 			{img src="{$person->picture_internal}" alt="Picture" width="80" height="80" style="border-radius:100px; border:3px solid {$color};"}

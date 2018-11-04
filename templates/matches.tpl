@@ -146,7 +146,7 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO FLOR @{$person->username}" caption="&#x1F33C; Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green" size="small"}
+					{button href="PIROPAZO FLOR @{$person->username}" caption="Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green" size="small"}
 					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>

@@ -19,7 +19,7 @@
 <center>
 	<!--CROWN-->
 	{if $person->crown}
-		<spam style="color:orange; font-size:30px;" class="emogi">&#x1F451;</spam><br/>
+		<spam style="color:orange; font-size:30px;" class="emoji">&#x1F451;</spam><br/>
 	{/if}
 
 	<!--COLOR BASED ON GENDER-->

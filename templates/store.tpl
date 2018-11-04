@@ -11,21 +11,21 @@
 
 <table width="100%" style="font-size:small;">
 	<tr>
-		<td align="center"><span style="color:green; font-size:30px;" class="emogi">&#x1F339;</span></td>
+		<td align="center"><span style="color:green; font-size:30px;" class="emoji">&#x1F339;</span></td>
 		<td>Regale una flor para atraer su atenci&oacute;n y agregar una semana al tiempo de espera</td>
 		<td>{button href="CREDITO COMPRAR FLOWER" caption="Pagar &sect;0.5" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
-		<td align="center"><span style="color:orange; font-size:30px;" class="emogi">&#x1F451;</span></td>
+		<td align="center"><span style="color:orange; font-size:30px;" class="emoji">&#x1F451;</span></td>
 		<td>Una corona aparecer&aacute; en su cabeza por tres d&iacute;as, haciendo que su perfil se muestre con mucha mayor frecuencia</td>
 		<td>{button href="CREDITO COMPRAR CROWN" caption="Pagar &sect;2" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
 		<td align="center">
-			<span style="color:green; font-size:15px;" class="emogi">&#x1F339;</span>
-			<span style="color:orange; font-size:15px;" class="emogi">&#x1F451;</span>
+			<span style="color:green; font-size:15px;" class="emoji">&#x1F339;</span>
+			<span style="color:orange; font-size:15px;" class="emoji">&#x1F451;</span>
 		</td>
 		<td>7 flores y 2 coronas, la oferta perfecta para que empieces a enlazar corazones como todo un profesional</td>
 		<td>{button href="CREDITO COMPRAR PACK_ONE" caption="Pagar &sect;5" size="small"}</td>
@@ -33,8 +33,8 @@
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
 		<td align="center">
-			<span style="color:green; font-size:15px;" class="emogi">&#x1F339;</span>
-			<span style="color:orange; font-size:15px;" class="emogi">&#x1F451;</span>
+			<span style="color:green; font-size:15px;" class="emoji">&#x1F339;</span>
+			<span style="color:orange; font-size:15px;" class="emoji">&#x1F451;</span>
 		</td>
 		<td>15 flores y 4 coronas. Saca el mayor beneficio posible de Piropazo y conviertete en todo un cyber-Romeo.</td>
 		<td>{button href="CREDITO COMPRAR PACK_TWO" caption="Pagar &sect;10" size="small"}</td>
