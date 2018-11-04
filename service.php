@@ -313,6 +313,7 @@ class Piropazo extends Service
 				"icon"=>"&#x1F64D;",
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
 				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar Pareja"]];
+
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
 			$response->createFromTemplate('message.tpl', $content);
@@ -410,6 +411,7 @@ class Piropazo extends Service
 				"icon"=>"&#x1F339;",
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
+
 			$response = new Response();
 			$response->setEmailLayout('piropazo.tpl');
 			$response->createFromTemplate('message.tpl', $content);
@@ -432,6 +434,7 @@ class Piropazo extends Service
 			"icon"=>"&#x1F339;",
 			"text" => "@$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
+
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->createFromTemplate('message.tpl', $content);
@@ -504,7 +507,7 @@ class Piropazo extends Service
 		// build the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('store.tpl', ["credit"=>$credit]);
+		$response->createFromTemplate('store.tpl', ["credit"=>$credit, "email"=>$request->email]);
 		return $response;
 	}
 
@@ -555,10 +558,20 @@ class Piropazo extends Service
 	 */
 	public function _salir (Request $request)
 	{
-		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person='{$request->userId}'");
+		// remove from piropazo
+		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->userId}");
+
+		// respond to user
+		$content = [
+			"environment" => $request->environment,
+			"header"=>"Usted ha salido de Piropazo",
+			"icon"=>"&#x1F64D;",
+			"text" => "No recibir&aacute; m&aacute;s mensajes de otros usuarios ni aparecer&aacute; en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil sera agregado autom&aacute;ticamente.",
+			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
 
 		$response = new Response();
-		$response->createFromText('Haz salido de nuestra red de busqueda de parejas. No recibir&aacute;s m&aacute;s emails de otros usuarios diciendo que le gustas ni aparecer&aacute;s en la lista de Piropazo. &iexcl;Gracias!');
+		$response->setEmailLayout('piropazo.tpl');
+		$response->createFromTemplate('message.tpl', $content);
 		return $response;
 	}
 

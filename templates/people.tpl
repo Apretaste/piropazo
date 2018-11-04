@@ -16,7 +16,7 @@
 	<div class="notice">Agregue 3 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
 {/if}
 
-<center>
+<div id="container">
 	<!--CROWN-->
 	{if $person->crown}
 		<spam style="color:orange; font-size:30px;" class="emoji">&#x1F451;</spam><br/>
@@ -61,7 +61,27 @@
 	</p>
 
 	<!--BUTTONS-->
-	{space5}
-	{button href="PIROPAZO SINEXT @{$person->username}" caption="&hearts; S&iacute;" color="green"}
-	{button href="PIROPAZO NONEXT @{$person->username}" caption="&#10008; No" color="red"}
-</center>
+	{button href="PIROPAZO SINEXT @{$person->username}" class="btn btn-green" caption="&hearts;" color="green"}
+	{button href="PIROPAZO NONEXT @{$person->username}" class="btn btn-red" caption="&#10008;" color="red"}
+</div>
+
+<style type="text/css">
+	#container{
+		text-align: center;
+		margin: auto;
+	}
+
+	.btn {
+		margin: 20px 20px 0px 20px;
+	}
+
+	.btn-green {
+		font-size: 60px;
+		color: green;
+	}
+
+	.btn-red {
+		font-size: 50px;
+		color: red;
+	}
+</style>

@@ -3,11 +3,16 @@
 <h1>Tienda de Piropazo</h1>
 <p>En nuestra tienda encontrar&aacute; flores y coronas que le har&aacute;n m&aacute;s sencillo el arduo proceso de encontrar a su media naranja.</p>
 
-{if {$APRETASTE_ENVIRONMENT} eq "web"}
-	<p>Usted tiene <b>&sect;{$credit}</b> de cr&eacute;dito. Escr&iacute;banos a <a href="mailto:salvi@apretaste.com">salvi@apretaste.com</a> si desea comprar cr&eacute;ditos.</p>
-{/if}
+<table width="100%" cellspacing="0" cellpadding="3">
+	<tr>
+		<td align="left" bgcolor="#FCF8E3"><small>Usted tiene <b>&sect;{$credit}</b> de cr&eacute;dito.</small></td>
+		<td align="right" bgcolor="#FCF8E3" width="10">
+			<a href="https://apretaste.com/topup?email={$email}" target="_blank" class="btn-ap">Recargar</a>
+		</td>
+	</tr>
+</table>
 
-{space5}
+{space10}
 
 <table width="100%" style="font-size:small;">
 	<tr>
@@ -47,5 +52,19 @@
 		height: 0;
 		border-top: 1px solid rgba(0, 0, 0, 0.1);
 		border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+	}
+
+	.btn-ap {
+		color:#000000;
+		background-color:#E6E6E6;
+		border:1px solid #CCCCCC; 
+		border-radius:3px;
+		display:inline-block; 
+		font-family:sans-serif;
+		font-size:12px; 
+		line-height:20px;
+		text-align:center;
+		text-decoration:none; 
+		width:80px;
 	}
 </style>

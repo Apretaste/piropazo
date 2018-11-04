@@ -148,6 +148,12 @@
 	</tr>
 </table>
 
+{space5}
+
+<center>
+	<p><small>Si ya encontr&oacute; pareja puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}</small></p>	
+</center>
+
 <style>
 	#profile tr {
 		height: 40px;

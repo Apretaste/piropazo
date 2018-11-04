@@ -42,7 +42,7 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO SI @{$person->username}" caption="&hearts; S&iacute;" color="green" size="small" wait="false"}
+					{button href="PIROPAZO SI @{$person->username}" caption="Aceptar" color="green" size="small" wait="false"}
 					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
 				</td>
 			</tr>
