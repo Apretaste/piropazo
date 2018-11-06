@@ -1,5 +1,14 @@
 {include file="../includes/appmenu.tpl"}
 
+<table id="newChatOk" class="hidden" width="100%" cellspacing="0" cellpadding="3">
+	<tr>
+		<td align="left" bgcolor="#DFF0D8"><small>Le hemos enviado su mensaje a @{$username}</small></td>
+		<td align="right" bgcolor="#DFF0D8" width="10">
+			{button href="PIROPAZO CHAT @{$username}" caption="Recargar" color="grey" size="small"}
+		</td>
+	</tr>
+</table>
+
 <h1>Charla con @{$username}</h1>
 
 {if not $chats}
@@ -33,6 +42,10 @@
 {space15}
 
 <center>
-	{button href="CHAT @{$username}" caption="Escribir" size="medium" desc="a:Escriba el texto a enviar*" popup="true" wait="false"}
+	{button href="CHAT @{$username}" caption="Escribir" size="medium" desc="a:Escriba el texto a enviar*" popup="true" wait="false" callback="addChat"}
 	{button href="PIROPAZO PAREJAS" caption="Parejas" size="medium" color="grey"}
 </center>
+
+<script>
+	function addChat(values) { document.getElementById('newChatOk').style.display = "table"; }
+</script>

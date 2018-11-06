@@ -42,8 +42,8 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO SI @{$person->username}" caption="Aceptar" color="green" size="small" wait="false"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
+					{button href="PIROPAZO SIPAREJAS @{$person->username}" caption="Aceptar" color="green" size="small"}
+					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
@@ -95,7 +95,7 @@
 				</td>
 				<td valign="middle" align="right">
 					{button href="PIROPAZO CHAT @{$person->username}" caption="Chat" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
+					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>
@@ -146,8 +146,8 @@
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
 				<td valign="middle" align="right">
-					{button href="PIROPAZO FLOR @{$person->username}" caption="Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green" size="small"}
-					{button href="PIROPAZO NO @{$person->username}" caption="&#10008;" color="red" size="icon" wait="false"}
+					{button href="PIROPAZO MANDARFLOR @{$person->username}|" caption="Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green" size="small"}
+					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
 			</tr>
 			<tr><td colspan="4" heigth="50"><small><small>&nbsp;</small></small></td></tr>

@@ -81,7 +81,12 @@ h1{
 	font-weight:bold;
 }
 
+.hidden {
+	display: none;
+}
+
 #menu td{
 	background-color:#F2F2F2;
 	border-radius:5px;
 }
+

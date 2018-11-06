@@ -11,16 +11,6 @@ CREATE TABLE `_piropazo_cache` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='Cache the list of users suggested to a person';
 
 --
--- Table structure for table `_piropazo_crowns`
---
-
-CREATE TABLE `_piropazo_crowns` (
-  `id` int(11) NOT NULL,
-  `email` char(100) NOT NULL,
-  `crowned` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
 -- Table structure for table `_piropazo_flowers`
 --
 
@@ -81,12 +71,6 @@ CREATE TABLE `_piropazo_reports` (
 -- Indexes for table `_piropazo_cache`
 --
 ALTER TABLE `_piropazo_cache`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `_piropazo_crowns`
---
-ALTER TABLE `_piropazo_crowns`
   ADD PRIMARY KEY (`id`);
 
 --

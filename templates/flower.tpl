@@ -10,8 +10,6 @@
 		&#x1F339;
 		{if $person->picture}
 			{img src="{$person->picture_internal}" alt="Picture" width="80" height="80" style="border-radius:100px; border:3px solid {$color};"}
-		{else}
-			{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
 		{/if}
 	</span>
 
@@ -23,7 +21,7 @@
 	{/if}
 
 	<p><small>&iquest;Te gustar&iacute;a chatear con @{$person->username}?</small></p>
-	{button href="PIROPAZO SIMATCHES @{$person->username}" caption="Decir Si" color="green" size="small"}
-	{button href="PIROPAZO NOMATCHES @{$person->username}" caption="Decir No" color="red" size="small"}
+	{button href="PIROPAZO SIPAREJAS @{$person->username}" caption="Aceptar" color="green" size="small"}
+	{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="Bloquear" color="red" size="small"}
 	{button href="PIROPAZO PERFIL @{$person->username}" caption="Ver perfil" size="small" color="grey"}
 </center>

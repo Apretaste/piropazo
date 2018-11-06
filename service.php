@@ -218,7 +218,7 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Say No to a person and return next match
+	 * Say No to a person and return the profile
 	 *
 	 * @param Request $request
 	 * @return Response
@@ -227,6 +227,30 @@ class Piropazo extends Service
 	{
 		$this->_no($request);
 		return $this->_main($request);
+	}
+
+	/**
+	 * Say Yes to a person and return the matches
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _siParejas (Request $request)
+	{
+		$this->_si($request);
+		return $this->_parejas($request);
+	}
+
+	/**
+	 * Say No to a person and return next matches
+	 *
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _noParejas (Request $request)
+	{
+		$this->_no($request);
+		return $this->_parejas($request);
 	}
 
 	/**
@@ -373,7 +397,7 @@ class Piropazo extends Service
 	}
 
 	/**
-	 * Send a flower to another user
+	 * View a flower sent by another user
 	 *
 	 * @author salvipascual
 	 * @param Request $request
@@ -381,29 +405,40 @@ class Piropazo extends Service
 	 */
 	public function _flor (Request $request)
 	{
-		$arr = explode(" ", $request->query);
-		// if coming as FLOR ID, open the flower
-		$flower = (strpos($arr[0],'@')>-1)?false:Connection::query("SELECT sender, message FROM _piropazo_flowers WHERE id='{$request->query}'");
-		if($flower) {
-			$person = Utils::getPerson($flower[0]->sender);
-			$message = $flower[0]->message;
+		// get data of the flower
+		$flowerId = trim($request->query);
+		$flower = Connection::query("SELECT id_sender, message FROM _piropazo_flowers WHERE id='$flowerId'");
+		if(empty($flower)) return new Response();
 
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('flower.tpl', ["person"=>$person, "message"=>$message]);
-			return $response;
-		}
+		// get params for the view
+		$person = Utils::getPerson($flower[0]->id_sender);
+		$message = $flower[0]->message;
 
-		// separate username and message
-		$username = str_replace("@", "", array_shift($arr));
-		$message = Connection::escape(implode(" ", $arr),200);
+		// send the reponse
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->createFromTemplate('flower.tpl', ["person"=>$person, "message"=>$message]);
+		return $response;
+	}
+
+	/**
+	 * Send a flower to another user
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _mandarFlor (Request $request)
+	{
+		$username = $request->params[0];
+		$message = trim(Connection::escape($request->params[1], 200));
 
 		// do not allow inexistant people
 		$receiver = Utils::getIdFromUsername($username);
 		if(empty($receiver)) return new Response();
 
 		// check if you have enought flowers to send
-		$flowers = Connection::query("SELECT email FROM _piropazo_people WHERE id_person='{$request->userId}' AND flowers>0");
+		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->userId}' AND flowers > 0");
 		if(empty($flowers)) {
 			$content = [
 				"environment" => $request->environment,
@@ -419,7 +454,7 @@ class Piropazo extends Service
 		}
 
 		// send the flower and expand response time 7 days
-		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (sender,receiver,message) VALUES ('{$request->userId}','$receiver','$message')");
+		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->userId}','$receiver','$message')");
 		Connection::query("
 			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->userId}';
 			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from = '{$request->userId}' AND id_to = '$receiver';");
@@ -430,9 +465,9 @@ class Piropazo extends Service
 		// return message
 		$content = [
 			"environment" => $request->environment,
-			"header"=>"Hemos enviado su flor a @$username",
+			"header"=>"Hemos enviado su flor a $username",
 			"icon"=>"&#x1F339;",
-			"text" => "@$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
+			"text" => "$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
 		$response = new Response();
@@ -451,7 +486,7 @@ class Piropazo extends Service
 	public function _corona (Request $request)
 	{
 		// check if you have enought crowns
-		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->userId}' AND crowns>0");
+		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->userId}' AND crowns > 0");
 
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
@@ -468,12 +503,8 @@ class Piropazo extends Service
 			return $response;
 		}
 
-		// set the crown
-		Connection::query("
-			START TRANSACTION;
-			INSERT INTO _piropazo_crowns (id_person) VALUES ('{$request->userId}');
-			UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person='{$request->userId}';
-			COMMIT");
+		// set the crown and substract a crown
+		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->userId}");
 
 		// post a notification for the user
 		Utils::addNotification($request->userId, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
@@ -525,21 +556,20 @@ class Piropazo extends Service
 		if(empty($friendId)) return new Response();
 
 		// get the list of people chating with you
-		$chats = $this->social->chatConversation($request->userId, $friendId);
+		$social = new Social();
+		$chats = $social->chatConversation($request->userId, $friendId);
 
 		// create content to send to the view
 		$content = [
 			"environment" => $request->environment,
-			"username"=>str_replace("@", "", $request->query),
-			"chats"=>$chats
+			"username" => str_replace("@", "", $request->query),
+			"chats" => $chats
 		];
 
 		// get images for the web
 		$images = [];
 		if(($request->environment == "web" || $request->environment == "appnet")) {
-			foreach ($chats as $chat) {
-				$images[] = $chat->picture_internal;
-			}
+			foreach ($chats as $chat) $images[] = $chat->picture_internal;
 		}
 
 		// respond to the view
