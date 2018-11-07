@@ -52,7 +52,7 @@ class Piropazo extends Service
 		$tags = [];
 		if(array_intersect($match->interests, $user->interests)) $tags[] = "Intereses Similares";
 		if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = "Viven Cerca";
-		if(abs($match->age - $user->age) <= 3) $tags[] = "Igual Edad";
+		if($match->age && abs($match->age - $user->age) <= 3) $tags[] = "Igual Edad";
 		if($match->religion && ($match->religion == $user->religion)) $tags[] = "Misma Religion";
 		if($match->highest_school_level && ($match->highest_school_level == $user->highest_school_level)) $tags[] = "Misma Educacion";
 		if($match->body_type == "ATLETICO") $tags[] = "Cita Caliente";

@@ -13,8 +13,7 @@
 				<tr>
 					<!--logo-->
 					<td valign="middle" align="left">
-						&nbsp;&nbsp;&nbsp;
-						{link href="PIROPAZO" caption="&hearts;" style="color:#5DBB48; font-size:40px; text-decoration:none;"}
+						<img src="/images/icon.png" style="width:20px; margin-left:20px;" caption="Piropazo Logo"/>
 					</td>
 
 					<!--notifications & profile-->
