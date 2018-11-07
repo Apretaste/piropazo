@@ -19,12 +19,13 @@
 
 					<!--notifications & profile-->
 					<td align="right" class="emoji" valign="middle" style="padding:10px 25px 0px 0px;">
+						{if $num_notifications}{assign var="bell" value="🔔"}{assign var="color" value="#5DBB48"}{else}{assign var="bell" value="🔕"}{assign var="color" value="grey"}{/if}
+
 						{link href="PIROPAZO" caption="&#x1F495;" title="Personas" style="color:#5DBB48; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PIROPAZO PAREJAS" caption="&#x1F498;" title="Parejas" style="color:#5DBB48; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
 						{link href="PIROPAZO PERFIL" caption="&#128100;" title="Perfil" style="color:#5DBB48; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PIROPAZO TIENDA" caption="💰" title="Tienda" style="color:#5DBB48; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{if $num_notifications}{assign var="bell" value="🔔"}{assign var="color" value="#5DBB48"}{else}{assign var="bell" value="🔕"}{assign var="color" value="grey"}{/if}
-						{link href="NOTIFICACIONES piropazo chat" caption="{$bell}" title="Notificacioens" style="color:{$color}; text-decoration: none;"}
+						{link href="PIROPAZO NOTIFICACIONES" caption="{$bell}" title="Notificacioens" style="color:{$color}; text-decoration: none;"}
 					</td>
 				</tr>
 

@@ -507,7 +507,7 @@ class Piropazo extends Service
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->userId}");
 
 		// post a notification for the user
-		Utils::addNotification($request->userId, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO");
+		Utils::addNotification($request->userId, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO PERFIL");
 
 		// build the response
 		$content = [
@@ -539,6 +539,24 @@ class Piropazo extends Service
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
 		$response->createFromTemplate('store.tpl', ["credit"=>$credit, "email"=>$request->email]);
+		return $response;
+	}
+	/**
+	 * Open the store
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _notificaciones (Request $request)
+	{
+		// get notifications
+		$notifications = Utils::getNotifications($request->userId, 20, ['piropazo', 'chat']);
+
+		// build the response
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->createFromTemplate('notifications.tpl', ['notificactions' => $notifications]);
 		return $response;
 	}
 
