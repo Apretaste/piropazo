@@ -1,5 +1,4 @@
-{space10}
-<center>
+<table width="100%" height="100%"><tr><td align="center" valign="middle">
 	<!--COLOR BASED ON GENDER-->
 	{assign var="color" value="gray"}
 	{if $person->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
@@ -24,4 +23,4 @@
 	{button href="PIROPAZO SIPAREJAS @{$person->username}" caption="Aceptar" color="green" size="small"}
 	{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="Bloquear" color="red" size="small"}
 	{button href="PIROPAZO PERFIL @{$person->username}" caption="Ver perfil" size="small" color="grey"}
-</center>
+</td></tr></table>

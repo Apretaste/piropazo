@@ -1,3 +1,5 @@
+{include file="../includes/appmenu.tpl"}
+
 <!-- PICTURE -->
 <center>
 	{if $person->picture}

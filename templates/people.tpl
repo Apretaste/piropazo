@@ -2,21 +2,15 @@
 
 {if $noProfilePic}
 	<div class="notice">Agregue su foto de perfil para recibir m&aacute;s atenci&oacute;n</div>
-{/if}
-
-{if $completion lt 65}
+{elseif $completion lt 65}
 	<div class="notice">Complete al menos el 65% del perfil para encontrar su pareja ideal</div>
-{/if}
-
-{if $noProvince}
+{elseif $noProvince}
 	<div class="notice">Agregue su pais o provincia para encontrar gente cercana</div>
-{/if}
-
-{if $fewInterests}
+{elseif $fewInterests}
 	<div class="notice">Agregue 3 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
 {/if}
 
-<div id="container">
+<table width="100%" height="100%"><tr><td align="center" valign="middle">
 	<!--CROWN-->
 	{if $person->crown}
 		<spam style="color:orange; font-size:30px;" class="emoji">&#x1F451;</spam><br/>
@@ -61,27 +55,21 @@
 	</p>
 
 	<!--BUTTONS-->
-	{button href="PIROPAZO SINEXT @{$person->username}" class="btn btn-green" caption="&hearts;" color="green"}
-	{button href="PIROPAZO NONEXT @{$person->username}" class="btn btn-red" caption="&#10008;" color="red"}
-</div>
+	{button href="PIROPAZO SINEXT @{$person->username}" class="btn btn-green" caption="&#10004;"}
+	{button href="PIROPAZO NONEXT @{$person->username}" class="btn btn-red" caption="&#10007;"}
+</td></tr></table>
 
 <style type="text/css">
-	#container{
-		text-align: center;
-		margin: auto;
-	}
-
 	.btn {
+		font-size: 50px;
 		margin: 20px 20px 0px 20px;
 	}
 
 	.btn-green {
-		font-size: 60px;
 		color: green;
 	}
 
 	.btn-red {
-		font-size: 50px;
 		color: red;
 	}
 </style>

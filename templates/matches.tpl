@@ -41,7 +41,7 @@
 					{/if}
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
-				<td valign="middle" align="right">
+				<td valign="middle" align="right" style="white-space:nowrap;">
 					{button href="PIROPAZO SIPAREJAS @{$person->username}" caption="Aceptar" color="green" size="small"}
 					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
@@ -91,9 +91,9 @@
 					</small>
 					<br/>
 					{/if}
-					<font color="gray"><small>Se conocieron el {$person->matched_on|date_format:"%d/%m/%Y"}</small></font>
+					<font color="gray"><small>Unidos el {$person->matched_on|date_format:"%d/%m/%y"}</small></font>
 				</td>
-				<td valign="middle" align="right">
+				<td valign="middle" align="right" style="white-space:nowrap;">
 					{button href="PIROPAZO CHAT @{$person->username}" caption="Chat" color="green" size="small"}
 					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
@@ -145,7 +145,7 @@
 					{/if}
 					<font color="gray"><small>{$person->time_left} d&iacute;as para responder</small></font>
 				</td>
-				<td valign="middle" align="right">
+				<td valign="middle" align="right" style="white-space:nowrap;">
 					{button href="PIROPAZO MANDARFLOR @{$person->username}|" caption="Flor" popup="true" desc="a:Mande a decir algo con su flor*" color="green" size="small"}
 					{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="&#10008;" color="red" size="icon"}
 				</td>
