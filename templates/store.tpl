@@ -1,13 +1,13 @@
 {include file="../includes/appmenu.tpl"}
 
 <h1>Tienda de Piropazo</h1>
-<p>En nuestra tienda encontrar&aacute; flores y coronas que le har&aacute;n m&aacute;s sencillo el arduo proceso de encontrar a su media naranja.</p>
+<p>Canjee su cr&eacute;dito por flores y coronas que le ayudar&aacute;n a encontrar su media naranja. Puede comprar creditos, o adquirirlo en nuestros eventos.</p>
 
 <table width="100%" cellspacing="0" cellpadding="3">
 	<tr>
 		<td align="left" bgcolor="#FCF8E3"><small>Usted tiene <b>&sect;{$credit}</b> de cr&eacute;dito.</small></td>
 		<td align="right" bgcolor="#FCF8E3" width="10">
-			<a href="https://apretaste.com/topup?email={$email}" target="_blank" class="btn-ap">Recargar</a>
+			<a href="https://apretaste.com/topup?email={$email}" target="_blank" class="btn-ap">Comprar</a>
 		</td>
 	</tr>
 </table>
@@ -18,13 +18,13 @@
 	<tr>
 		<td align="center"><span style="color:green; font-size:30px;" class="emoji">&#x1F339;</span></td>
 		<td>Regale una flor para atraer su atenci&oacute;n y agregar una semana al tiempo de espera</td>
-		<td>{button href="CREDITO COMPRAR FLOWER" caption="Pagar &sect;0.5" size="small"}</td>
+		<td>{button href="CREDITO COMPRAR FLOWER" caption="Canjear &sect;0.5" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
 		<td align="center"><span style="color:orange; font-size:30px;" class="emoji">&#x1F451;</span></td>
 		<td>Una corona aparecer&aacute; en su cabeza por tres d&iacute;as, haciendo que su perfil se muestre con mucha mayor frecuencia</td>
-		<td>{button href="CREDITO COMPRAR CROWN" caption="Pagar &sect;2" size="small"}</td>
+		<td>{button href="CREDITO COMPRAR CROWN" caption="Canjear &sect;2" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
@@ -33,7 +33,7 @@
 			<span style="color:orange; font-size:15px;" class="emoji">&#x1F451;</span>
 		</td>
 		<td>7 flores y 2 coronas, la oferta perfecta para que empieces a enlazar corazones como todo un profesional</td>
-		<td>{button href="CREDITO COMPRAR PACK_ONE" caption="Pagar &sect;5" size="small"}</td>
+		<td>{button href="CREDITO COMPRAR PACK_ONE" caption="Canjear &sect;5" size="small"}</td>
 	</tr>
 	<tr><td colspan="3"><hr/></td></tr>
 	<tr>
@@ -42,7 +42,7 @@
 			<span style="color:orange; font-size:15px;" class="emoji">&#x1F451;</span>
 		</td>
 		<td>15 flores y 4 coronas. Saca el mayor beneficio posible de Piropazo y conviertete en todo un cyber-Romeo.</td>
-		<td>{button href="CREDITO COMPRAR PACK_TWO" caption="Pagar &sect;10" size="small"}</td>
+		<td>{button href="CREDITO COMPRAR PACK_TWO" caption="Canjear &sect;10" size="small"}</td>
 	</tr>
 </table>
 

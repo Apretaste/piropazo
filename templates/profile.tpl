@@ -1,5 +1,20 @@
 {include file="../includes/appmenu.tpl"}
 
+{if $isMyOwnProfile}
+	{if $noProfilePic}
+		<div class="notice">Agregue su foto de perfil para recibir m&aacute;s atenci&oacute;n</div>
+	{/if}
+	{if $completion lt 65}
+		<div class="notice">Complete al menos el 65% del perfil</div>
+	{/if}
+	{if $noProvince}
+		<div class="notice">Agregue su pais o provincia para encontrar gente cercana</div>
+	{/if}
+	{if $fewInterests}
+		<div class="notice">Agregue 3 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
+	{/if}
+{/if}
+
 <!--COLOR BASED ON GENDER-->
 {assign var="color" value="gray"}
 {if $profile->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
@@ -7,16 +22,13 @@
 
 <!--PROFILE PICTURE-->
 <center>
-	<!--CROWN OR PERCENTAGE-->
+	<!--CROWN-->
 	{if $crowned}
 		<span style="color:orange; font-size:50px;" class="emoji">&#x1F451;</span><br/>
 	{/if}
 
-	{if $profile->picture}
-		{img src="{$profile->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:100px; border:3px solid {$color};"}
-	{else}
-		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
-	{/if}
+	<!--PICTURE-->
+	{img src="{$profile->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:100px; border:3px solid {$color};"}
 
 	{space10}
 
@@ -26,6 +38,7 @@
 			&nbsp;&nbsp;
 			{link href="PIROPAZO CORONA" caption="<span style='color:orange;' class='emoji'>&#x1F451; {$crowns}</span>" style="text-decoration:underline solid {$color};"}
 		{else}
+			<!--PERCENTAGE-->
 			<span style="color:{$color};">{$percentageMatch}% IGUALES<span>
 		{/if}
 	</div>
@@ -39,7 +52,7 @@
 			&nbsp;<b>&middot;</b>&nbsp;
 			{$profile->age} a&ntilde;os
 		{/if}
-		{if ($environment eq "web" or $environment eq "appnet") and $profile->country}
+		{if ($APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet") and $profile->country}
 			&nbsp;<b>&middot;</b>&nbsp;
 			{img src="{$profile->country|lower}.png" alt="{$profile->country}" class="flag"}
 		{/if}
@@ -66,12 +79,11 @@
 	{if $isMyOwnProfile}
 		{button href="PIROPAZO EDITAR" caption="Editar Perfil"}
 	{else}
-		{button href="PIROPAZO {$returnTo}" caption="Atr&aacute;s" color="grey"}
+		{button href="PIROPAZO {$returnTo|upper}" caption="{$returnTo|ucfirst}" color="grey"}
 	{/if}
 
 	<!--DENOUNCE BUTTON-->
 	{if not $isMyOwnProfile}
-		{space5}
 		<p id="value_report" style="font-size:small; color:grey;">{button class="empty" href="PIROPAZO REPORTAR @{$profile->username}|" caption="Denuncie a este usuario" desc="m:Por que desea denunciar a este usuario? [La foto o el texto es ofensivo,El perfil tiene informacion falsa,La persona no luce como el perfil,Esta impersonando a alguien,El perfil viola los derechos de autor]*" popup="true" wait="false" style="color:grey; text-decoration:underline;" callback="reloadReport"}</p>
 	{/if}
 </center>

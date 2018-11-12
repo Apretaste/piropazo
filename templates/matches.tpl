@@ -16,7 +16,7 @@
 
 		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
-				{if $environment eq "web" or $environment eq "appnet"}
+				{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -34,7 +34,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if $environment eq "web" or $environment eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
+						{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>
@@ -68,7 +68,7 @@
 
 		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
-				{if $environment eq "web" or $environment eq "appnet"}
+				{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -86,7 +86,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if $environment eq "web" or $environment eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
+						{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>
@@ -120,7 +120,7 @@
 
 		<table width="100%" cellspacing="0" cellspadding="0">
 			<tr>
-				{if $environment eq "web" or $environment eq "appnet"}
+				{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}
 				<td width="50" valign="middle" align="center">
 					{if empty($person->picture)}
 						{noimage width="45" height="45" text="No Foto"}
@@ -138,7 +138,7 @@
 					{if $person->age OR $person->location}
 					<small>
 						{if $person->age}{$person->age} a&ntilde;os &nbsp;<b>&middot;</b>&nbsp;{/if}
-						{if $environment eq "web" or $environment eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
+						{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}{/if}
 						{if $person->location}{$person->location}{/if}
 					</small>
 					<br/>

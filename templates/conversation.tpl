@@ -22,7 +22,7 @@
 			{if $item->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 			<td width="1" valign="top">
-				{if {$APRETASTE_ENVIRONMENT} eq "web"}
+				{if $APRETASTE_ENVIRONMENT eq "web" OR $APRETASTE_ENVIRONMENT eq "appnet"}
 					{img src="{$item->picture_internal}" title="@{$item->username}" alt="@{$item->username}" class="profile-small"}
 				{/if}
 			</td>
@@ -43,7 +43,7 @@
 
 <center>
 	{button href="CHAT @{$username}" caption="Escribir" size="medium" desc="a:Escriba el texto a enviar*" popup="true" wait="false" callback="addChat"}
-	{button href="PIROPAZO PAREJAS" caption="Parejas" size="medium" color="grey"}
+	{button href="PIROPAZO CHAT" caption="Chats" size="medium" color="grey"}
 </center>
 
 <script>

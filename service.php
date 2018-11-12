@@ -15,6 +15,46 @@ class Piropazo extends Service
 	 */
 	public function _main (Request $request)
 	{
+		// by default, open citas
+		return $this->_citas($request);
+	}
+
+	/**
+	 * Edit the user profile at start
+	 * 
+	 * @author salvipascual
+	 */
+	public function _inicio(Request $request)
+	{
+		// get the person to edit profile
+		$person = Utils::getPerson($request->email);
+		if (empty($person)) return new Response();
+
+		// make the person's text readable
+		$person->province = str_replace("_", " ", $person->province);
+		if ($person->gender == 'M') $person->gender = "Masculino";
+		if ($person->gender == 'F') $person->gender = "Femenino";
+		$person->country_name = Utils::getCountryNameByCode($person->country);
+		$person->usstate_name = Utils::getStateNameByCode($person->usstate);
+		$person->interests = count($person->interests);
+		$image = $person->picture ? [$person->picture_internal] : [];
+		$person->province = str_replace("_", " ", $person->province);
+		$person->years = implode(",", array_reverse(range(date('Y')-90, date('Y')-10)));
+
+		// prepare response for the view
+		$response = new Response();
+		$response->setEmailLayout('piropazo.tpl');
+		$response->createFromTemplate('profile_min.tpl', ["person"=>$person], $image);
+		return $response;
+	}
+
+	/**
+	 * Get dates for your profile
+	 * 
+	 * @author salvipascual
+	 */
+	public function _citas(Request $request)
+	{
 		// get the current user
 		$user = Utils::getPerson($request->userId);
 
@@ -65,15 +105,6 @@ class Piropazo extends Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->userId);
 
-		// create response
-		$content = [
-			"environment" => $request->environment,
-			"noProfilePic" => empty($user->picture),
-			"noProvince" => empty($user->country) || ($user->country=="US" && empty($user->usstate)) || ($user->country=="CU" && empty($user->province)),
-			"fewInterests" => count($user->interests) <= 3,
-			"completion" => $user->completion,
-			"person" => $match];
-
 		// get match images into an array
 		$images = [];
 		if($match->picture) $images[] = $match->picture_internal;
@@ -88,36 +119,7 @@ class Piropazo extends Service
 		// build the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('people.tpl', $content, $images);
-		return $response;
-	}
-
-	/**
-	 * Edit the user profile at start
-	 * 
-	 * @author salvipascual
-	 */
-	public function _inicio(Request $request)
-	{
-		// get the person to edit profile
-		$person = Utils::getPerson($request->email);
-		if (empty($person)) return new Response();
-
-		// make the person's text readable
-		$person->province = str_replace("_", " ", $person->province);
-		if ($person->gender == 'M') $person->gender = "Masculino";
-		if ($person->gender == 'F') $person->gender = "Femenino";
-		$person->country_name = Utils::getCountryNameByCode($person->country);
-		$person->usstate_name = Utils::getStateNameByCode($person->usstate);
-		$person->interests = count($person->interests);
-		$image = $person->picture ? [$person->picture_internal] : [];
-		$person->province = str_replace("_", " ", $person->province);
-		$person->years = implode(",", array_reverse(range(date('Y')-90, date('Y')-10)));
-
-		// prepare response for the view
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('profile_min.tpl', ["person"=>$person], $image);
+		$response->createFromTemplate('people.tpl', ["person" => $match], $images);
 		return $response;
 	}
 
@@ -169,7 +171,7 @@ class Piropazo extends Service
 			COMMIT");
 
 		// send a notification to the user
-		Utils::addNotification($idTo, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO parejas");
+		Utils::addNotification($idTo, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO PERFIL @{$personFrom->username}");
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
@@ -373,12 +375,11 @@ class Piropazo extends Service
 		$this->markLastTimeUsed($request->userId);
 
 		// create response array
-		$responseArray = array(
-			"environment" => $request->environment,
+		$responseArray = [
 			"likeCounter" => $likeCounter,
 			"waitingCounter" => $waitingCounter,
 			"matchCounter" => $matchCounter,
-			"people"=>$matches);
+			"people"=>$matches];
 
 		// get flag images for the web
 		if(($request->environment == "web" || $request->environment == "appnet")) {
@@ -569,6 +570,47 @@ class Piropazo extends Service
 	 */
 	public function _chat(Request $request)
 	{
+		//
+		// SHOW THE LIST OF OPEN CHATS WHEN SUBJECT=NOTA
+		//
+
+		if(empty($request->query))
+		{
+			// get the list of people chating with you
+			$chats = $this->social->chatsOpen($request->userId);
+
+			// show message if no chats
+			if(empty($chats)) {
+				$content = [
+					"environment" => $request->environment,
+					"header"=>"No tiene chats abiertos",
+					"icon"=>"&#x1F64D;",
+					"text" => "Usted nunca ha hablado con otro usurio antes. Para chatear, primero debe decir s&iacute; a otro usuario, y que este le diga s&iacute; a usted. Luego empiece una conversacion en la seccion Parejas.",
+					"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
+
+				$response = new Response();
+				$response->setEmailLayout('piropazo.tpl');
+				$response->createFromTemplate('message.tpl', $content);
+				return $response;
+			}
+
+			// get images for the web
+			$images = [];
+			if(($request->environment == "web" || $request->environment == "appnet")) {
+				foreach ($chats as $c) $images[] = $c->profile->picture_internal;
+			}
+
+			// send data to the view
+			$response = new Response();
+			$response->setEmailLayout('piropazo.tpl');
+			$response->createFromTemplate("chats.tpl", ["chats"=>$chats, "myUserId"=>$request->userId], $images);
+			return $response;
+		}
+
+		//
+		// GET A LIST OF THE CHATS WHEN SUBJECT=NOTA @USERNAME
+		//
+
 		// get person to chat
 		$friendId = Utils::getIdFromUsername($request->query);
 		if(empty($friendId)) return new Response();
@@ -638,7 +680,7 @@ class Piropazo extends Service
 		$profile = Utils::getPerson($id);
 
 		// erase unwanted properties in the object
-		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture_internal','location','age'];
+		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture_internal','location','age','completion'];
 		$profile = $this->filterObjectProperties($properties, $profile);
 
 		// check the specific values of piropazo
@@ -653,7 +695,7 @@ class Piropazo extends Service
 		// check if is my own profile
 		$isMyOwnProfile = $id == $request->userId;
 
-		$returnTo = "";
+		$returnTo = "citas";
 		$percentageMatch = "";
 		if( ! $isMyOwnProfile) {
 			// calculate the percentage of a math
@@ -665,12 +707,11 @@ class Piropazo extends Service
 				FROM _piropazo_relationships 
 				WHERE (id_from = $id AND id_to = {$request->userId}) 
 				OR (id_from = {$request->userId} AND id_to = $id)");
-			if($back[0]->cnt > 0) $returnTo = "PAREJAS";
+			if($back[0]->cnt > 0) $returnTo = "parejas";
 		}
 
 		// create the response object
 		$content = [
-			"environment" => $request->environment,
 			"username" => $profile->username,
 			"flowers" => $piropazo[0]->flowers,
 			"crowns" => $piropazo[0]->crowns,
@@ -679,6 +720,14 @@ class Piropazo extends Service
 			"percentageMatch" => $percentageMatch,
 			"returnTo" => $returnTo,
 			"profile" => $profile];
+
+		// add tips to complete your profile
+		if($isMyOwnProfile) {
+			$content["noProfilePic"] = empty($profile->picture);
+			$content["noProvince"] = empty($profile->country) || ($profile->country=="US" && empty($profile->usstate)) || ($profile->country=="CU" && empty($profile->province));
+			$content["fewInterests"] = count($profile->interests) <= 3;
+			$content["completion"] = $profile->completion;			
+		}
 
 		// get images for the web
 		$images = [$profile->picture_internal];

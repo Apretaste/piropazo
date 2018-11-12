@@ -1,5 +1,7 @@
 {include file="../includes/appmenu.tpl"}
 
+<h1>Edite su perfil</h1>
+
 <!-- PICTURE -->
 <center>
 	{if $person->picture}

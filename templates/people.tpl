@@ -1,16 +1,8 @@
-{include file="../includes/appmenu.tpl"}
-
-{if $noProfilePic}
-	<div class="notice">Agregue su foto de perfil para recibir m&aacute;s atenci&oacute;n</div>
-{elseif $completion lt 65}
-	<div class="notice">Complete al menos el 65% del perfil para encontrar su pareja ideal</div>
-{elseif $noProvince}
-	<div class="notice">Agregue su pais o provincia para encontrar gente cercana</div>
-{elseif $fewInterests}
-	<div class="notice">Agregue 3 &oacute; m&aacute;s intereses para encontrar su pareja ideal</div>
-{/if}
-
 <table width="100%" height="100%"><tr><td align="center" valign="middle">
+	{include file="../includes/appmenu.tpl"}
+
+	<h1>Diga S&iacute; o No</h1>
+
 	<!--CROWN-->
 	{if $person->crown}
 		<spam style="color:orange; font-size:30px;" class="emoji">&#x1F451;</spam><br/>
@@ -22,13 +14,9 @@
 	{if $person->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 	<!--PICTURE-->
-	{if $person->picture}
-		{link href="PIROPAZO PERFIL @{$person->username}" style="text-decoration:none;" caption="
-			{img src="{$person->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
-		"}
-	{else}
-		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
-	{/if}<br/>
+	{link href="PIROPAZO PERFIL @{$person->username}" style="text-decoration:none;" caption="
+		{img src="{$person->picture_internal}" alt="Picture" width="200" height="200" style="border-radius:10px; border:3px solid {$color};"}
+	"}
 
 	<!--TAGS-->
 	{foreach item=tag from=$person->tags}
@@ -48,7 +36,7 @@
 
 		<!--FLAG AND LOCATION-->
 		&nbsp;<b>&middot;</b>&nbsp;
-		{if $environment eq "web" or $environment eq "appnet"}
+		{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}
 			{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}
 		{/if}
 		{$person->location}
