@@ -1,3 +1,5 @@
+{include file="../includes/appmenu.tpl"}
+
 <h1>Chats abiertos</h1>
 
 {foreach from=$chats item=chat name=loop} 
