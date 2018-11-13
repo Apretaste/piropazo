@@ -39,7 +39,7 @@
 
 		<!--FLAG AND LOCATION-->
 		&nbsp;<b>&middot;</b>&nbsp;
-		{if $APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet"}
+		{if $APRETASTE_ENVIRONMENT eq "web" OR $APP_METHOD eq "http"}
 			{img src="{$person->country|lower}.png" alt="{$person->country}" class="flag"}
 		{/if}
 		{$person->location}

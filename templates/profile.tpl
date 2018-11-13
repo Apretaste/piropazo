@@ -52,7 +52,7 @@
 			&nbsp;<b>&middot;</b>&nbsp;
 			{$profile->age} a&ntilde;os
 		{/if}
-		{if ($APRETASTE_ENVIRONMENT eq "web" or $APRETASTE_ENVIRONMENT eq "appnet") and $profile->country}
+		{if ($APRETASTE_ENVIRONMENT eq "web" OR $APP_METHOD eq "http") and $profile->country}
 			&nbsp;<b>&middot;</b>&nbsp;
 			{img src="{$profile->country|lower}.png" alt="{$profile->country}" class="flag"}
 		{/if}

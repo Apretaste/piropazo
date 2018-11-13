@@ -8,7 +8,7 @@
 	<table width="100%" cellpadding="3">
 		<tr>
 			<!--PICTURE-->
-			{if $APRETASTE_ENVIRONMENT eq "web" OR $APRETASTE_ENVIRONMENT eq "appnet"}
+			{if $APRETASTE_ENVIRONMENT eq "web" OR $APP_METHOD eq "http"}
 				<td width="32px" rowspan="2">
 					{img src="{$chat->profile->picture_internal}" title="@{$chat->profile->username}" alt="@{$chat->profile->username}" style="border:2px solid {$color}; width: 28px; height: 28px; border-radius: 100px;"}
 				</td>

@@ -22,7 +22,7 @@
 			{if $item->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 			<td width="1" valign="top">
-				{if $APRETASTE_ENVIRONMENT eq "web" OR $APRETASTE_ENVIRONMENT eq "appnet"}
+				{if $APRETASTE_ENVIRONMENT eq "web" OR $APP_METHOD eq "http"}
 					{img src="{$item->picture_internal}" title="@{$item->username}" alt="@{$item->username}" class="profile-small"}
 				{/if}
 			</td>

@@ -110,7 +110,7 @@ class Piropazo extends Service
 		if($match->picture) $images[] = $match->picture_internal;
 
 		// get flag images for the web and internet app
-		if(($request->environment == "web" || $request->environment == "appnet") && $match->country) {
+		if(($request->environment == "web" || $request->appmethod == "http") && $match->country) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			$images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
@@ -382,7 +382,7 @@ class Piropazo extends Service
 			"people"=>$matches];
 
 		// get flag images for the web
-		if(($request->environment == "web" || $request->environment == "appnet")) {
+		if(($request->environment == "web" || $request->appmethod == "http")) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			foreach ($matches as $match) {
@@ -599,7 +599,7 @@ class Piropazo extends Service
 
 			// get images for the web
 			$images = [];
-			if(($request->environment == "web" || $request->environment == "appnet")) {
+			if(($request->environment == "web" || $request->appmethod == "http")) {
 				foreach ($chats as $c) $images[] = $c->profile->picture_internal;
 			}
 
@@ -631,7 +631,7 @@ class Piropazo extends Service
 
 		// get images for the web
 		$images = [];
-		if(($request->environment == "web" || $request->environment == "appnet")) {
+		if(($request->environment == "web" || $request->appmethod == "http")) {
 			foreach ($chats as $chat) $images[] = $chat->picture_internal;
 		}
 
@@ -734,7 +734,7 @@ class Piropazo extends Service
 
 		// get images for the web
 		$images = [$profile->picture_internal];
-		if(($request->environment == "web" || $request->environment == "appnet") && $profile->country) {
+		if(($request->environment == "web" || $request->appmethod == "http") && $profile->country) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
 			$images[] = "$wwwroot/public/images/flags/".strtolower($profile->country).".png";
