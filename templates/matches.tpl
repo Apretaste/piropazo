@@ -2,10 +2,7 @@
 
 <!--WAITING FOR YOU-->
 {if $waitingCounter gt 0}
-	<center>
-		<h1>Esperando por ti</h1>
-		<p><small>Estas personas dijeron Si, y est&aacute;n esperando tu respuesta</small></p>
-	</center>
+	<h1>Esperando por ti</h1>
 	{foreach item=person from=$people}
 		{if $person->type neq "WAITING"}{continue}{/if}
 
@@ -54,10 +51,7 @@
 
 <!--YOUR MATCHES-->
 {if $matchCounter gt 0}
-	<center>
-		<h1>De pareja contigo</h1>
-		<p><small>Ambos dijeron Si y ahora pueden chatear</small></p>
-	</center>
+	<h1>De pareja contigo</h1>
 	{foreach item=person from=$people}
 		{if $person->type neq "MATCH"}{continue}{/if}
 
@@ -106,10 +100,7 @@
 
 <!--YOU ARE WAITING FOR THEM-->
 {if $likeCounter gt 0}
-	<center>
-		<h1>Esperando por ellos</h1>
-		<p><small>Mandando flores agregara una semana al tiempo de espera</small></p>
-	</center>
+	<h1>Esperando por ellos</h1>
 	{foreach item=person from=$people}
 		{if $person->type neq "LIKE"}{continue}{/if}
 
