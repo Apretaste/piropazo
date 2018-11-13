@@ -119,7 +119,7 @@ class Piropazo extends Service
 		// build the response
 		$response = new Response();
 		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('people.tpl', ["person" => $match], $images);
+		$response->createFromTemplate('dates.tpl', ["person" => $match], $images);
 		return $response;
 	}
 
@@ -594,6 +594,9 @@ class Piropazo extends Service
 				return $response;
 			}
 
+			// get just the latest 10 chats
+			if(count($chats) > 10) $chats = array_slice($chats, 0, 10);
+
 			// get images for the web
 			$images = [];
 			if(($request->environment == "web" || $request->environment == "appnet")) {
@@ -988,13 +991,16 @@ class Piropazo extends Service
 		if($payment->code == "PACK_TWO") {$flowers = 15; $crowns = 4;}
 
 		// do not allow wrong codes
-		if(empty($flowers) && empty($crowns)) return false;
+		if($flowers + $crowns <= 0) return false;
+
+		// get the person Id
+		$personId = Utils::personExist($payment->buyer);
 
 		// save the articles in the database
 		Connection::query("
 			UPDATE _piropazo_people
-			SET flowers=flowers+$flowers, crowns=crowns+$crowns
-			WHERE email='{$payment->buyer}'");
+			SET flowers = flowers+$flowers, crowns = crowns+$crowns
+			WHERE id_person = $personId");
 
 		return true;
 	}

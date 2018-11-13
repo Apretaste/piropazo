@@ -19,9 +19,12 @@
 	"}
 
 	<!--TAGS-->
-	{foreach item=tag from=$person->tags}
-		<small style="background-color:#D9EDF7;"><font color="#757B8F"><nobr>&nbsp;{$tag}&nbsp;</nobr></font></small>
-	{/foreach}
+	{if $person->tags}
+		<br/>
+		{foreach item=tag from=$person->tags}
+			<small class="label"><nobr>&nbsp;{$tag}&nbsp;</nobr></small>
+		{/foreach}
+	{/if}
 
 	<p style="font-size:small;">
 		<!--USERNAME-->
@@ -48,16 +51,8 @@
 </td></tr></table>
 
 <style type="text/css">
-	.btn {
-		font-size: 50px;
-		margin: 20px 20px 0px 20px;
-	}
-
-	.btn-green {
-		color: green;
-	}
-
-	.btn-red {
-		color: red;
-	}
+	.btn { font-size: 50px; margin: 20px 20px 0px 20px; }
+	.btn-green { color: green; }
+	.btn-red { color: red; }
+	.label { background-color:#D9EDF7; color:#757B8F; }
 </style>
