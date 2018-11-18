@@ -28,7 +28,7 @@
 			</td>
 			<td>
 				<span style="font-size:10px;">
-					{link href="PIZARRA PERFIL @{$item->username}" caption="@{$item->username}" style="color:{$color};"}
+					{link href="PIROPAZO PERFIL @{$item->username}" caption="@{$item->username}" style="color:{$color};"}
 					<b>&middot;</b>
 					<span style="color:grey;">{$item->sent|date_format:"%e/%m/%Y %I:%M %p"}</span>
 				</span><br/>

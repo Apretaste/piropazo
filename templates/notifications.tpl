@@ -1,3 +1,5 @@
+{include file="../includes/appmenu.tpl"}
+
 {if $notificactions}
 	<h1>Ultimas notificaciones</h1>
 

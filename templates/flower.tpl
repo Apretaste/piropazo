@@ -1,3 +1,5 @@
+{include file="../includes/appmenu.tpl"}
+
 <table width="100%" height="100%"><tr><td align="center" valign="middle">
 	<!--COLOR BASED ON GENDER-->
 	{assign var="color" value="gray"}

@@ -152,12 +152,12 @@
 	</tr>
 </table>
 
-{if $APRETASTE_ENVIRONMENT eq "web"}
-	{space5}
-	<center>
-		<p><small>Si ya encontr&oacute; pareja puede {link href="PIROPAZO SALIR" caption="salir de Piropazo"}</small></p>	
-	</center>
-{/if}
+{space15}
+
+<center>
+	{button caption="Mi Perfil" href="PIROPAZO PERFIL"}
+	<p class="note">Si ya encontr&oacute; pareja puede {link href="PIROPAZO SALIR" style="color:gray;" caption="salir de Piropazo"}</p>
+</center>
 
 <style>
 	#profile tr {
@@ -173,6 +173,10 @@
 		border: 1px solid grey;
 		border-radius: 5px;
 		width: 100px;
+	}
+	.note {
+		font-size: small;
+		color: gray;
 	}
 </style>
 
