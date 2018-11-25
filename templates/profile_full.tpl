@@ -11,7 +11,7 @@
 		{noimage}
 	{/if}
 	<br/>
-	{button color="grey" href="PERFIL FOTO" desc="u:Adjunte su foto de perfil*" caption="Cambiar" size="small" popup="true" callback="reloadPicture"}
+	{button color="grey" href="PERFIL FOTO" desc="u:Adjunte su foto de perfil*" caption="Cambiar" size="small" popup="true" wait="false" callback="reloadPicture"}
 
 	{space15}
 
