@@ -36,7 +36,11 @@
 		{if $isMyOwnProfile}
 			<span style="color:green;" class="emoji">&#x1F339; {$flowers}</span>
 			&nbsp;&nbsp;
-			{link href="PIROPAZO CORONA" caption="<span style='color:orange;' class='emoji'>&#x1F451; {$crowns}</span>" style="text-decoration:underline solid {$color};"}
+			{if $crowned}
+				<span style='color:orange;' class='emoji'>&#x1F451; {$crowns}</span>
+			{else}
+				{link href="PIROPAZO CORONA" caption="<span style='color:orange;' class='emoji'>&#x1F451; {$crowns}</span>" style="text-decoration:underline solid {$color};"}
+			{/if}
 		{else}
 			<!--PERCENTAGE-->
 			<span style="color:{$color};">{$percentageMatch}% IGUALES<span>

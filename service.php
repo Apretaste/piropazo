@@ -43,8 +43,9 @@ class Piropazo extends Service
 		if ($person->gender == 'F') $person->gender = "Mujer";
 		$person->country_name = Utils::getCountryNameByCode($person->country);
 		$image = $person->picture ? [$person->picture_internal] : [];
+
+		// get list of years
 		$person->years = implode(",", array_reverse(range(date('Y')-90, date('Y')-10)));
-		$person->yearBorn = explode('-', $person->date_of_birth)[0];
 
 		// prepare response for the view
 		$response = new Response();
@@ -765,13 +766,23 @@ class Piropazo extends Service
 		$person = Utils::getPerson($request->userId);
 		if (empty($person)) return new Response();
 
+		// get what gender do you search for
+		if($person->sexual_orientation == "BI") $person->searchfor = "Ambos";
+		elseif($person->gender == "M" && $person->sexual_orientation == "HETERO") $person->searchfor = "Mujeres";
+		elseif($person->gender == "F" && $person->sexual_orientation == "HETERO") $person->searchfor = "Hombres";		
+		elseif($person->gender == "M" && $person->sexual_orientation == "HOMO") $person->searchfor = "Hombres";
+		elseif($person->gender == "F" && $person->sexual_orientation == "HOMO") $person->searchfor = "Mujeres";
+		else $person->searchfor = "";
+
 		// make the person's text readable
-		$person->province = str_replace("_", " ", $person->province);
-		if ($person->gender == 'M') $person->gender = "Masculino";
-		if ($person->gender == 'F') $person->gender = "Femenino";
+		if ($person->gender == 'M') $person->gender = "Hombre";
+		if ($person->gender == 'F') $person->gender = "Mujer";
 		$person->country_name = Utils::getCountryNameByCode($person->country);
 		$person->usstate_name = Utils::getStateNameByCode($person->usstate);
+		$person->province = str_replace("_", " ", $person->province);
 		$person->interests = count($person->interests);
+
+		// get the list of years
 		$person->years = implode(",", array_reverse(range(date('Y')-90, date('Y')-10)));
 
 		// get the person images

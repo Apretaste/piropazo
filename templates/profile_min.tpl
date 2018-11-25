@@ -1,7 +1,11 @@
 <!-- PICTURE -->
 <center>
 	<p>Agrega una foto e info b&aacute;sica necesaria para buscar citas</p>
-	{img src="{$person->picture_internal}" alt="Picture" width="100" id="value_image"}
+	<div id="img_container">
+		{img id="img_picture" src="{$person->picture_internal}" alt="Picture"}
+		<div id="img_check">&#x2714;</div>
+	</div>
+
 	<br/>
 	{button color="grey" href="PERFIL FOTO" desc="u:Toque aqui para agregar su foto*" caption="Agregar" size="small" popup="true" wait="false" callback="reloadPicture"}
 </center>
@@ -33,7 +37,7 @@
 	<!-- BIRTH YEAR -->
 	<tr>
 		<td valign="middle"><small>&iquest;Cuando nacistes?</small></td>
-		<td valign="middle"><b id="value_birthday">{$person->yearBorn}</b></td>
+		<td valign="middle"><b id="value_birthday">{$person->year_of_birth}</b></td>
 		<td align="right" valign="middle">{button size="small" color="grey" caption="Agregar" href="PERFIL ANO" desc="m:Que a&ntilde;o usted nacio?[{$person->years}]*" popup="true"  wait="false" callback="reloadBirthday"}</td>
 	</tr>
 
@@ -58,9 +62,25 @@
 	#profile tr:nth-child(odd) {
 		background-color: #F2F2F2;
 	}
-	#value_image {
+	#img_container {
+		position: relative;
+		text-align: center;
+	}
+	#img_picture {
 		border: 1px solid grey;
 		border-radius: 100px;
+		width: 100px;
+		height: 100px;
+	}
+	#img_check {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		color: green;
+		font-size: 80px;
+		font-weight: bold;
+		display: none;
 	}
 </style>
 
@@ -70,5 +90,8 @@
 	function reloadOrientation(values) { document.getElementById('value_orientation').innerHTML = values[0]; }
 	function reloadBirthday(values) { document.getElementById('value_birthday').innerHTML = values[0]; }
 	function reloadCountry(values) { document.getElementById('value_country').innerHTML = values[0]; }
-	function reloadPicture(values) { document.getElementById('value_image').src = 'file://' + values[0]; }
+	function reloadPicture(values) {
+		document.getElementById('img_picture').style.filter = "blur(3px)";
+		document.getElementById('img_check').style.display = "inline";
+	}
 </script>
