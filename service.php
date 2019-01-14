@@ -3,54 +3,54 @@
 /**
  * Apretaste Piropazo Service
  *
- * @version 2.0
+ * @version 3.0
  */
-class Piropazo extends Service
+class Service
 {
 	/**
 	 * Function executed when the service is called
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _main (Request $request)
+	public function _main (Request $request, Response $response)
 	{
 		// by default, open citas
-		return $this->_citas($request);
+		$this->_citas($request, $response);
 	}
 
 	/**
 	 * Edit the user profile at start
 	 * 
 	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _inicio(Request $request)
+	public function _inicio(Request $request, Response $response)
 	{
-		// get the person to edit profile
-		$person = Utils::getPerson($request->email);
-		if (empty($person)) return new Response();
-
 		// get what gender do you search for
-		if($person->sexual_orientation == "BI") $person->searchfor = "Ambos";
-		elseif($person->gender == "M" && $person->sexual_orientation == "HETERO") $person->searchfor = "Mujeres";
-		elseif($person->gender == "F" && $person->sexual_orientation == "HETERO") $person->searchfor = "Hombres";		
-		elseif($person->gender == "M" && $person->sexual_orientation == "HOMO") $person->searchfor = "Hombres";
-		elseif($person->gender == "F" && $person->sexual_orientation == "HOMO") $person->searchfor = "Mujeres";
-		else $person->searchfor = "";
+		if($request->person->sexual_orientation == "BI") $request->person->searchfor = "AMBOS";
+		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "MUJERES";
+		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "HOMBRES";		
+		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "HOMBRES";
+		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "MUJERES";
+		else $request->person->searchfor = "";
+
+		// get the path to www
+		$images = [];
+		if($request->person->picture) {
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			$images[] = "$wwwroot/public/profile/{$request->person->picture}";
+		}
 
 		// make the person's text readable
-		if ($person->gender == 'M') $person->gender = "Hombre";
-		if ($person->gender == 'F') $person->gender = "Mujer";
-		$person->country_name = Utils::getCountryNameByCode($person->country);
-		$image = $person->picture ? [$person->picture_internal] : [];
-
-		// get list of years
-		$person->years = implode(",", array_reverse(range(date('Y')-90, date('Y')-10)));
+		$request->person->country_name = Utils::getCountryNameByCode($request->person->country);
 
 		// prepare response for the view
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('profile_min.tpl', ["person"=>$person], $image);
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('profile_min.ejs', ["profile"=>$request->person], $images);
 		return $response;
 	}
 
@@ -58,27 +58,26 @@ class Piropazo extends Service
 	 * Get dates for your profile
 	 * 
 	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _citas(Request $request)
+	public function _citas(Request $request, Response $response)
 	{
-		// get the current user
-		$user = Utils::getPerson($request->userId);
-
 		// ensure your profile is completed
 		if(
-			empty($user->picture) ||
-			empty($user->first_name) ||
-			empty($user->gender) ||
-			empty($user->sexual_orientation) ||
-			$user->age < 10 || $user->age > 110 ||
-			empty($user->country)
-		) return $this->_inicio($request);
+			empty($request->person->picture) ||
+			empty($request->person->first_name) ||
+			empty($request->person->gender) ||
+			empty($request->person->sexual_orientation) ||
+			$request->person->age < 10 || $request->person->age > 110 ||
+			empty($request->person->country)
+		) return $this->_inicio($request, $response);
 
 		// activate new users and people who left
-		$this->activatePiropazoUser($request->userId);
+		$this->activatePiropazoUser($request->person->id);
 
 		// get the best match for the user
-		$match = $this->getMatchFromCache($user);
+		$match = $this->getMatchFromCache($request->person);
 
 		// if no matches, let the user know
 		if( ! $match) {
@@ -88,19 +87,18 @@ class Piropazo extends Service
 				"icon"=>"&#x1F64D;",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href"=>"PIROPAZO EDITAR", "caption"=>"Editar perfil"]];
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('message.tpl', $content);
-			return $response;
+
+			$response->setLayout('piropazo.ejs');
+			return $response->setTemplate('message.ejs', $content);
 		}
 
 		// calculate the tags
 		$tags = [];
-		if(array_intersect($match->interests, $user->interests)) $tags[] = "Intereses Similares";
-		if(($match->city && ($match->city == $user->city)) || ($match->usstate && ($match->usstate == $user->usstate)) || ($match->province && ($match->province == $user->province))) $tags[] = "Viven Cerca";
-		if($match->age && abs($match->age - $user->age) <= 3) $tags[] = "Igual Edad";
-		if($match->religion && ($match->religion == $user->religion)) $tags[] = "Misma Religion";
-		if($match->highest_school_level && ($match->highest_school_level == $user->highest_school_level)) $tags[] = "Misma Educacion";
+		if(array_intersect($match->interests, $request->person->interests)) $tags[] = "Intereses Similares";
+		if(($match->city && ($match->city == $request->person->city)) || ($match->usstate && ($match->usstate == $request->person->usstate)) || ($match->province && ($match->province == $request->person->province))) $tags[] = "Viven Cerca";
+		if($match->age && abs($match->age - $request->person->age) <= 3) $tags[] = "Igual Edad";
+		if($match->religion && ($match->religion == $request->person->religion)) $tags[] = "Misma Religion";
+		if($match->highest_school_level && ($match->highest_school_level == $request->person->highest_school_level)) $tags[] = "Misma Educacion";
 		if($match->body_type == "ATLETICO") $tags[] = "Cita Caliente";
 		$match->tags = array_slice($tags, 0, 2); // show only two tags
 
@@ -109,39 +107,30 @@ class Piropazo extends Service
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
-		$this->markLastTimeUsed($request->userId);
+		$this->markLastTimeUsed($request->person->id);
 
 		// get match images into an array
-		$images = [];
-		if($match->picture) $images[] = $match->picture_internal;
-
-		// get flag images for the web and internet app
-		if(($request->environment == "web" || $request->appmethod == "http") && $match->country) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
-		}
+		$images = ($match->picture) ? [$match->picture] : [];
 
 		// build the response
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('dates.tpl', ["person" => $match], $images);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('dates.ejs', ["match" => $match], $images);
 	}
 
 	/**
 	 * Say Yes to a match
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _si (Request $request)
+	public function _si (Request $request, Response $response)
 	{
 		// get the emails from and to
 		$username = str_replace("@", "", trim($request->query));
-		$idFrom = $request->userId;
+		$idFrom = $request->person->id;
 		$idTo = Utils::getIdFromUsername($username);
-		if( ! $idTo) return new Response();
+		if( ! $idTo) return $response;
 
 		// check if there is any previous record between you and that person
 		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
@@ -165,7 +154,7 @@ class Piropazo extends Service
 
 			// if they dislike you, block that match
 			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
-			return new Response();
+			return $response;
 		}
 
 		// insert the new relationship
@@ -183,21 +172,22 @@ class Piropazo extends Service
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
 		// return empty response
-		return new Response();
+		return $response;
 	}
 
 	/**
 	 * Say No to a match
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _no (Request $request)
+	public function _no (Request $request, Response $response)
 	{
 		// get the ids from and to
-		$idFrom = $request->userId;
+		$idFrom = $request->person->id;
 		$idTo = Utils::getIdFromUsername($request->query);
-		if(empty($idTo)) return new Response();
+		if(empty($idTo)) return $response;
 
 		// insert the new relationship
 		Connection::query("
@@ -210,16 +200,17 @@ class Piropazo extends Service
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
 		// do not return anything
-		return new Response();
+		return $response;
 	}
 
 	/**
 	 * Say Yes to a match and return next match
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _siNext (Request $request)
+	public function _siNext (Request $request, Response $response)
 	{
 		$this->_si($request);
 		return $this->_main($request);
@@ -228,10 +219,11 @@ class Piropazo extends Service
 	/**
 	 * Say No to a person and return the profile
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _noNext (Request $request)
+	public function _noNext (Request $request, Response $response)
 	{
 		$this->_no($request);
 		return $this->_main($request);
@@ -240,10 +232,11 @@ class Piropazo extends Service
 	/**
 	 * Say Yes to a person and return the matches
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _siParejas (Request $request)
+	public function _siParejas (Request $request, Response $response)
 	{
 		$this->_si($request);
 		return $this->_parejas($request);
@@ -252,10 +245,11 @@ class Piropazo extends Service
 	/**
 	 * Say No to a person and return next matches
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _noParejas (Request $request)
+	public function _noParejas (Request $request, Response $response)
 	{
 		$this->_no($request);
 		return $this->_parejas($request);
@@ -264,15 +258,16 @@ class Piropazo extends Service
 	/**
 	 * Flag a user's profile
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _reportar (Request $request)
+	public function _reportar (Request $request, Response $response)
 	{
 		// do not report inexistant people
 		$violatorUsername = $request->params[0];
 		$violator = Utils::getIdFromUsername($violatorUsername);
-		if(empty($violator)) return new Response();
+		if(empty($violator)) return $response;
 
 		// get code from text
 		$text = trim($request->params[1]);
@@ -284,10 +279,10 @@ class Piropazo extends Service
 
 		// only acept the types allowed
 		$text = strtoupper($text);
-		if( ! in_array($text, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return new Response();
+		if( ! in_array($text, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return $response;
 
 		// save the report
-		Connection::query("INSERT INTO _piropazo_reports (id_reporter,id_violator,type) VALUES ({$request->userId}, $violator, '$text')");
+		Connection::query("INSERT INTO _piropazo_reports (id_reporter,id_violator,type) VALUES ({$request->person->id}, $violator, '$text')");
 
 		// say NO to the user
 		$request->query = $violatorUsername;
@@ -297,13 +292,14 @@ class Piropazo extends Service
 	/**
 	 * Get the list of matches for your user
 	 *
-	 * @param Request $request
-	 * @return Response
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
 	 */
-	public function _parejas (Request $request)
+	public function _parejas (Request $request, Response $response)
 	{
 		// activate new users and people who left
-		$this->activatePiropazoUser($request->userId);
+		$this->activatePiropazoUser($request->person->id);
 
 		// get list of people whom you liked or liked you
 		$matches = Connection::query("
@@ -313,7 +309,7 @@ class Piropazo extends Service
 			ON A.id_to = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
-			AND id_from = '{$request->userId}'
+			AND id_from = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'WAITING' AS type, A.id_from AS id, '' AS matched_on, datediff(A.expires_matched_blocked, CURDATE()) AS time_left
 			FROM _piropazo_relationships A
@@ -321,21 +317,21 @@ class Piropazo extends Service
 			ON A.id_from = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
 			AND status = 'like'
-			AND id_to = '{$request->userId}'
+			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_from AS id, A.expires_matched_blocked AS matched_on, '' AS time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
 			WHERE status = 'match'
-			AND id_to = '{$request->userId}'
+			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_to AS id, A.expires_matched_blocked AS matched_on, '' AS time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
 			WHERE status = 'match'
-			AND id_from = '{$request->userId}'");
+			AND id_from = '{$request->person->id}'");
 
 		// if no matches, let the user know
 		if(empty($matches)) {
@@ -346,10 +342,10 @@ class Piropazo extends Service
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
 				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar Pareja"]];
 
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('message.tpl', $content);
-			return $response;
+
+			$response->setLayout('piropazo.ejs');
+			$response->setTemplate('message.ejs', $content);
+
 		}
 
 		// initialize counters
@@ -378,7 +374,7 @@ class Piropazo extends Service
 		}
 
 		// mark the last time the system was used
-		$this->markLastTimeUsed($request->userId);
+		$this->markLastTimeUsed($request->person->id);
 
 		// create response array
 		$responseArray = [
@@ -387,65 +383,52 @@ class Piropazo extends Service
 			"matchCounter" => $matchCounter,
 			"people"=>$matches];
 
-		// get flag images for the web
-		if(($request->environment == "web" || $request->appmethod == "http")) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
-			foreach ($matches as $match) {
-				if($match->country) $images[] = "$wwwroot/public/images/flags/".strtolower($match->country).".png";
-			}
-		}
-
 		// Building the response
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('matches.tpl', $responseArray, $images);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('matches.ejs', $responseArray, $images);
 	}
 
 	/**
 	 * View a flower sent by another user
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _flor (Request $request)
+	public function _flor (Request $request, Response $response)
 	{
 		// get data of the flower
 		$flowerId = trim($request->query);
 		$flower = Connection::query("SELECT id_sender, message FROM _piropazo_flowers WHERE id='$flowerId'");
-		if(empty($flower)) return new Response();
+		if(empty($flower)) return $response;
 
 		// get params for the view
 		$person = Utils::getPerson($flower[0]->id_sender);
 		$message = $flower[0]->message;
 
 		// send the reponse
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('flower.tpl', ["person"=>$person, "message"=>$message]);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('flower.ejs', ["person"=>$person, "message"=>$message]);
 	}
 
 	/**
 	 * Send a flower to another user
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _mandarFlor (Request $request)
+	public function _mandarFlor (Request $request, Response $response)
 	{
 		$username = $request->params[0];
 		$message = trim(Connection::escape($request->params[1], 200));
 
 		// do not allow inexistant people
 		$receiver = Utils::getIdFromUsername($username);
-		if(empty($receiver)) return new Response();
+		if(empty($receiver)) return $response;
 
 		// check if you have enought flowers to send
-		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->userId}' AND flowers > 0");
+		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers > 0");
 		if(empty($flowers)) {
 			$content = [
 				"environment" => $request->environment,
@@ -454,17 +437,17 @@ class Piropazo extends Service
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('message.tpl', $content);
-			return $response;
+
+			$response->setLayout('piropazo.ejs');
+			$response->setTemplate('message.ejs', $content);
+
 		}
 
 		// send the flower and expand response time 7 days
-		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->userId}','$receiver','$message')");
+		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->person->id}','$receiver','$message')");
 		Connection::query("
-			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->userId}';
-			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from = '{$request->userId}' AND id_to = '$receiver';");
+			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->person->id}';
+			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from = '{$request->person->id}' AND id_to = '$receiver';");
 
 		// send emails for users with app/email/web
 		Utils::addNotification($receiver, "Piropazo", "Enhorabuena, @{$request->username} le ha mandado una flor. Este es un sintoma inequivoco de le gustas", "PIROPAZO FLOR $flowerId");
@@ -477,23 +460,21 @@ class Piropazo extends Service
 			"text" => "$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('message.tpl', $content);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('message.ejs', $content);
 	}
 
 	/**
 	 * Use a crown to highlight your profile
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _corona (Request $request)
+	public function _corona (Request $request, Response $response)
 	{
 		// check if you have enought crowns
-		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->userId}' AND crowns > 0");
+		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
@@ -504,17 +485,17 @@ class Piropazo extends Service
 				"text" => "Actualmente usted no tiene suficientes coronas para usar. Puede comprar algunas coronas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate('message.tpl', $content);
-			return $response;
+
+			$response->setLayout('piropazo.ejs');
+			$response->setTemplate('message.ejs', $content);
+
 		}
 
 		// set the crown and substract a crown
-		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->userId}");
+		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->userId, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO PERFIL");
+		Utils::addNotification($request->person->id, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO PERFIL");
 
 		// build the response
 		$content = [
@@ -524,57 +505,51 @@ class Piropazo extends Service
 			"text" => "Usted ha sido coronado, y en los proximos tres dias su perfil se mostrara muchas mas veces a otros usuarios, lo cual mejorara sus chances de recibir solicitudes y flores. Mantenganse revisando a diario su lista de parejas.",
 			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('message.tpl', $content);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('message.ejs', $content);
 	}
 
 	/**
 	 * Open the store
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _tienda (Request $request)
+	public function _tienda (Request $request, Response $response)
 	{
 		// get the user credit
-		$credit = Connection::query("SELECT credit FROM person WHERE id={$request->userId}")[0]->credit;
+		$credit = Connection::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
 
 		// build the response
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('store.tpl', ["credit"=>$credit, "email"=>$request->email]);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('store.ejs', ["credit"=>$credit, "email"=>$request->email]);
 	}
 	/**
 	 * Open the store
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _notificaciones (Request $request)
+	public function _notificaciones (Request $request, Response $response)
 	{
 		// get notifications
-		$notifications = Utils::getNotifications($request->userId, 20, ['piropazo', 'chat']);
+		$notifications = Utils::getNotifications($request->person->id, 20, ['piropazo', 'chat']);
 
 		// build the response
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('notifications.tpl', ['notificactions' => $notifications]);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('notifications.ejs', ['notificactions' => $notifications]);
 	}
 
 	/**
 	 * Chat with somebody
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _chat(Request $request)
+	public function _chat(Request $request, Response $response)
 	{
 		//
 		// SHOW THE LIST OF OPEN CHATS WHEN SUBJECT=NOTA
@@ -583,7 +558,7 @@ class Piropazo extends Service
 		if(empty($request->query))
 		{
 			// get the list of people chating with you
-			$chats = $this->social->chatsOpen($request->userId);
+			$chats = $this->social->chatsOpen($request->person->id);
 
 			// show message if no chats
 			if(empty($chats)) {
@@ -594,10 +569,10 @@ class Piropazo extends Service
 					"text" => "Usted nunca ha hablado con otro usurio antes. Para chatear, primero debe decir s&iacute; a otro usuario, y que este le diga s&iacute; a usted. Luego empiece una conversacion en la seccion Parejas.",
 					"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
-				$response = new Response();
-				$response->setEmailLayout('piropazo.tpl');
-				$response->createFromTemplate('message.tpl', $content);
-				return $response;
+	
+				$response->setLayout('piropazo.ejs');
+				$response->setTemplate('message.ejs', $content);
+	
 			}
 
 			// get just the latest 10 chats
@@ -610,10 +585,10 @@ class Piropazo extends Service
 			}
 
 			// send data to the view
-			$response = new Response();
-			$response->setEmailLayout('piropazo.tpl');
-			$response->createFromTemplate("chats.tpl", ["chats"=>$chats, "myUserId"=>$request->userId], $images);
-			return $response;
+
+			$response->setLayout('piropazo.ejs');
+			$response->setTemplate("chats.ejs", ["chats"=>$chats, "myUserId"=>$request->person->id], $images);
+
 		}
 
 		//
@@ -622,11 +597,11 @@ class Piropazo extends Service
 
 		// get person to chat
 		$friendId = Utils::getIdFromUsername($request->query);
-		if(empty($friendId)) return new Response();
+		if(empty($friendId)) return $response;
 
 		// get the list of people chating with you
 		$social = new Social();
-		$chats = $social->chatConversation($request->userId, $friendId);
+		$chats = $social->chatConversation($request->person->id, $friendId);
 
 		// create content to send to the view
 		$content = [
@@ -642,23 +617,21 @@ class Piropazo extends Service
 		}
 
 		// respond to the view
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate("conversation.tpl", $content, $images);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate("conversation.ejs", $content, $images);
 	}
 
 	/**
 	 * Exit the Piropazo network
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _salir (Request $request)
+	public function _salir (Request $request, Response $response)
 	{
 		// remove from piropazo
-		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->userId}");
+		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
 
 		// respond to user
 		$content = [
@@ -668,24 +641,22 @@ class Piropazo extends Service
 			"text" => "No recibir&aacute; m&aacute;s mensajes de otros usuarios ni aparecer&aacute; en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil sera agregado autom&aacute;ticamente.",
 			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
 
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('message.tpl', $content);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('message.ejs', $content);
 	}
 
 	/**
 	 * Open the user's profile
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _perfil (Request $request)
+	public function _perfil (Request $request, Response $response)
 	{
 		// get the user's profile
 		$id = Utils::getIdFromUsername($request->query);
-		if(empty($id)) $id = $request->userId;
+		if(empty($id)) $id = $request->person->id;
 		$profile = Utils::getPerson($id);
 
 		// erase unwanted properties in the object
@@ -699,23 +670,23 @@ class Piropazo extends Service
 			WHERE id_person = $id");
 
 		// ensure the user exists
-		if(empty($profile) || empty($piropazo)) return new Response();
+		if(empty($profile) || empty($piropazo)) return $response;
 
 		// check if is my own profile
-		$isMyOwnProfile = $id == $request->userId;
+		$isMyOwnProfile = $id == $request->person->id;
 
 		$returnTo = "citas";
 		$percentageMatch = "";
 		if( ! $isMyOwnProfile) {
 			// calculate the percentage of a math
-			$percentageMatch = $this->getPercentageMatch($id, $request->userId);
+			$percentageMatch = $this->getPercentageMatch($id, $request->person->id);
 
 			// return to people or matches
 			$back = Connection::query("
 				SELECT COUNT(id) AS cnt
 				FROM _piropazo_relationships 
-				WHERE (id_from = $id AND id_to = {$request->userId}) 
-				OR (id_from = {$request->userId} AND id_to = $id)");
+				WHERE (id_from = $id AND id_to = {$request->person->id}) 
+				OR (id_from = {$request->person->id} AND id_to = $id)");
 			if($back[0]->cnt > 0) $returnTo = "parejas";
 		}
 
@@ -738,33 +709,23 @@ class Piropazo extends Service
 			$content["completion"] = $profile->completion;			
 		}
 
-		// get images for the web
-		$images = [$profile->picture_internal];
-		if(($request->environment == "web" || $request->appmethod == "http") && $profile->country) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/images/flags/".strtolower($profile->country).".png";
-		}
-
 		// Building response
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('profile.tpl', $content, $images);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('profile.ejs', $content, $images);
 	}
 
 	/**
 	 * Open the user's profile
 	 *
 	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
+	 * @param Request
+	 * @param Response
 	 */
-	public function _editar (Request $request)
+	public function _editar (Request $request, Response $response)
 	{
 		// get the person to edit profile
-		$person = Utils::getPerson($request->userId);
-		if (empty($person)) return new Response();
+		$person = Utils::getPerson($request->person->id);
+		if (empty($person)) return $response;
 
 		// get what gender do you search for
 		if($person->sexual_orientation == "BI") $person->searchfor = "Ambos";
@@ -790,10 +751,8 @@ class Piropazo extends Service
 		$image = $person->picture ? [$person->picture_internal] : [];
 
 		// prepare response for the view
-		$response = new Response();
-		$response->setEmailLayout('piropazo.tpl');
-		$response->createFromTemplate('profile_full.tpl', ["person"=>$person], $image);
-		return $response;
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('profile_full.ejs', ["person"=>$person], $image);
 	}
 
 	/**
@@ -894,6 +853,9 @@ class Piropazo extends Service
 			HAVING percent_match > 0
 			ORDER BY percent_match DESC
 			LIMIT 50");
+
+		// do not create cache if no suggestions were found
+		if(empty($cacheUsers)) return false;
 
 		// create the cache of suggestions
 		$inserts = [];

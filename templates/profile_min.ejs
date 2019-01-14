@@ -1,0 +1,68 @@
+<div class="col s12">
+	<div class="img-wrap">
+		<% if(profile.picture) { %>
+			<img class="fullscreen" src="{{APP_IMAGE_PATH}}/<%= profile.picture %>">
+		<% } else { %>
+			<img class="fullscreen" src="{{APP_RESOURCES}}/images/user.jpg">
+		<% } %>
+	</div>
+	<a class="btn-floating btn-large waves-effect waves-light red fab-align"><i class="material-icons">add</i></a>
+</div>
+
+<div class="col s12">
+	<!-- NAME -->
+	<div class="input-field">
+		<input id="name" type="text" value="<%= profile.first_name %>" class="validate"/>
+		<label for="name">&iquest;Como te llamas?</label>
+	</div>
+
+	<!-- GENDER -->
+	<div class="input-field">
+		<select id="gender" class="validate">
+			<option value="" selected></option>
+			<option value="M" <%if(profile.gender=='M'){%>selected<%}%>>Hombre</option>
+			<option value="F" <%if(profile.gender=='F'){%>selected<%}%>>Mujer</option>
+		</select>
+		<label for="gender">&iquest;Qu&eacute; eres?</label>
+	</div>
+
+	<!-- SEXUAL ORIENTATION -->
+	<div class="input-field" value="<%= profile.orientation %>">
+		<select id="orientation" class="validate">
+			<option value="" selected></option>
+			<option value="MUJERES" <%if(profile.searchfor=='MUJERES'){%>selected<%}%>>Mujeres</option>
+			<option value="HOMBRES" <%if(profile.searchfor=='HOMBRES'){%>selected<%}%>>Hombres</option>
+			<option value="AMBOS" <%if(profile.searchfor=='AMBOS'){%>selected<%}%>>Ambos</option>
+		</select>
+		<label for="orientation">&iquest;Qu&eacute; buscas?</label>
+	</div>
+
+	<!-- BIRTH YEAR -->
+	<div class="input-field" value="<%= profile.year_of_birth %>">
+		<select id="birthday" class="validate">
+			<option value="" selected></option>
+			<% service.getYears().forEach(function(year) { %>
+				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
+			<% }); %>
+		</select>
+		<label for="birthday">&iquest;Que a&ntilde;o nacistes?</label>
+	</div>
+
+	<!-- COUNTRY -->
+	<div class="input-field" value="<%= profile.country %>">
+		<select id="country" class="validate">
+			<option value="" selected></option>
+			<% service.getCountries().forEach(function(country) { %>
+				<option value="<%= country.code %>" <%if(profile.country==country.code){%>selected<%}%>><%= country.name %></option>
+			<% }); %>
+		</select>
+		<label for="country">&iquest;Donde vives?</label>
+	</div>
+
+	<div class="input-field">
+		<a class="btn waves-effect waves-light fullscreen" href="#!" onclick="service.submitMinimalProfile()">
+			Continuar
+			<i class="material-icons right">send</i>
+		</a>
+	</div>
+</div>

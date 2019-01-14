@@ -1,0 +1,38 @@
+<div class="col m6 offset-m3 col s10 offset-s1">
+	<div class="card">
+		<div class="card-image waves-effect waves-block waves-light profile-wrap">
+			<img class="activator" src="{{APP_IMAGE_PATH}}/<%= match.picture %>">
+		</div>
+		<div class="card-content">
+			<span class="card-title activator grey-text text-darken-4">
+				@<%= match.username %>
+				<i class="material-icons right">more_vert</i>
+			</span>
+			<p>
+				<%= match.age %> a&ntilde;os
+				&middot;
+				<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= match.country %>.png">
+				<%= match.location %>
+			</p>
+		</div>
+		<div class="card-reveal">
+			<span class="card-title grey-text text-darken-4">
+				@<%= match.username %>
+				<i class="material-icons right">close</i>
+			</span>
+			<p><%= match.about_me %></p>
+
+			<% match.tags.forEach(function(tag){ %>
+				<div class="chip"><%= tag %></div>
+			<% }) %>
+		</div>
+		<div class="card-action">
+			<div class="left-align col s6">
+				<a href="#!" class="card-link-no"><i class="material-icons">clear</i> No</a>
+			</div>
+			<div class="right-align">
+				<a href="#!" class="card-link-si"><i class="material-icons">check</i> Si</a>
+			</div>
+		</div>
+	</div>
+</div>
