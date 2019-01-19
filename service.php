@@ -338,13 +338,13 @@ class Service
 			$content = [
 				"environment" => $request->environment,
 				"header"=>"Por ahora no tiene parejas",
-				"icon"=>"&#x1F64D;",
+				"icon"=>"mood_bad",
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
-				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar Pareja"]];
+				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
 
 			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content);
+			return $response->setTemplate('message.ejs', $content);
 
 		}
 

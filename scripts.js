@@ -66,6 +66,11 @@ var service = {
 	// callback to upload data for minimal profile
 	callbackSubmitMinimalProfile: function() {
 		apretaste.send({command:'PIROPAZO'});
+	},
+
+	openMenu: function() {
+		$('.sidenav').sidenav();
+		$('.sidenav').sidenav('open');
 	}
 }
 
