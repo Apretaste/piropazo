@@ -1,3 +1,11 @@
+// ON LOAD FUNCTIONS
+
+$(document).ready(function(){
+	$('select').formSelect();
+});
+
+// FUCTIONS FOR THE SERVICE
+
 var service = {
 	// get list of years fort the age
 	getYears: function() {
@@ -74,6 +82,9 @@ var service = {
 	}
 }
 
-$(document).ready(function(){
-	$('select').formSelect();
-});
+// PROTOTYPES
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.split(search).join(replacement);
+};

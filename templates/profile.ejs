@@ -1,0 +1,76 @@
+<div class="col s12 center-align">
+	<!-- PROFILE COMPLETION MESSAGE -->
+	<% if(isMyOwnProfile && profile.completion < 80) { %>
+		<div class="message danger">
+			Complete al menos el 65% del perfil
+			<a href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
+				<i class="material-icons right">send</i>
+			</a>
+		</div>
+	<% } %>
+
+	<!-- PICTURE -->
+	<div class="img-wrap">
+		<img class="fullscreen z-depth-2 <%= profile.color %>-border" src="{{APP_IMAGE_PATH}}/<%= profile.picture %>" alt="Picture"/>
+
+		<!-- USER IS CROWNED -->
+		<% if(crowned) { %>
+			<i class="material-icons yellow-text large position-top-right">favorite</i>
+		<% } %>
+	</div>
+
+	<p class="size-large">
+		<!-- FLOWERS AND CROWN -->
+		<% if(isMyOwnProfile) { %>
+			<span class="green-text">
+				<i class="material-icons size-large">local_florist</i><%= flowers %>
+			</span>
+			&nbsp;&nbsp;
+			<span>
+				<a class="underline green-text darken-2" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
+					<i class="material-icons underline size-large">favorite</i><%= crowns %>
+				</a>
+			</span>
+		<% } else { %>
+			<!--PERCENTAGE-->
+			<span class="<%= profile.color %>-color"><%= percentageMatch %>% IGUALES<span>
+		<% } %>
+	</p>
+
+	<!-- USERNAME, AGE AND LOCATION -->
+	<p>
+		<span class="<%= profile.color %>-color">@<%= profile.username %></span>
+		&nbsp;<b>&middot;</b>&nbsp;
+		<%= profile.age %> a&ntilde;os
+		&nbsp;<b>&middot;</b>&nbsp;
+		<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= profile.country %>.png"/>
+		<%= profile.location %>
+	</p>
+
+	<!-- ABOUT ME -->
+	<p><%= profile.about_me %></p>
+
+	<!-- MY INTERESTS -->
+	<% if(profile.interests.length > 0) { %>
+		<p class="interests">
+			<% profile.interests.forEach(function(interest){ %>
+				<div class="chip"><%= interest %></div>
+			<% }); %>
+		</p>
+	<% } %>
+
+	<!-- BUTTON -->
+	<% if(isMyOwnProfile) { %>
+		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
+			<i class="material-icons right">mode_edit</i>
+			Editar Perfil
+		</a>
+	<% } %>
+
+	<!-- DENOUNCE BUTTON -->
+	<% if( ! isMyOwnProfile) { %>
+		<p id="value_report">
+			<a class="denounce-link" href="#" onclick="apretaste.send({command:'PIROPAZO REPORTAR','data':{'id':'<%= profile.id %>'}})">Denuncie a este usuario</a>
+		</p>
+	<% } %>
+</div>

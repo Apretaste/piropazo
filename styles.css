@@ -1,15 +1,74 @@
 /* MENU */
 
-.nav-wrapper {
-	padding: 0px 20px;
-}
-
 #btnMenu {
 	float: right;
 	margin: 10px;
 }
 
+/* COLORS */
+
+.male-border {
+	border: 2px solid #4863A0;
+}
+
+.male-color {
+	color: #4863A0;
+}
+
+.female-border {
+	border: 2px solid #F778A1;
+}
+
+.female-color {
+	color: #F778A1;
+}
+
+.neutral-border {
+	border: 2px solid gray;
+}
+
+.neutral-color {
+	color: gray;
+}
+
+/* GENERAL */
+
+.flag {
+	width: 20px;
+}
+
+.fab-align{
+	left: 80%;
+	margin-top: -40px;
+}
+
+.hidden {
+	display: none;
+}
+
 /* PIROPAZO CITAS */
+
+.card-link-si {
+	vertical-align: top;
+	color: green !important;
+}
+
+.card-link-no {
+	vertical-align: top;
+	color: red !important;
+}
+
+.profile-wrap {
+	height: 250px;
+}
+
+/* PIROPAZO PAREJAS */
+
+.collection-item {
+	min-height: unset !important;
+}
+
+/* PIROPAZO PERFIL */
 
 .img-wrap {
 	width: 100%;
@@ -30,25 +89,32 @@
 	transform: translate(-50%, -50%);
 }
 
-.fab-align{
-	left: 80%;
-	margin-top: -40px;
+.underline {
+	text-decoration: underline;
 }
 
-.flag {
-	width: 20px;
+.size-large {
+	font-size: 35px;
 }
 
-.card-link-si {
-	vertical-align: top;
-	color: green !important;
+.denounce-link {
+	font-size: small;
+	color: grey;
 }
 
-.card-link-no {
-	vertical-align: top;
-	color: red !important;
+.position-top-right {
+	position: absolute; 
+	right: 10px;
 }
 
-.profile-wrap {
-	height: 250px;
+/* PIROPAZO TIENDA */
+
+.fixed-width {
+	width: 120px;
+}
+
+/* PIROPAZO NOTIFICACIONES */
+
+.no-left-padding {
+	padding-left: 20px !important;
 }

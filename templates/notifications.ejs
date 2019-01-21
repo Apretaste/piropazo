@@ -1,0 +1,18 @@
+<div class="col s12">
+	<h1>Notificaciones</h1>
+	<ul class="collection">
+		<% notifications.forEach(function(note){ %>
+			<li class="collection-item avatar no-left-padding <% if(note.viewed){ %>grey lighten-3<% } %>">
+				<span>
+					<small><%= note.inserted_date %></small><br/>
+					<%= note.text %>
+				</span>
+				<% if(note.link){ %>
+					<a href="#!" class="secondary-content" onclick="apretaste.send({'command':'<%= note.link %>'})">
+						<i class="material-icons">send</i>
+					</a>
+				<% } %>
+			</li>
+		<% }) %>
+	</ul>
+</div>

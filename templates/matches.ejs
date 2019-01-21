@@ -1,0 +1,75 @@
+<!--WAITING FOR YOU-->
+<% if(waiting.length > 0) { %>
+	<h1>Esperando por ti</h1>
+	<ul class="collection">
+		<% waiting.forEach(function(person) { %>
+			<li class="collection-item avatar">
+				<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+					<img src="{{APP_IMAGE_PATH}}/<%= person.picture %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+					<span class="title <%= person.color %>-color">@<%= person.username %></span>
+				</a>
+				<p>
+					<%= person.age %> a&ntilde;os
+					&nbsp;&middot;&nbsp;
+					<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+					<%= person.location %>
+				</p>
+				<span class="secondary-content">
+					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO SIPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons green-text">check</i></a>
+					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+				</span>
+			</li>
+		<% }) %>
+	</ul>
+<% } %>
+
+<!--YOUR MATCHES-->
+<% if(matched.length > 0) { %>
+	<h1>De pareja contigo</h1>
+	<ul class="collection">
+		<% matched.forEach(function(person) { %>
+			<li class="collection-item avatar">
+				<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+					<img src="{{APP_IMAGE_PATH}}/<%= person.picture %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+					<span class="title <%= person.color %>-color">@<%= person.username %></span>
+				</a>
+				<p>
+					<%= person.age %> a&ntilde;os
+					&nbsp;&middot;&nbsp;
+					<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+					<%= person.location %>
+				</p>
+				<span class="secondary-content">
+					<a href="mailto:EMAIL_HERE"><i class="material-icons green-text">email</i></a>
+					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+				</span>
+			</li>
+		<% }) %>
+	</ul>
+<% } %>
+
+<!--YOU ARE WAITING FOR THEM-->
+<% if(liked.length > 0) { %>
+	<h1>Esperando por ellos</h1>
+	<ul class="collection">
+		<% liked.forEach(function(person) { %>
+			<li class="collection-item avatar">
+				<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+					<img src="{{APP_IMAGE_PATH}}/<%= person.picture %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+					<span class="title <%= person.color %>-color">@<%= person.username %></span>
+				</a>
+				<p>
+					<%= person.age %> a&ntilde;os
+					&nbsp;&middot;&nbsp;
+					<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+					<%= person.location %><br/>
+					<span class="grey-text"><%= person.time_left %> d&iacute;as para responder</span>
+				</p>
+				<span class="secondary-content">
+					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO MANDARFLOR','data':{'id':'<%= person.id %>'}})"><i class="material-icons green-text">local_florist</i></a>
+					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+				</span>
+			</li>
+		<% }) %>
+	</ul>
+<% } %>
