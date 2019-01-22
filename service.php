@@ -160,58 +160,6 @@ class Service
 	}
 
 	/**
-	 * Say Yes to a match and return next match
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _siNext (Request $request, Response $response)
-	{
-		$this->_si($request);
-		return $this->_citas($request);
-	}
-
-	/**
-	 * Say No to a person and return the profile
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _noNext (Request $request, Response $response)
-	{
-		$this->_no($request);
-		return $this->_citas($request);
-	}
-
-	/**
-	 * Say Yes to a person and return the matches
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _siParejas (Request $request, Response $response)
-	{
-		$this->_si($request);
-		return $this->_parejas($request);
-	}
-
-	/**
-	 * Say No to a person and return next matches
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _noParejas (Request $request, Response $response)
-	{
-		$this->_no($request);
-		return $this->_parejas($request);
-	}
-
-	/**
 	 * Flag a user's profile
 	 *
 	 * @author salvipascual
