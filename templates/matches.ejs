@@ -1,5 +1,6 @@
 <!--WAITING FOR YOU-->
 <% if(waiting.length > 0) { %>
+	<section>
 	<h1>Esperando por ti</h1>
 	<ul class="collection">
 		<% waiting.forEach(function(person) { %>
@@ -15,16 +16,18 @@
 					<%= person.location %>
 				</p>
 				<span class="secondary-content">
-					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO SIPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons green-text">check</i></a>
-					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+					<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons green-text">check</i></a>
+					<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
 				</span>
 			</li>
 		<% }) %>
 	</ul>
+	</section>
 <% } %>
 
 <!--YOUR MATCHES-->
 <% if(matched.length > 0) { %>
+	<section>
 	<h1>De pareja contigo</h1>
 	<ul class="collection">
 		<% matched.forEach(function(person) { %>
@@ -37,19 +40,22 @@
 					<%= person.age %> a&ntilde;os
 					&nbsp;&middot;&nbsp;
 					<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
-					<%= person.location %>
+					<%= person.location %><br/>
+					<span class="grey-text"><%= person.email %></span>
 				</p>
 				<span class="secondary-content">
-					<a href="mailto:EMAIL_HERE"><i class="material-icons green-text">email</i></a>
-					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+					<a href="mailto:<%= person.email %>?subject=Hola, soy @<%= person.username %> de Piropazo"><i class="material-icons green-text">email</i></a>
+					<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
 				</span>
 			</li>
 		<% }) %>
 	</ul>
+	</section>
 <% } %>
 
 <!--YOU ARE WAITING FOR THEM-->
 <% if(liked.length > 0) { %>
+	<section>
 	<h1>Esperando por ellos</h1>
 	<ul class="collection">
 		<% liked.forEach(function(person) { %>
@@ -67,9 +73,10 @@
 				</p>
 				<span class="secondary-content">
 					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO MANDARFLOR','data':{'id':'<%= person.id %>'}})"><i class="material-icons green-text">local_florist</i></a>
-					<a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOPAREJAS','data':{'id':'<%= person.id %>'}})"><i class="material-icons red-text">close</i></a>
+					<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
 				</span>
 			</li>
 		<% }) %>
 	</ul>
+	</section>
 <% } %>

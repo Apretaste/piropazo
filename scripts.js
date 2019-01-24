@@ -100,9 +100,22 @@ function showDenounceMenu() {
 function denounceUser(violation, violator) {
 	apretaste.send({
 		command: 'PIROPAZO REPORTAR',
-		data :{code:violation, id:violator},
+		data: {code:violation, id:violator},
 		redirect: false,
 		callback: {name: "callbackDenounceFinish"}
+	});
+}
+
+// terminates a date on the parejas section
+function sayNoAndBlock(personId, element) {
+	apretaste.send({
+		command: 'PIROPAZO NO',
+		data: {'id': personId},
+		redirect: false,
+		callback: {
+			name: "callbackRemoveDateFromScreen", 
+			data: {element: element}
+		}
 	});
 }
 
@@ -117,6 +130,17 @@ function callbackBringNewDate() {
 function callbackDenounceFinish() {
 	$('#denounce-menu').hide();
 	$('#denounce-done').show();
+}
+
+function callbackRemoveDateFromScreen(values) {
+	// delete the whole section if only one match is left
+	var liCnt = $(values.element).parents('ul.collection').find('li').length;
+	var toDelete = liCnt > 1 ? '.collection-item' : 'section';
+
+	// delete the element or the section
+	$(values.element).parents(toDelete).fadeOut('fast', function(){
+		$(this).remove();
+	});
 }
 
 //

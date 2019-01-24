@@ -4,7 +4,7 @@
 		<div class="message danger">
 			Complete al menos el 65% del perfil
 			<a href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
-				<i class="material-icons right">send</i>
+				<i class="material-icons right green-text">create</i>
 			</a>
 		</div>
 	<% } %>
@@ -61,10 +61,7 @@
 
 	<!-- BUTTON -->
 	<% if(isMyOwnProfile) { %>
-		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
-			<i class="material-icons right">mode_edit</i>
-			Editar Perfil
-		</a>
+		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
 	<% } %>
 
 	<!-- DENOUNCE BUTTON -->

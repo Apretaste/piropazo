@@ -48,7 +48,7 @@ class Service
 		// if no matches, let the user know
 		if( ! $match) {
 			$content = [
-				"header"=>"No encontramos a nadie",
+				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href"=>"PIROPAZO EDITAR", "caption"=>"Editar perfil"]];
@@ -230,9 +230,8 @@ class Service
 		// if no matches, let the user know
 		if(empty($matches)) {
 			$content = [
-				"environment" => $request->environment,
 				"header"=>"No tiene parejas",
-				"icon"=>"mood_bad",
+				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
@@ -255,7 +254,7 @@ class Service
 			if($match->picture) $images[] = $match->picture;
 
 			// erase unwanted properties in the object
-			$properties = ["id","username","gender","age","type","location","picture","picture_public","picture","matched_on","time_left","country","online","color"];
+			$properties = ["id","email","username","gender","age","type","location","picture","picture_public","picture","matched_on","time_left","country","online","color"];
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
@@ -321,7 +320,6 @@ class Service
 		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers > 0");
 		if(empty($flowers)) {
 			$content = [
-				"environment" => $request->environment,
 				"header"=>"No tiene suficientes flores",
 				"icon"=>"&#x1F339;",
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
@@ -344,7 +342,6 @@ class Service
 
 		// return message
 		$content = [
-			"environment" => $request->environment,
 			"header"=>"Hemos enviado su flor a $username",
 			"icon"=>"&#x1F339;",
 			"text" => "$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
@@ -369,7 +366,6 @@ class Service
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
 			$content = [
-				"environment" => $request->environment,
 				"header"=>"No tiene suficientes coronas",
 				"icon"=>"&#x1F451;",
 				"text" => "Actualmente usted no tiene suficientes coronas para usar. Puede comprar algunas coronas en la tienda de Piropazo.",
@@ -388,7 +384,6 @@ class Service
 
 		// build the response
 		$content = [
-			"environment" => $request->environment,
 			"header"=>"Usted ha sido coronado",
 			"icon"=>"&#x1F451;",
 			"text" => "Usted ha sido coronado, y en los proximos tres dias su perfil se mostrara muchas mas veces a otros usuarios, lo cual mejorara sus chances de recibir solicitudes y flores. Mantenganse revisando a diario su lista de parejas.",
