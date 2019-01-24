@@ -83,10 +83,26 @@ function openMenu() {
 // say yes/no to a date
 function respondToDate(personId, answer) {
 	apretaste.send({
-		command: "PIROPAZO " + answer, 
+		command: "PIROPAZO " + answer,
 		data: {id: personId}, 
 		redirect: false,
 		callback: {name: "callbackBringNewDate"}
+	});
+}
+
+// show the denounce drop down menu
+function showDenounceMenu() {
+	$('#denounce-link').hide();
+	$('#denounce-menu').show();
+}
+
+// denounce a user
+function denounceUser(violation, violator) {
+	apretaste.send({
+		command: 'PIROPAZO REPORTAR',
+		data :{code:violation, id:violator},
+		redirect: false,
+		callback: {name: "callbackDenounceFinish"}
 	});
 }
 
@@ -96,6 +112,11 @@ function respondToDate(personId, answer) {
 
 function callbackBringNewDate() {
 	apretaste.send({command: "PIROPAZO"});
+}
+
+function callbackDenounceFinish() {
+	$('#denounce-menu').hide();
+	$('#denounce-done').show();
 }
 
 //

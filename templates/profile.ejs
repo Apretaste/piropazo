@@ -70,7 +70,19 @@
 	<!-- DENOUNCE BUTTON -->
 	<% if( ! isMyOwnProfile) { %>
 		<p id="value_report">
-			<a class="denounce-link" href="#" onclick="apretaste.send({command:'PIROPAZO REPORTAR','data':{'id':'<%= profile.id %>'}})">Denuncie a este usuario</a>
+			<a id="denounce-link" href="#" onclick="showDenounceMenu()">Denuncie a este usuario</a>
+			<div id="denounce-menu" class="input-field hidden">
+				<select onchange="denounceUser(this.value, '<%= profile.id %>')">
+					<option value="" disabled selected>Escoja una raz&oacute;n</option>
+					<option value="OFFENSIVE">La foto o el texto es ofensivo</option>
+					<option value="FAKE">El perfil tiene informaci&oacute;n falsa</option>
+					<option value="MISLEADING">La persona no luce como el perfil</option>
+					<option value="IMPERSONATING">Est&aacute; impersonando a alguien</option>
+					<option value="COPYRIGHT">El perfil viola los derechos de autor</option>
+				</select>
+				<label>Denuncie a este usuario</label>
+			</div>
+			<p id="denounce-done" class="hidden red-text">Gracias por denunciar a este usuario</p>			
 		</p>
 	<% } %>
 </div>

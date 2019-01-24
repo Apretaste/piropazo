@@ -68,7 +68,7 @@ class Service
 		$match->tags = array_slice($tags, 0, 2); // show only two tags
 
 		// erase unwanted properties in the object
-		$properties = ["username","gender","interests","about_me","picture","pictureURL","picture_public","picture","crown","country","location","age","tags","online"];
+		$properties = ["id","username","gender","interests","about_me","picture","pictureURL","picture_public","picture","crown","country","location","age","tags","online"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -99,19 +99,19 @@ class Service
 		// check if there is any previous record between you and that person
 		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
 
-		// get the person From from the database
-		$personFrom = Utils::getPerson($idFrom);
-
-		// if they liked you, like too, if they dislike you, block
-		if( ! empty($record)) {
+		// if they liked you, like too; if they dislike you, block
+		if($record) {
 			// if they liked you, create a match
 			if($record[0]->status == "like") {
+				// get the target @username
+				$username = Connection::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
+
 				// update to create a match and let you know of the match
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 				Utils::addNotification($idFrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "PIROPAZO CHAT @$username");
 
 				// let the other person know of the match
-				Utils::addNotification($idTo, "piropazo", "Felicidades, ambos tu y @{$personFrom->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$personFrom->username}");
+				Utils::addNotification($idTo, "piropazo", "Felicidades, ambos tu y @{$request->person->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$request->person->username}");
 			}
 
 			// if they dislike you, block that match
@@ -128,7 +128,7 @@ class Service
 			COMMIT");
 
 		// send a notification to the user
-		Utils::addNotification($idTo, "piropazo", "El usuario @{$personFrom->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO PERFIL @{$personFrom->username}");
+		Utils::addNotification($idTo, "piropazo", "El usuario @{$request->person->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO PERFIL @{$request->person->username}");
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
@@ -148,7 +148,7 @@ class Service
 		$idTo = $request->input->data->id;
 		if(empty($idTo)) return $response;
 
-		// insert the new relationship
+		// mark the transaction as blocked
 		Connection::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
@@ -168,29 +168,19 @@ class Service
 	 */
 	public function _reportar (Request $request, Response $response)
 	{
-		// do not report inexistant people
-		$violatorUsername = $request->params[0];
-		$violator = Utils::getIdFromUsername($violatorUsername);
-		if(empty($violator)) return $response;
-
-		// get code from text
-		$text = trim($request->params[1]);
-		if(php::exists($text, "ofensivo")) $text = "OFFENSIVE";
-		if(php::exists($text, "info")) $text = "FAKE";
-		if(php::exists($text, "no luce")) $text = "MISLEADING";
-		if(php::exists($text, "impersonando")) $text = "IMPERSONATING";
-		if(php::exists($text, "autor")) $text = "COPYRIGHT";
-
-		// only acept the types allowed
-		$text = strtoupper($text);
-		if( ! in_array($text, ['OFFENSIVE','FAKE','MISLEADING','IMPERSONATING','COPYRIGHT'])) return $response;
+		// do not allow empty codes
+		$violatorId = $request->input->data->id;
+		$violationCode = $request->input->data->violation;
+		if(empty($violatorId) || empty($violationCode)) return $response;
 
 		// save the report
-		Connection::query("INSERT INTO _piropazo_reports (id_reporter,id_violator,type) VALUES ({$request->person->id}, $violator, '$text')");
+		Connection::query("
+			INSERT INTO _piropazo_reports (id_reporter, id_violator, type) 
+			VALUES ({$request->person->id}, $violatorId, '$violationCode')");
 
 		// say NO to the user
 		$request->query = $violatorUsername;
-		return $this->_no($request);
+		$this->_no($request);
 	}
 
 	/**
