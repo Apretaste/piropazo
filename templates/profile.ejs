@@ -9,42 +9,48 @@
 		</div>
 	<% } %>
 
-	<!-- PICTURE -->
 	<div class="img-wrap">
-		<img class="fullscreen z-depth-2 <%= profile.color %>-border" src="{{APP_IMAGE_PATH}}/<%= profile.picture %>" alt="Picture"/>
+		<!-- PICTURE -->
+		<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
+		else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+		<img class="fullscreen z-depth-2 <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
 
 		<!-- USER IS CROWNED -->
 		<% if(crowned) { %>
 			<i class="material-icons yellow-text large position-top-right">favorite</i>
 		<% } %>
 	</div>
+</div>
 
-	<p class="size-large">
-		<!-- FLOWERS AND CROWN -->
-		<% if(isMyOwnProfile) { %>
-			<span class="green-text">
-				<i class="material-icons size-large">local_florist</i><%= flowers %>
-			</span>
-			&nbsp;&nbsp;
-			<span>
-				<a class="underline green-text darken-2" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
-					<i class="material-icons underline size-large">favorite</i><%= crowns %>
-				</a>
-			</span>
-		<% } else { %>
-			<!--PERCENTAGE-->
-			<span class="<%= profile.color %>-color"><%= percentageMatch %>% IGUALES<span>
-		<% } %>
-	</p>
+<div class="col s12">
+	<!--PERCENTAGE-->
+	<% if( ! isMyOwnProfile) { %>
+		<p class="size-large <%= profile.color %>-color"><%= percentageMatch %>% IGUALES</p>
+	<% } %>
 
-	<!-- USERNAME, AGE AND LOCATION -->
 	<p>
+		<!-- USERNAME, AGE AND LOCATION -->
 		<span class="<%= profile.color %>-color">@<%= profile.username %></span>
 		&nbsp;<b>&middot;</b>&nbsp;
 		<%= profile.age %> a&ntilde;os
 		&nbsp;<b>&middot;</b>&nbsp;
 		<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= profile.country %>.png"/>
 		<%= profile.location %>
+
+		<!-- FLOWERS AND CROWN -->
+		<% if(isMyOwnProfile) { %>
+			<span class="right">
+				<span class="green-text">
+					<i class="material-icons tiny">local_florist</i> <%= flowers %>
+				</span>
+				&nbsp;&nbsp;
+				<span>
+					<a class="underline green-text underline" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
+						<i class="material-icons tiny underline">favorite</i> <%= crowns %>
+					</a>
+				</span>
+			</span>
+		<% } %>
 	</p>
 
 	<!-- ABOUT ME -->
@@ -54,16 +60,20 @@
 	<% if(profile.interests.length > 0) { %>
 		<p class="interests">
 			<% profile.interests.forEach(function(interest){ %>
-				<div class="chip"><%= interest %></div>
+				<span class="interest"><%= interest %></span>
 			<% }); %>
 		</p>
 	<% } %>
 
-	<!-- BUTTON -->
+	<!-- BUTTON EDITAR -->
 	<% if(isMyOwnProfile) { %>
-		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
+		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
+			<i class="material-icons">create</i> Editar Perfil
+		</a>
 	<% } %>
+</div>
 
+<div class="col s12 center-align">
 	<!-- DENOUNCE BUTTON -->
 	<% if( ! isMyOwnProfile) { %>
 		<p id="value_report">

@@ -2,7 +2,6 @@
 
 /**
  * Apretaste Piropazo Service
- *
  * @version 3.0
  */
 class Service
@@ -68,7 +67,7 @@ class Service
 		$match->tags = array_slice($tags, 0, 2); // show only two tags
 
 		// erase unwanted properties in the object
-		$properties = ["id","username","gender","interests","about_me","picture","pictureURL","picture_public","picture","crown","country","location","age","tags","online"];
+		$properties = ["id","username","gender","interests","about_me","picture","picture","crown","country","location","age","tags","online","color"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -106,12 +105,12 @@ class Service
 				// get the target @username
 				$username = Connection::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
 
-				// update to create a match and let you know of the match
+				// update to create a match
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
-				Utils::addNotification($idFrom, "piropazo", "Felicidades, ambos tu y @$username se han gustado, ahora pueden chatear", "PIROPAZO CHAT @$username");
 
-				// let the other person know of the match
-				Utils::addNotification($idTo, "piropazo", "Felicidades, ambos tu y @{$request->person->username} se han gustado, ahora pueden chatear", "PIROPAZO CHAT @{$request->person->username}");
+				// create notifications for both you and your date
+				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'chat_bubble_outline', '{"command":"PIROPAZO PAREJAS"}');
+				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", "chat_bubble_outline", '{"command":"PIROPAZO PAREJAS"}');
 			}
 
 			// if they dislike you, block that match
@@ -126,9 +125,6 @@ class Service
 			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
 			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
 			COMMIT");
-
-		// send a notification to the user
-		Utils::addNotification($idTo, "piropazo", "El usuario @{$request->person->username} ha mostrado interes en ti, deberias revisar su perfil.", "PIROPAZO PERFIL @{$request->person->username}");
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
@@ -266,8 +262,12 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
+		// get the number of flowers for the logged user 
+		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
+
 		// create response array
 		$content = [
+			"myflowers" => $myFlowers[0]->flowers,
 			"liked" => $liked,
 			"waiting" => $waiting,
 			"matched" => $matched];
@@ -278,7 +278,7 @@ class Service
 	}
 
 	/**
-	 * View a flower sent by another user
+	 * Sends a flower to another user
 	 *
 	 * @author salvipascual
 	 * @param Request
@@ -286,38 +286,8 @@ class Service
 	 */
 	public function _flor (Request $request, Response $response)
 	{
-		// get data of the flower
-		$flowerId = trim($request->query);
-		$flower = Connection::query("SELECT id_sender, message FROM _piropazo_flowers WHERE id='$flowerId'");
-		if(empty($flower)) return $response;
-
-		// get params for the view
-		$person = Utils::getPerson($flower[0]->id_sender);
-		$message = $flower[0]->message;
-
-		// send the reponse
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('flower.ejs', ["person"=>$person, "message"=>$message]);
-	}
-
-	/**
-	 * Send a flower to another user
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _mandarFlor (Request $request, Response $response)
-	{
-		$username = $request->params[0];
-		$message = trim(Connection::escape($request->params[1], 200));
-
-		// do not allow inexistant people
-		$receiver = Utils::getIdFromUsername($username);
-		if(empty($receiver)) return $response;
-
 		// check if you have enought flowers to send
-		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers > 0");
+		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
 		if(empty($flowers)) {
 			$content = [
 				"header"=>"No tiene suficientes flores",
@@ -325,26 +295,30 @@ class Service
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
-
 			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content);
-
+			return $response->setTemplate('message.ejs', $content);
 		}
 
-		// send the flower and expand response time 7 days
-		$flowerId = Connection::query("INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->person->id}','$receiver','$message')");
+		// get the message sent with the flower
+		$message = trim(Connection::escape($request->input->data->msg, 200));
+
+		// get the recipient's username
+		$username = Connection::query("SELECT username FROM person WHERE id='{$request->input->data->id}'")[0]->username;
+
+		// send the flower and increase response time in 7 days
 		Connection::query("
+			INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->person->id}','{$request->input->data->id}','$message');
 			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->person->id}';
-			UPDATE _piropazo_relationships SET expires_matched_blocked = ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from = '{$request->person->id}' AND id_to = '$receiver';");
+			UPDATE _piropazo_relationships SET expires_matched_blocked=ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from='{$request->person->id}' AND id_to='{$request->input->data->id}';");
 
-		// send emails for users with app/email/web
-		Utils::addNotification($receiver, "Piropazo", "Enhorabuena, @{$request->username} le ha mandado una flor. Este es un sintoma inequivoco de le gustas", "PIROPAZO FLOR $flowerId");
+		// create a notification for the user
+		Utils::addNotification($request->input->data->id, "@{$request->person->username} le envia una flor: $message", '{"command":"PIROPAZO PAREJAS"}');
 
-		// return message
+		// let the sender know the flower was delivered
 		$content = [
-			"header"=>"Hemos enviado su flor a $username",
-			"icon"=>"&#x1F339;",
-			"text" => "$username recibira una notificacion y de seguro le contestara lo antes posible. Ademas, le hemos dado una semana extra para que le responda.",
+			"header"=>"Su flor fue enviada",
+			"icon"=>"local_florist",
+			"text" => "@$username recibira una notificacion y seguro le contestara lo antes posible. Tambien le hemos dado una semana extra para que responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
 		$response->setLayout('piropazo.ejs');
@@ -380,7 +354,7 @@ class Service
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->person->id, "piropazo", "Enhorabuena, Usted ha sido coronado. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", "PIROPAZO PERFIL");
+		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", 'favorite_border');
 
 		// build the response
 		$content = [
@@ -419,15 +393,20 @@ class Service
 	 */
 	public function _notificaciones (Request $request, Response $response)
 	{
-		// get notifications
-		$notifications = Utils::getNotifications($request->person->id, 20, ['piropazo', 'chat']);
+		// get all unread notifications
+		$notifications = Connection::query("
+			SELECT id,icon,`text`,link,inserted
+			FROM notification
+			WHERE `to` = {$request->person->id} 
+			AND service = 'piropazo'
+			AND `read` IS NULL");
 
 		// if no notifications, let the user know
 		if(empty($notifications)) {
 			$content = [
-				"header"=>"No hay nada por leer",
+				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
-				"text" => "Aun no tiene ninguna notificacion por leer.",
+				"text" => "Por ahora usted no tiene ninguna notificacion por leer.",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
 			$response->setLayout('piropazo.ejs');
@@ -516,14 +495,6 @@ class Service
 			"percentageMatch" => $percentageMatch,
 			"profile" => $profile];
 
-		// add tips to complete your profile
-		// if($isMyOwnProfile) {
-		// 	$content["noProfilePic"] = empty($profile->picture);
-		// 	$content["noProvince"] = empty($profile->country) || ($profile->country=="US" && empty($profile->usstate)) || ($profile->country=="CU" && empty($profile->province));
-		// 	$content["fewInterests"] = count($profile->interests) <= 3;
-		// 	$content["completion"] = $profile->completion;			
-		// }
-
 		// Building response
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('profile.ejs', $content, $images);
@@ -552,6 +523,7 @@ class Service
 	 */
 	public function _editar (Request $request, Response $response)
 	{
+
 		// get what gender do you search for
 		if($request->person->sexual_orientation == "BI") $request->person->searchfor = "AMBOS";
 		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "MUJERES";
@@ -559,8 +531,8 @@ class Service
 		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "HOMBRES";
 		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "MUJERES";
 		else $request->person->searchfor = "";
-
-		// get the path to www
+//print_r($request->person); exit;
+		// get array of images
 		$images = [];
 		if($request->person->picture) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
@@ -611,6 +583,13 @@ class Service
 		$person = Utils::getPerson($match->user);
 		$person->crown = $match->crown;
 		$person->match = $this->getPercentageMatch($user->id, $match->user);
+
+		// get the match color class based on gender
+		if($person->gender == "M") $person->color = "male";
+		elseif($person->gender == "F") $person->color = "female";
+		else $person->color = "neutral";
+
+		// return the match
 		return $person;
 	}
 

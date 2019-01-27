@@ -4,6 +4,9 @@
 
 $(document).ready(function(){
 	$('select').formSelect();
+	showStateOrProvince();
+//	$('#picturefield').on('change', displayPicture);
+	$("#picturefield").change(displayPicture);
 });
 
 //
@@ -21,57 +24,19 @@ function getYears() {
 // get list of countries to display
 function getCountries() {
 	return [
-		{code:'CU', name:'Cuba'},
-		{code:'US', name:'Estados Unidos'},
-		{code:'ES', name:'Espa&ntilde;a'},
-		{code:'IT', name:'Italia'},
-		{code:'MX', name:'Mexico'},
-		{code:'BR', name:'Brasil'},
-		{code:'EC', name:'Ecuador'},
-		{code:'CA', name:'Canada'},
-		{code:'VZ', name:'Venezuela'},
-		{code:'AL', name:'Alemania'},
-		{code:'CO', name:'Colombia'},
+		{code:'cu', name:'Cuba'},
+		{code:'us', name:'Estados Unidos'},
+		{code:'es', name:'Espana'},
+		{code:'it', name:'Italia'},
+		{code:'mx', name:'Mexico'},
+		{code:'br', name:'Brasil'},
+		{code:'ec', name:'Ecuador'},
+		{code:'ca', name:'Canada'},
+		{code:'vz', name:'Venezuela'},
+		{code:'al', name:'Alemania'},
+		{code:'co', name:'Colombia'},
 		{code:'OTRO', name:'Otro'}
 	];
-}
-
-// submit mini profile
-function submitMinimalProfile() {
-	// get data from the form
-	var name = $('#name').val();
-	var gender = $('#gender').val();
-	var orientation = $('#orientation').val();
-	var birthday = $('#birthday').val();
-	var country = $('#country').val();
-
-	// do not allow empty inputs
-	if(!name || !gender || !orientation || !birthday || !country) {
-		M.toast({html: 'Llene todos los campos para buscar su media naranja'});
-		return false;
-	}
-
-	// create data JSON string
-	var data = JSON.stringify({
-		name: name,
-		gender: gender,
-		orientation: orientation,
-		birthday: birthday,
-		country: country
-	});
-
-	// submit data and execute callback
-	apretaste.send({
-		command: 'PERFIL CAMBIAR', 
-		data: data, 
-		redirect: false, 
-		callback: 'callbackBringNewDate'
-	});
-}
-
-// submit image
-function submitMinimalProfile() {
-
 }
 
 // open the menu for small devices
@@ -119,6 +84,149 @@ function sayNoAndBlock(personId, element) {
 	});
 }
 
+// toggles the user description visible/invisible on the "dates" page
+function toggleDescVisible() {
+	var status = $('#arrowicon').attr('status');
+
+	if(status == "closed") {
+		$('#desc').slideDown('fast');
+		$('#arrowicon').html('keyboard_arrow_up').attr('status', 'opened');
+	} else {
+		$('#desc').slideUp('fast');
+		$('#arrowicon').html('keyboard_arrow_down').attr('status', 'closed');
+	}
+}
+
+// open the modal to send a flower
+function openFlowerModal(personId, count, username) {
+	// do not open if the user do not have flowers
+	if(count <= 0) {
+		M.toast({html: 'Tristemente, usted no tiene ninguna flor. Puede comprar m&aacute;s flores en nuestra tienda'});
+		return false;
+	}
+
+	// replace values on the modal
+	$('#flowerCount').html(count);
+	$('#flowerUsername').html(username);
+	$('#modalFlower').attr('toId', personId);
+
+	// open the modal
+	var popup = document.getElementById('modalFlower');
+	var modal = M.Modal.init(popup);
+	modal.open();
+}
+
+// send a flower
+function sendFlower() {
+	// get data
+	var personId = $('#modalFlower').attr('toId');
+	var message = $('#flowerMsg').val();
+
+	// send the flower
+	apretaste.send({'command':'PIROPAZO FLOR','data':{id:personId, msg:message}});
+}
+
+// send the notificationd to be deleted
+function deleteNotification(id) {
+	// delete from the backend
+	apretaste.send({
+		command: 'NOTIFICACIONES LEER',
+		data: {id: id},
+		redirect: false
+	});
+
+	// remove from the view
+	$('#'+id).fadeOut(function() {
+		$(this).remove();
+
+		// show message if all notifications were deleted
+		var count = $("ul.collection li").length;
+		if(count <= 0) {
+			$('ul.collection').remove();
+			$('div.col').append('<p>No hay mas notificaciones por leer</p>');
+		}
+	});
+}
+
+// open the popup to upload a new profile picture
+function uploadPicture() {
+	$("#picturefield").trigger("click");
+}
+
+// display the picture on the image
+function displayPicture(e) {
+	// get the file
+	var file = $("#picturefield").prop("files")[0];
+
+	// display the picture on the img
+	var URL = window.webkitURL || window.URL;
+	var url = URL.createObjectURL(file);
+	$('#picture').attr('src', url);
+
+	// send the picture
+	apretaste.send({
+		"command":"PERFIL FOTO",
+		"data": {'picture': file.name},
+		"files": [file],
+		"redirect": false
+	});
+
+	// show confirmation text
+	M.toast({html: 'Su foto ha sido cambiada correctamente'});
+}
+
+// submit the profile informacion 
+function submitProfileData() {
+	// get the array of fields and  
+	var fields = ['picture','first_name','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','interests','religion'];
+
+	// create the JSON of data
+	var data = new Object;
+	fields.forEach(function(field) {
+		var value = $('#'+field).val();
+		if(value) data[field] = value;
+	});
+
+	// translate "que buscas" to sexual_orientation
+	if(data.sexual_orientation) {
+		if(data.sexual_orientation=="AMBOS") data.sexual_orientation="BI";
+		if(data.gender=="M" && data.sexual_orientation=="MUJERES") data.sexual_orientation="HETERO";
+		if(data.gender=="M" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HOMO";
+		if(data.gender=="F" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HETERO";
+		if(data.gender=="F" && data.sexual_orientation=="MUJERES") data.sexual_orientation="HOMO";
+	}
+
+	// save information in the backend
+	apretaste.send({
+		"command": "PERFIL UPDATE",
+		"data": data,
+		"redirect": false
+	});
+
+	// show confirmation text
+	M.toast({html: 'Su informacion se ha salvado correctamente'});
+}
+
+// hide state or province based on country
+function showStateOrProvince() {
+	var country = $('#country').val();
+	var province = $('.province-div');
+	var usstate = $('.usstate-div');
+
+	province.hide();
+	usstate.hide();
+
+	if(country == 'cu') {
+		province.show();
+		usstate.hide();
+	}
+
+	if(country == 'us') {
+		province.hide();
+		usstate.show();
+	}
+}
+
 //
 // CALLBACKS
 //
@@ -148,6 +256,9 @@ function callbackRemoveDateFromScreen(values) {
 //
 
 String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
-    return target.split(search).join(replacement);
+	return this.split(search).join(replacement);
+};
+
+String.prototype.firstUpper = function() {
+	return this.charAt(0).toUpperCase() + this.substr(1).toLowerCase();
 };

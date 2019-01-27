@@ -48,18 +48,23 @@
 
 /* PIROPAZO CITAS */
 
-.card-link-si {
-	vertical-align: top;
-	color: green !important;
-}
-
-.card-link-no {
-	vertical-align: top;
-	color: red !important;
-}
-
 .profile-wrap {
 	height: 300px;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+.interest {
+	color: white;
+	background-color: #424242;
+	padding: 2px 5px;
+	margin: 0px 5px 5px 0px;
+	white-space: nowrap;
+	border-radius: 5px;
+	display: inline-block;
+	font-size: small;
 }
 
 /* PIROPAZO PAREJAS */
@@ -94,7 +99,7 @@
 }
 
 .size-large {
-	font-size: 35px;
+	font-size: 20px;
 }
 
 #denounce-link {
@@ -107,14 +112,14 @@
 	right: 10px;
 }
 
+.position-bottom-left {
+	position: absolute; 
+	left: 10px;
+	bottom: 10px;
+}
+
 /* PIROPAZO TIENDA */
 
 .fixed-width {
 	width: 120px;
-}
-
-/* PIROPAZO NOTIFICACIONES */
-
-.no-left-padding {
-	padding-left: 20px !important;
 }
