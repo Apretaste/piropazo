@@ -156,32 +156,17 @@ function uploadPicture() {
 // display the picture on the image
 function displayPicture() {
 	// get the file
-	var file = document.getElementById('picturefield').files[0];
+	var file = $('#picturefield').files[0];
 
-	// convert file to Base64
-	var reader = new FileReader();
-	reader.onload = function(readerEvt) {
-		// get base64 from image
-		var content = btoa(readerEvt.target.result);
-
+	file.toBase64().then(data => {
 		// send the picture
 		apretaste.send({
-			"command":"PERFIL FOTO",
-			"data": {name:file.name, content:content},
-			"redirect": false
+		"command":"PERFIL FOTO",
+		"data": {'picture':data},
+		"redirect": false,
+		"callback":{"name":"updatePicture","data":file}
 		});
-	};
-
-	// start to process the image
-	reader.readAsBinaryString(file);
-
-	// display the picture on the img
-	var URL = window.webkitURL || window.URL;
-	var url = URL.createObjectURL(file);
-	$('#picture').attr('src', url);
-
-	// show confirmation text
-	M.toast({html: 'Su foto ha sido cambiada correctamente'});
+	});
 }
 
 // submit the profile informacion 
@@ -258,6 +243,16 @@ function callbackRemoveDateFromScreen(values) {
 	$(values.element).parents(toDelete).fadeOut('fast', function(){
 		$(this).remove();
 	});
+}
+
+function callbackUpdatePicture(file){
+    // display the picture on the img
+	var URL = window.URL || window.webkitURL;
+	var url = URL.createObjectURL(file);
+    $('#picture').attr('src', url);
+
+    // show confirmation text
+    showToast('Su foto ha sido cambiada correctamente');
 }
 
 //
