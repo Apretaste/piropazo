@@ -154,22 +154,31 @@ function uploadPicture() {
 }
 
 // display the picture on the image
-function displayPicture(e) {
+function displayPicture() {
 	// get the file
-	var file = $("#picturefield").prop("files")[0];
+	var file = document.getElementById('picturefield').files[0];
+
+	// convert file to Base64
+	var reader = new FileReader();
+	reader.onload = function(readerEvt) {
+		// get base64 from image
+		var content = btoa(readerEvt.target.result);
+
+		// send the picture
+		apretaste.send({
+			"command":"PERFIL FOTO",
+			"data": {name:file.name, content:content},
+			"redirect": false
+		});
+	};
+
+	// start to process the image
+	reader.readAsBinaryString(file);
 
 	// display the picture on the img
 	var URL = window.webkitURL || window.URL;
 	var url = URL.createObjectURL(file);
 	$('#picture').attr('src', url);
-
-	// send the picture
-	apretaste.send({
-		"command":"PERFIL FOTO",
-		"data": {'picture': file.name},
-		"files": [file],
-		"redirect": false
-	});
 
 	// show confirmation text
 	M.toast({html: 'Su foto ha sido cambiada correctamente'});

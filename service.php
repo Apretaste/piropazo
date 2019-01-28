@@ -523,7 +523,6 @@ class Service
 	 */
 	public function _editar (Request $request, Response $response)
 	{
-
 		// get what gender do you search for
 		if($request->person->sexual_orientation == "BI") $request->person->searchfor = "AMBOS";
 		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "MUJERES";
@@ -531,7 +530,7 @@ class Service
 		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "HOMBRES";
 		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "MUJERES";
 		else $request->person->searchfor = "";
-//print_r($request->person); exit;
+
 		// get array of images
 		$images = [];
 		if($request->person->picture) {
