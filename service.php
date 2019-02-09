@@ -452,7 +452,7 @@ class Service
 	{
 		// get the user's profile
 		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
-		$profile = Utils::getPerson($id);
+		$profile = Social::prepareUserProfile(Utils::getPerson($id));
 
 		// erase unwanted properties in the object
 		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture','location','age','completion'];
@@ -480,11 +480,7 @@ class Service
 
 		// get the profile image
 		$images = [];
-		if($request->person->picture) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/profile/{$request->person->picture}";
-		}
+		if($request->person->picture) $images[] = $profile->picture;
 
 		// create the response object
 		$content = [
@@ -536,7 +532,7 @@ class Service
 		if($request->person->picture) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/profile/{$request->person->picture}";
+			$images[] = $request->person->picture;
 		}
 
 		// list of values
@@ -579,7 +575,7 @@ class Service
 		else $match = $match[0];
 
 		// return the best match as a Person object
-		$person = Utils::getPerson($match->user);
+		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
 		$person->crown = $match->crown;
 		$person->match = $this->getPercentageMatch($user->id, $match->user);
 

@@ -17,7 +17,7 @@ $(document).ready(function(){
 function getYears() {
 	var year = new Date().getFullYear();
 	var years = [];
-	for (let i=year-90; i<=year-15; i++) years.push(i);
+	for (let i=year-15; i>=year-90; i--) years.push(i);
 	return years;
 }
 
@@ -172,7 +172,7 @@ function displayPicture() {
 // submit the profile informacion 
 function submitProfileData() {
 	// get the array of fields and  
-	var fields = ['picture','first_name','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','interests','religion'];
+	var fields = ['picture','first_name','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
 
 	// create the JSON of data
 	var data = new Object;
