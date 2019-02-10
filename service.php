@@ -109,8 +109,8 @@ class Service
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 				// create notifications for both you and your date
-				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'chat_bubble_outline', '{"command":"PIROPAZO PAREJAS"}');
-				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", "chat_bubble_outline", '{"command":"PIROPAZO PAREJAS"}');
+				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", '{"command":"PIROPAZO PAREJAS"}', 'chat_bubble_outline');
+				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", '{"command":"PIROPAZO PAREJAS"}', "chat_bubble_outline");
 			}
 
 			// if they dislike you, block that match
@@ -354,7 +354,7 @@ class Service
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias", 'favorite_border');
+		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias",'', 'favorite_border');
 
 		// build the response
 		$content = [
