@@ -15,7 +15,7 @@
 	<!-- NAME -->
 	<div class="input-field col s12 m6">
 		<input id="first_name" type="text" value="<%= profile.first_name %>" class="validate"/>
-		<label for="first_name">&iquest;Como te llamas?</label>
+		<label for="first_name">¿Como te llamas?</label>
 	</div>
 
 	<!-- GENDER -->
@@ -25,7 +25,7 @@
 			<option value="M" <%if(profile.gender=='M'){%>selected<%}%>>Hombre</option>
 			<option value="F" <%if(profile.gender=='F'){%>selected<%}%>>Mujer</option>
 		</select>
-		<label for="gender">&iquest;Qu&eacute; eres?</label>
+		<label for="gender">¿Qué eres?</label>
 	</div>
 
 	<!-- SEXUAL ORIENTATION -->
@@ -37,7 +37,7 @@
 				<option value="<%= val %>" <%if(val==profile.searchfor){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="sexual_orientation">&iquest;Qu&eacute; buscas?</label>
+		<label for="sexual_orientation">¿Qué buscas?</label>
 	</div>
 
 	<!-- BIRTH YEAR -->
@@ -48,7 +48,7 @@
 				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
 			<% }); %>
 		</select>
-		<label for="year_of_birth">&iquest;Que a&ntilde;o nacistes?</label>
+		<label for="year_of_birth">¿Que a&ntilde;o nacistes?</label>
 	</div>
 
 	<!-- BODY TYPE -->
@@ -60,7 +60,7 @@
 				<option value="<%= val %>" <%if(val==profile.body_type){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="body_type">&iquest;Como luces?</label>
+		<label for="body_type">¿Como luces?</label>
 	</div>
 
 	<!-- EYES -->
@@ -72,7 +72,7 @@
 				<option value="<%= val %>" <%if(val==profile.eyes){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="eyes">&iquest;De que color son sus ojos?</label>
+		<label for="eyes">¿De que color son sus ojos?</label>
 	</div>
 
 	<!-- HAIR -->
@@ -84,7 +84,7 @@
 				<option value="<%= val %>" <%if(val==profile.hair){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="hair">&iquest;De que color es tu pelo?</label>
+		<label for="hair">¿De que color es tu pelo?</label>
 	</div>
 
 	<!-- SKIN -->
@@ -96,7 +96,7 @@
 				<option value="<%= val %>" <%if(val==profile.skin){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="skin">&iquest;De que color es tu piel?</label>
+		<label for="skin">¿De que color es tu piel?</label>
 	</div>
 
 	<!-- MARITAL STATUS -->
@@ -108,7 +108,7 @@
 				<option value="<%= val %>" <%if(val==profile.marital_status){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="marital_status">&iquest;Cual es su estado sentimental?</label>
+		<label for="marital_status">¿Cual es su estado sentimental?</label>
 	</div>
 
 	<!-- HIGHEST SCHOOL LEVEL-->
@@ -120,7 +120,7 @@
 				<option value="<%= val %>" <%if(val==profile.highest_school_level){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="highest_school_level">&iquest;Cual es su nivel escolar?</label>
+		<label for="highest_school_level">¿Cual es su nivel escolar?</label>
 	</div>
 
 	<!-- OCCUPATION -->
@@ -132,7 +132,7 @@
 				<option value="<%= val %>" <%if(val==profile.occupation){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="occupation">&iquest;Cual es su profesi&oacute;n?</label>
+		<label for="occupation">¿Cual es su profesión?</label>
 	</div>
 
 	<!-- COUNTRY -->
@@ -143,7 +143,7 @@
 				<option value="<%= country.code %>" <%if(profile.country==country.code){%>selected<%}%>><%= country.name %></option>
 			<% }); %>
 		</select>
-		<label for="country">&iquest;En que pa&iacute;s vives?</label>
+		<label for="country">¿En que país vives?</label>
 	</div>
 
 	<!-- PROVINCE-->
@@ -155,7 +155,7 @@
 				<option value="<%= val %>" <%if(val==profile.province){%>selected<%}%>><%= val.replaceAll('_', ' ').firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="province">&iquest;En que provincia vives?</label>
+		<label for="province">¿En que provincia vives?</label>
 	</div>
 
 	<!-- STATE-->
@@ -168,20 +168,20 @@
 				<option value="<%= val %>" <%if(val==profile.usstate){%>selected<%}%>><%= val %></option>
 			<% }); %>
 		</select>
-		<label for="usstate">&iquest;En que estado vives?</label>
+		<label for="usstate">¿En que estado vives?</label>
 	</div>
 	<% } %>
 
 	<!-- CITY -->
 	<div class="input-field col s12 m6 <%= extra_fields %>">
 		<input id="city" type="text" value="<%= profile.city %>" class="validate"/>
-		<label for="city">&iquest;En que ciudad o pueblo vives?</label>
+		<label for="city">¿En que ciudad o pueblo vives?</label>
 	</div>
 
 	<!-- INTERESTS -->
 	<div class="input-field col s12 m6 <%= extra_fields %>">
 		<input id="interests" type="text" value="<%= profile.interests %>" class="validate"/>
-		<label for="interests">&iquest;Cuales son sus intereses?</label>
+		<label for="interests">¿Cuales son sus intereses?</label>
 	</div>
 
 	<!-- RELIGION -->
@@ -193,13 +193,28 @@
 				<option value="<%= val %>" <%if(val==profile.religion){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="religion">&iquest;Cual es su religi&oacute;n?</label>
+		<label for="religion">¿Cual es su religión?</label>
 	</div>
 </div>
 
 <!-- SAVE BUTTON -->
-<div class="row">
-	<div class="input-field col s12">
-		<a class="btn waves-effect waves-light fullscreen" href="#!" onclick="submitProfileData()">Continuar</a>
-	</div>
+<a class="btn-floating btn-large waves-effect waves-light floating-action" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
+
+<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
+<% if(apptype != "single") { %>
+<div class="hide-on-large-only <%= extra_fields %>">
+	<!-- FLOATING MOBILE BTN -->
+	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
+		<i class="material-icons"><%= menuicon %></i>
+	</a>
+
+	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
+	<ul class="sidenav">
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
+	</ul>
 </div>
+<% } %>

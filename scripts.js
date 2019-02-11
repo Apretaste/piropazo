@@ -5,7 +5,6 @@
 $(document).ready(function(){
 	$('select').formSelect();
 	showStateOrProvince();
-//	$('#picturefield').on('change', displayPicture);
 	$("#picturefield").change(displayPicture);
 });
 
@@ -101,7 +100,7 @@ function toggleDescVisible() {
 function openFlowerModal(personId, count, username) {
 	// do not open if the user do not have flowers
 	if(count <= 0) {
-		M.toast({html: 'Tristemente, usted no tiene ninguna flor. Puede comprar m&aacute;s flores en nuestra tienda'});
+		M.toast({html: 'Tristemente, usted no tiene ninguna flor. Puede comprar más flores en nuestra tienda'});
 		return false;
 	}
 
@@ -143,7 +142,7 @@ function deleteNotification(id) {
 		var count = $("ul.collection li").length;
 		if(count <= 0) {
 			$('ul.collection').remove();
-			$('div.col').append('<p>No hay mas notificaciones por leer</p>');
+			$('div.col').append('<p>No hay más notificaciones por leer</p>');
 		}
 	});
 }

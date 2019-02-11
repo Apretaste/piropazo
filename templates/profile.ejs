@@ -67,9 +67,7 @@
 
 	<!-- BUTTON EDITAR -->
 	<% if(isMyOwnProfile) { %>
-		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
-			<i class="material-icons">create</i> Editar Perfil
-		</a>
+		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
 	<% } %>
 </div>
 
@@ -80,11 +78,11 @@
 			<a id="denounce-link" href="#" onclick="showDenounceMenu()">Denuncie a este usuario</a>
 			<div id="denounce-menu" class="input-field hidden">
 				<select onchange="denounceUser(this.value, '<%= profile.id %>')">
-					<option value="" disabled selected>Escoja una raz&oacute;n</option>
+					<option value="" disabled selected>Escoja una razón</option>
 					<option value="OFFENSIVE">La foto o el texto es ofensivo</option>
-					<option value="FAKE">El perfil tiene informaci&oacute;n falsa</option>
+					<option value="FAKE">El perfil tiene información falsa</option>
 					<option value="MISLEADING">La persona no luce como el perfil</option>
-					<option value="IMPERSONATING">Est&aacute; impersonando a alguien</option>
+					<option value="IMPERSONATING">Está impersonando a alguien</option>
 					<option value="COPYRIGHT">El perfil viola los derechos de autor</option>
 				</select>
 				<label>Denuncie a este usuario</label>
@@ -93,3 +91,22 @@
 		</p>
 	<% } %>
 </div>
+
+<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
+<% if(apptype != "single") { %>
+<div class="hide-on-large-only">
+	<!-- FLOATING MOBILE BTN -->
+	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
+		<i class="material-icons"><%= menuicon %></i>
+	</a>
+
+	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
+	<ul class="sidenav">
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
+		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
+	</ul>
+</div>
+<% } %>

@@ -49,7 +49,7 @@ class Service
 			$content = [
 				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
-				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese mas tarde, o cambie su perfil e intente nuevamente.",
+				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href"=>"PIROPAZO EDITAR", "caption"=>"Editar perfil"]];
 
 			$response->setLayout('piropazo.ejs');
@@ -73,12 +73,16 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// get match images into an array
+		// get match images into an array and the content
 		$images = ($match->picture) ? [$match->picture] : [];
+		$content = [
+			"match" => $match,
+			"menuicon" => "favorite",
+			"apptype" => $request->input->apptype];
 
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('dates.ejs', ["match" => $match], $images);
+		$response->setTemplate('dates.ejs', $content, $images);
 	}
 
 	/**
@@ -228,7 +232,7 @@ class Service
 			$content = [
 				"header"=>"No tiene parejas",
 				"icon"=>"sentiment_very_dissatisfied",
-				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aqu&iacute;, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos peces en el oc&eacute;ano.",
+				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
 			$response->setLayout('piropazo.ejs');
@@ -270,7 +274,9 @@ class Service
 			"myflowers" => $myFlowers[0]->flowers,
 			"liked" => $liked,
 			"waiting" => $waiting,
-			"matched" => $matched];
+			"matched" => $matched,
+			"menuicon" => "people",
+			"apptype" => $request->input->apptype];
 
 		// Building the response
 		$response->setLayout('piropazo.ejs');
@@ -291,7 +297,7 @@ class Service
 		if(empty($flowers)) {
 			$content = [
 				"header"=>"No tiene suficientes flores",
-				"icon"=>"&#x1F339;",
+				"icon"=>"local_florist",
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
@@ -318,7 +324,7 @@ class Service
 		$content = [
 			"header"=>"Su flor fue enviada",
 			"icon"=>"local_florist",
-			"text" => "@$username recibira una notificacion y seguro le contestara lo antes posible. Tambien le hemos dado una semana extra para que responda.",
+			"text" => "@$username recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
 		$response->setLayout('piropazo.ejs');
@@ -340,9 +346,9 @@ class Service
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
 			$content = [
-				"header"=>"No tiene suficientes coronas",
-				"icon"=>"&#x1F451;",
-				"text" => "Actualmente usted no tiene suficientes coronas para usar. Puede comprar algunas coronas en la tienda de Piropazo.",
+				"header"=>"No tiene suficientes corazones",
+				"icon"=>"favorite",
+				"text" => "Actualmente usted no tiene suficientes corazones para usar. Puede comprar más en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
 			$response->setLayout('piropazo.ejs');
@@ -354,13 +360,13 @@ class Service
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos mas usuarios por los proximos tres dias",'', 'favorite_border');
+		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias",'', 'favorite_border');
 
 		// build the response
 		$content = [
-			"header"=>"Usted ha sido coronado",
-			"icon"=>"&#x1F451;",
-			"text" => "Usted ha sido coronado, y en los proximos tres dias su perfil se mostrara muchas mas veces a otros usuarios, lo cual mejorara sus chances de recibir solicitudes y flores. Mantenganse revisando a diario su lista de parejas.",
+			"header"=>"Su perfil ha sido promovido",
+			"icon"=>"favorite",
+			"text" => "Su perfil ha sido promovido, y en los próximos tres días se mostrará muchas más veces a otros usuarios, lo cual mejorará sus chances de recibir solicitudes. Manténganse revisando a diario su lista de parejas.",
 			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 
 		$response->setLayout('piropazo.ejs');
@@ -376,12 +382,20 @@ class Service
 	 */
 	public function _tienda (Request $request, Response $response)
 	{
+
 		// get the user credit
 		$credit = Connection::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
 
+		// prepare content for the view
+		$content = [
+			"credit"=>$credit, 
+			"email"=>$request->person->email,
+			"menuicon" => "shopping_cart",
+			"apptype" => $request->input->apptype];
+
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('store.ejs', ["credit"=>$credit, "email"=>$request->person->email]);
+		$response->setTemplate('store.ejs', $content);
 	}
 
 	/**
@@ -393,6 +407,7 @@ class Service
 	 */
 	public function _notificaciones (Request $request, Response $response)
 	{
+
 		// get all unread notifications
 		$notifications = Connection::query("
 			SELECT id,icon,`text`,link,inserted
@@ -406,16 +421,23 @@ class Service
 			$content = [
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
-				"text" => "Por ahora usted no tiene ninguna notificacion por leer.",
+				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
+				"menuicon" => "notifications",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
 			$response->setLayout('piropazo.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
+		// prepare content for the view
+		$content = [
+			"notifications" => $notifications,
+			"menuicon" => "notifications",
+			"apptype" => $request->input->apptype];
+
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('notifications.ejs', ['notifications' => $notifications]);
+		$response->setTemplate('notifications.ejs', $content);
 	}
 
 	/**
@@ -434,7 +456,7 @@ class Service
 		$content = [
 			"header"=>"Ha salido de Piropazo",
 			"icon"=>"directions_walk",
-			"text" => "No recibir&aacute; m&aacute;s mensajes de otros usuarios ni aparecer&aacute; en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil sera agregado autom&aacute;ticamente.",
+			"text" => "No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.",
 			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
 
 		$response->setLayout('piropazo.ejs');
@@ -489,7 +511,9 @@ class Service
 			"crowned" => $piropazo[0]->crowned,
 			"isMyOwnProfile" => $isMyOwnProfile,
 			"percentageMatch" => $percentageMatch,
-			"profile" => $profile];
+			"profile" => $profile,
+			"menuicon" => "face",
+			"apptype" => $request->input->apptype];
 
 		// Building response
 		$response->setLayout('piropazo.ejs');
@@ -538,8 +562,9 @@ class Service
 		// list of values
 		$content = [
 			"extra_fields" => isset($request->extra_fields) ? $request->extra_fields : "",
-			"profile" => $request->person
-		];
+			"profile" => $request->person,
+			"menuicon" => "face",
+			"apptype" => $request->input->apptype];
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');

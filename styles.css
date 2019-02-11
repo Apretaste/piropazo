@@ -1,8 +1,15 @@
 /* MENU */
 
-#btnMenu {
-	float: right;
-	margin: 10px;
+#btnFloatingMenu {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+}
+
+.floating-action {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
 }
 
 /* COLORS */

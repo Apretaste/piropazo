@@ -14,14 +14,14 @@
 		{/if}
 	</span>
 
-	<p>@{$person->username} le ha mandado una flor porque ha visto algo especial en t&iacute; y quisiera conocerte mejor.</p>
+	<p>@{$person->username} le ha mandado una flor porque ha visto algo especial en tí y quisiera conocerte mejor.</p>
 
 	<!--MESSAGE-->
 	{if $message}
 		<p><b>{$message}</b></p>
 	{/if}
 
-	<p><small>&iquest;Te gustar&iacute;a chatear con @{$person->username}?</small></p>
+	<p><small>¿Te gustaría chatear con @{$person->username}?</small></p>
 	{button href="PIROPAZO SIPAREJAS @{$person->username}" caption="Aceptar" color="green" size="small"}
 	{button href="PIROPAZO NOPAREJAS @{$person->username}" caption="Bloquear" color="red" size="small"}
 	{button href="PIROPAZO PERFIL @{$person->username}" caption="Ver perfil" size="small" color="grey"}
