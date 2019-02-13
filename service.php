@@ -75,6 +75,7 @@ class Service
 
 		// get match images into an array and the content
 		$images = ($match->picture) ? [$match->picture] : [];
+		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 		$content = [
 			"match" => $match,
 			"menuicon" => "favorite",
@@ -269,6 +270,8 @@ class Service
 		// get the number of flowers for the logged user 
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
+		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
+
 		// create response array
 		$content = [
 			"myflowers" => $myFlowers[0]->flowers,
@@ -327,6 +330,8 @@ class Service
 			"text" => "@$username recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
 
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
+
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('message.ejs', $content);
 	}
@@ -352,7 +357,7 @@ class Service
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
 			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content, $images);
 
 		}
 
@@ -369,8 +374,10 @@ class Service
 			"text" => "Su perfil ha sido promovido, y en los próximos tres días se mostrará muchas más veces a otros usuarios, lo cual mejorará sus chances de recibir solicitudes. Manténganse revisando a diario su lista de parejas.",
 			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
+
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('message.ejs', $content);
+		$response->setTemplate('message.ejs', $content, $images);
 	}
 
 	/**
@@ -393,9 +400,11 @@ class Service
 			"menuicon" => "shopping_cart",
 			"apptype" => $request->input->apptype];
 
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
+
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('store.ejs', $content);
+		$response->setTemplate('store.ejs', $content, $images);
 	}
 
 	/**
@@ -435,9 +444,11 @@ class Service
 			"menuicon" => "notifications",
 			"apptype" => $request->input->apptype];
 
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
+
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('notifications.ejs', $content);
+		$response->setTemplate('notifications.ejs', $content, $images);
 	}
 
 	/**
@@ -459,8 +470,10 @@ class Service
 			"text" => "No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.",
 			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
 
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
+		
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('message.ejs', $content);
+		$response->setTemplate('message.ejs', $content, $images);
 	}
 
 	/**
@@ -515,6 +528,8 @@ class Service
 			"menuicon" => "face",
 			"apptype" => $request->input->apptype];
 
+		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
+
 		// Building response
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('profile.ejs', $content, $images);
@@ -565,6 +580,8 @@ class Service
 			"profile" => $request->person,
 			"menuicon" => "face",
 			"apptype" => $request->input->apptype];
+
+		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
