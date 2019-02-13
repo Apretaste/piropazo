@@ -1,45 +1,28 @@
-<div class="col s12">
-	<h1>Notificaciones</h1>
-	<ul class="collection">
-		<% notifications.forEach(function(note){ %>
-			<li id="<%= note.id %>" class="collection-item avatar">
-				<!-- ICON -->
-				<i class="material-icons circle"><%= note.icon %></i>
+<div class="row">
+	<div class="col s12">
+		<h1>Notificaciones</h1>
+		<ul class="collection">
+			<% notifications.forEach(function(note){ %>
+				<li id="<%= note.id %>" class="collection-item avatar">
+					<!-- ICON -->
+					<i class="material-icons circle"><%= note.icon %></i>
 
-				<span>
-					<!-- DATE -->
-					<small><%= note.inserted %></small><br/>
+					<span>
+						<!-- DATE -->
+						<small><%= note.inserted %></small><br/>
 
-					<!-- TEXT -->
-					<% if(note.link) { %>
-						<a href="#!" onclick="apretaste.send(<%= note.link %>)"><%= note.text %></a>
-					<% } else { %>
-						<%= note.text %>
-					<% } %>
-				</span>
+						<!-- TEXT -->
+						<% if(note.link) { %>
+							<a href="#!" onclick="apretaste.send(<%= note.link %>)"><%= note.text %></a>
+						<% } else { %>
+							<%= note.text %>
+						<% } %>
+					</span>
 
-				<!-- DELETE BUTTON-->
-				<a href="#!" class="secondary-content" onclick="deleteNotification('<%= note.id %>')"><i class="material-icons">delete</i></a>
-			</li>
-		<% }) %>
-	</ul>
+					<!-- DELETE BUTTON-->
+					<a href="#!" class="secondary-content" onclick="deleteNotification('<%= note.id %>')"><i class="material-icons">delete</i></a>
+				</li>
+			<% }) %>
+		</ul>
+	</div>
 </div>
-
-<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
-<% if(apptype != "single") { %>
-<div class="hide-on-large-only">
-	<!-- FLOATING MOBILE BTN -->
-	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
-		<i class="material-icons"><%= menuicon %></i>
-	</a>
-
-	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
-	<ul class="sidenav">
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
-	</ul>
-</div>
-<% } %>

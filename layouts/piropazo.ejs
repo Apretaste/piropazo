@@ -1,11 +1,11 @@
 <%
 	if(typeof menuicon == 'undefined') menuicon = '';
 	var menu = [
-		{link:'CITAS', icon:'favorite'},
-		{link:'PAREJAS', icon:'people'},
-		{link:'PERFIL', icon:'face'},
-		{link:'TIENDA', icon:'shopping_cart'},
-		{link:'NOTIFICACIONES', icon:'notifications'}];
+		{link:'CITAS', icon:'favorite', caption:'Citas'},
+		{link:'PAREJAS', icon:'people', caption:'Parejas'},
+		{link:'PERFIL', icon:'face', caption:'Perfil'},
+		{link:'TIENDA', icon:'shopping_cart', caption:'Tienda'},
+		{link:'NOTIFICACIONES', icon:'notifications', caption:'Notificaciones'}];
 %>
 
 <!-- MENU -->
@@ -15,7 +15,7 @@
 			<div class="nav-wrapper">
 				<!-- LOGO -->
 				<span class="brand-logo">
-					<img style="max-height: 64px; padding: 15px 0;" src="{{APP_RESOURCES}}/images/icon.png" alt="Piropazo"/>
+					<img style="max-height: 64px; padding: 15px 0;" src="{{APP_SERVICE_PATH}}/icon.png" alt="Piropazo"/>
 				</span>
 
 				<!-- ICONS ON THE MENU -->
@@ -31,7 +31,22 @@
 
 <!-- CONTENT -->
 <div class="container">
-	<div class="row">
-		{{APP_TEMPLATE_CODE}}
-	</div>
+	{{APP_TEMPLATE_CODE}}
 </div>
+
+<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
+<% if(menuicon) { %>
+<div class="hide-on-large-only">
+	<!-- FLOATING MOBILE BTN -->
+	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
+		<i class="material-icons"><%= menuicon %></i>
+	</a>
+
+	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
+	<ul class="sidenav">
+		<% menu.forEach(function(e) { %>
+			<li class="<%= e.icon==menuicon ? 'active' : '' %>"><a href="#!" onclick="apretaste.send({'command':'PIROPAZO <%= e.link %>'})"><i class="material-icons green-text"><%= e.icon %></i> <%= e.caption %></a></li>
+		<% }); %>
+	</ul>
+</div>
+<% } %>

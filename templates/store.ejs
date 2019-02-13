@@ -1,53 +1,57 @@
-<h1>Tienda de Piropazo</h1>
-<p>Canjee su crédito por flores y coronas que le ayudarán a encontrar su media naranja. Puede comprar creditos, o adquirirlo en nuestros eventos.</p>
+<div class="row">
+	<div class="col s12">
+		<h1>Tienda de Piropazo</h1>
+		<p>Canjee su crédito por flores y coronas que le ayudarán a encontrar su media naranja. Puede comprar creditos, o adquirirlo en nuestros eventos.</p>
 
-<ul class="collection">
-	<li class="collection-item avatar">
-		<i class="material-icons circle">local_florist</i>
-		<span class="title"><b>Una flor</b></span>
-		<p>Regale una flor para atraer su atención y agregar una semana al tiempo de espera.</p>
-		<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'FLOWER'}})">Canjar por §0.50</a></p>
-	</li>
+		<ul class="collection">
+			<li class="collection-item avatar">
+				<i class="material-icons circle">local_florist</i>
+				<span class="title"><b>Una flor</b></span>
+				<p>Regale una flor para atraer su atención y agregar una semana al tiempo de espera.</p>
+				<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'FLOWER'}})">Canjar por §0.50</a></p>
+			</li>
 
-	<li class="collection-item avatar">
-		<i class="material-icons circle">favorite</i>
-		<span class="title"><b>Un corazón</b></span>
-		<p>Este aparecerá junto a su foto por tres días, haciendo que su perfil se muestre con mucha mayor frecuencia.</p>
-		<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'HEART'}})">Canjar por §2.00</a></p>
-	</li>
+			<li class="collection-item avatar">
+				<i class="material-icons circle">favorite</i>
+				<span class="title"><b>Un corazón</b></span>
+				<p>Este aparecerá junto a su foto por tres días, haciendo que su perfil se muestre con mucha mayor frecuencia.</p>
+				<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'HEART'}})">Canjar por §2.00</a></p>
+			</li>
 
-	<li class="collection-item avatar">
-		<i class="material-icons circle">shopping_basket</i>
-		<span class="title"><b>7 flores y 2 corazones</b></span>
-		<p>La oferta perfecta para que empieces a crear amores como todo un profesional.</p>
-		<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'PACK_ONE'}})">Canjar por §5.00</a></p>
-	</li>
+			<li class="collection-item avatar">
+				<i class="material-icons circle">shopping_basket</i>
+				<span class="title"><b>7 flores y 2 corazones</b></span>
+				<p>La oferta perfecta para que empieces a crear amores como todo un profesional.</p>
+				<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'PACK_ONE'}})">Canjar por §5.00</a></p>
+			</li>
 
-	<li class="collection-item avatar">
-		<i class="material-icons circle">shopping_cart</i>
-		<span class="title"><b>15 flores y 4 corazones.</b></span>
-		<p>Saca el mayor beneficio posible de Piropazo y conviertete en todo un cyber-Romeo.</p>
-		<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'PACK_TWO'}})">Canjar por §10.00</a></p>
-	</li>
-</ul>
+			<li class="collection-item avatar">
+				<i class="material-icons circle">shopping_cart</i>
+				<span class="title"><b>15 flores y 4 corazones.</b></span>
+				<p>Saca el mayor beneficio posible de Piropazo y conviertete en todo un cyber-Romeo.</p>
+				<p><a href="#!" onclick="apretaste.send({'command':'CREDITO PROCESAR','data':{'item':'PACK_TWO'}})">Canjar por §10.00</a></p>
+			</li>
+		</ul>
 
-<p>Usted tiene <b>§<%= credit %></b>. Compre créditos en <a href="https://apretaste.org/topup?email=<%= email %>" target="_blank">nuestra website.</a></p>
+		<p>Usted tiene <b>§<%= credit %></b>. Compre créditos en <a href="https://apretaste.org/topup?email=<%= email %>" target="_blank">nuestra website.</a></p>
 
-<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
-<% if(apptype != "single") { %>
-<div class="hide-on-large-only">
-	<!-- FLOATING MOBILE BTN -->
-	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
-		<i class="material-icons"><%= menuicon %></i>
-	</a>
+		<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
+		<% if(apptype != "single") { %>
+		<div class="hide-on-large-only">
+			<!-- FLOATING MOBILE BTN -->
+			<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
+				<i class="material-icons"><%= menuicon %></i>
+			</a>
 
-	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
-	<ul class="sidenav">
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
-	</ul>
+			<!-- SIDE BAR TO BE OPENED ON MOBILE -->
+			<ul class="sidenav">
+				<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
+				<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
+				<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
+				<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
+				<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
+			</ul>
+		</div>
+		<% } %>
+	</div>
 </div>
-<% } %>

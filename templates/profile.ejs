@@ -1,79 +1,84 @@
-<div class="col s12 center-align">
-	<!-- PROFILE COMPLETION MESSAGE -->
-	<% if(isMyOwnProfile && profile.completion < 80) { %>
-		<div class="message danger">
-			Complete al menos el 65% del perfil
-			<a href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
-				<i class="material-icons right green-text">create</i>
-			</a>
+<div class="row">
+	<div class="col s12 center-align">
+		<!-- PROFILE COMPLETION MESSAGE -->
+		<% if(isMyOwnProfile && profile.completion < 80) { %>
+			<div class="message danger">
+				Complete al menos el 65% del perfil
+				<a href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
+					<i class="material-icons right green-text">create</i>
+				</a>
+			</div>
+		<% } %>
+
+		<div class="img-wrap">
+			<!-- PICTURE -->
+			<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
+			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+			<img class="z-depth-2 <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
+
+			<!-- USER IS CROWNED -->
+			<% if(crowned) { %>
+				<i class="material-icons yellow-text large position-top-right">favorite</i>
+			<% } %>
 		</div>
-	<% } %>
+	</div>
+</div>
 
-	<div class="img-wrap">
-		<!-- PICTURE -->
-		<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
-		else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-		<img class="fullscreen z-depth-2 <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
+<div class="row">
+	<div class="col s12">
+		<!--PERCENTAGE-->
+		<% if( ! isMyOwnProfile) { %>
+			<p class="size-large <%= profile.color %>-color"><%= percentageMatch %>% IGUALES</p>
+		<% } %>
 
-		<!-- USER IS CROWNED -->
-		<% if(crowned) { %>
-			<i class="material-icons yellow-text large position-top-right">favorite</i>
+		<p>
+			<!-- USERNAME, AGE AND LOCATION -->
+			<span class="<%= profile.color %>-color">@<%= profile.username %></span>
+			&nbsp;<b>&middot;</b>&nbsp;
+			<%= profile.age %> a&ntilde;os
+			&nbsp;<b>&middot;</b>&nbsp;
+			<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= profile.country %>.png"/>
+			<%= profile.location %>
+
+			<!-- FLOWERS AND CROWN -->
+			<% if(isMyOwnProfile) { %>
+				<span class="right">
+					<span class="green-text">
+						<i class="material-icons tiny">local_florist</i> <%= flowers %>
+					</span>
+					&nbsp;&nbsp;
+					<span>
+						<a class="underline green-text underline" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
+							<i class="material-icons tiny underline">favorite</i> <%= crowns %>
+						</a>
+					</span>
+				</span>
+			<% } %>
+		</p>
+
+		<!-- ABOUT ME -->
+		<p><%= profile.about_me %></p>
+
+		<!-- MY INTERESTS -->
+		<% if(profile.interests.length > 0) { %>
+			<p class="interests">
+				<% profile.interests.forEach(function(interest){ %>
+					<span class="interest"><%= interest %></span>
+				<% }); %>
+			</p>
+		<% } %>
+
+		<!-- BUTTON EDITAR -->
+		<% if(isMyOwnProfile) { %>
+			<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
 		<% } %>
 	</div>
 </div>
 
-<div class="col s12">
-	<!--PERCENTAGE-->
-	<% if( ! isMyOwnProfile) { %>
-		<p class="size-large <%= profile.color %>-color"><%= percentageMatch %>% IGUALES</p>
-	<% } %>
-
-	<p>
-		<!-- USERNAME, AGE AND LOCATION -->
-		<span class="<%= profile.color %>-color">@<%= profile.username %></span>
-		&nbsp;<b>&middot;</b>&nbsp;
-		<%= profile.age %> a&ntilde;os
-		&nbsp;<b>&middot;</b>&nbsp;
-		<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= profile.country %>.png"/>
-		<%= profile.location %>
-
-		<!-- FLOWERS AND CROWN -->
-		<% if(isMyOwnProfile) { %>
-			<span class="right">
-				<span class="green-text">
-					<i class="material-icons tiny">local_florist</i> <%= flowers %>
-				</span>
-				&nbsp;&nbsp;
-				<span>
-					<a class="underline green-text underline" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
-						<i class="material-icons tiny underline">favorite</i> <%= crowns %>
-					</a>
-				</span>
-			</span>
-		<% } %>
-	</p>
-
-	<!-- ABOUT ME -->
-	<p><%= profile.about_me %></p>
-
-	<!-- MY INTERESTS -->
-	<% if(profile.interests.length > 0) { %>
-		<p class="interests">
-			<% profile.interests.forEach(function(interest){ %>
-				<span class="interest"><%= interest %></span>
-			<% }); %>
-		</p>
-	<% } %>
-
-	<!-- BUTTON EDITAR -->
-	<% if(isMyOwnProfile) { %>
-		<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
-	<% } %>
-</div>
-
-<div class="col s12 center-align">
-	<!-- DENOUNCE BUTTON -->
-	<% if( ! isMyOwnProfile) { %>
+<!-- DENOUNCE BUTTON -->
+<% if( ! isMyOwnProfile) { %>
+<div class="row">
+	<div class="col s12 center-align">
 		<p id="value_report">
 			<a id="denounce-link" href="#" onclick="showDenounceMenu()">Denuncie a este usuario</a>
 			<div id="denounce-menu" class="input-field hidden">
@@ -87,26 +92,8 @@
 				</select>
 				<label>Denuncie a este usuario</label>
 			</div>
-			<p id="denounce-done" class="hidden red-text">Gracias por denunciar a este usuario</p>			
+			<p id="denounce-done" class="hidden red-text">Gracias por denunciar a este usuario</p>	
 		</p>
-	<% } %>
-</div>
-
-<!-- DISPLAY FLOATING MENU FOR THE ORIGINAL APP -->
-<% if(apptype != "single") { %>
-<div class="hide-on-large-only">
-	<!-- FLOATING MOBILE BTN -->
-	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light" onclick="openMenu();">
-		<i class="material-icons"><%= menuicon %></i>
-	</a>
-
-	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
-	<ul class="sidenav">
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})"><i class="material-icons green-text">favorite</i> Citas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PAREJAS'})"><i class="material-icons green-text"">people</i> Parejas</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL'})"><i class="material-icons green-text"">face</i> Perfil</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO TIENDA'})"><i class="material-icons green-text"">shopping_cart</i> Tienda</a></li>
-		<li><a href="#!" onclick="apretaste.send({'command':'PIROPAZO NOTIFICACIONES'})"><i class="material-icons green-text"">notifications</i> Notificaciones</a></li>
-	</ul>
+	</div>
 </div>
 <% } %>
