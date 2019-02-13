@@ -1,0 +1,203 @@
+<div class="row">
+	<div class="col s12">
+		<div class="img-wrap">
+			<!-- PICTURE -->
+			<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
+			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+			<img id="picture" class="fullscreen" src="<%= src %>"/>
+		</div>
+
+		<!-- EDIT PIC BUTTON -->
+		<input id="picturefield" type="file" class="hidden" />
+		<a class="btn-floating btn-large waves-effect waves-light red fab-align" href="#!" onclick="uploadPicture()"><i class="material-icons">add</i></a>
+	</div>
+</div>
+
+<div class="row">
+	<!-- NAME -->
+	<div class="input-field col s12 m6">
+		<input id="first_name" type="text" value="<%= profile.first_name %>" class="validate"/>
+		<label for="first_name">¿Como te llamas?</label>
+	</div>
+
+	<!-- GENDER -->
+	<div class="input-field col s12 m6">
+		<select id="gender" class="validate">
+			<option value=""></option>
+			<option value="M" <%if(profile.gender=='M'){%>selected<%}%>>Hombre</option>
+			<option value="F" <%if(profile.gender=='F'){%>selected<%}%>>Mujer</option>
+		</select>
+		<label for="gender">¿Qué eres?</label>
+	</div>
+
+	<!-- SEXUAL ORIENTATION -->
+	<% var orientation = ["MUJERES","HOMBRES","AMBOS"] %>
+	<div class="input-field col s12 m6">
+		<select id="sexual_orientation" class="validate">
+			<option value=""></option>
+			<% orientation.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.searchfor){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="sexual_orientation">¿Qué buscas?</label>
+	</div>
+
+	<!-- BIRTH YEAR -->
+	<div class="input-field col s12 m6">
+		<select id="year_of_birth" class="validate">
+			<option value=""></option>
+			<% getYears().forEach(function(year) { %>
+				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
+			<% }); %>
+		</select>
+		<label for="year_of_birth">¿Que a&ntilde;o nacistes?</label>
+	</div>
+
+	<!-- BODY TYPE -->
+	<% var body_type = ["DELGADO","MEDIO","EXTRA","ATLETICO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="body_type" class="validate">
+			<option value="" selected></option>
+			<% body_type.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.body_type){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="body_type">¿Como luces?</label>
+	</div>
+
+	<!-- EYES -->
+	<% var eyes = ["NEGRO","CARMELITA","VERDE","AZUL","AVELLANA","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="eyes" class="validate">
+			<option value=""></option>
+			<% eyes.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.eyes){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="eyes">¿De que color son sus ojos?</label>
+	</div>
+
+	<!-- HAIR -->
+	<% var hair = ["TRIGUENO","CASTANO","RUBIO","NEGRO","ROJO","BLANCO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="hair" class="validate">
+			<option value=""></option>
+			<% hair.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.hair){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="hair">¿De que color es tu pelo?</label>
+	</div>
+
+	<!-- SKIN -->
+	<% var skin = ["BLANCO","NEGRO","MESTIZO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="skin" class="validate">
+			<option value=""></option>
+			<% skin.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.skin){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="skin">¿De que color es tu piel?</label>
+	</div>
+
+	<!-- MARITAL STATUS -->
+	<% var marital_status = ["SOLTERO","SALIENDO","COMPROMETIDO","CASADO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="marital_status" class="validate">
+			<option value=""></option>
+			<% marital_status.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.marital_status){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="marital_status">¿Cual es su estado sentimental?</label>
+	</div>
+
+	<!-- HIGHEST SCHOOL LEVEL-->
+	<% var highest_school_level = ["PRIMARIO","SECUNDARIO","TECNICO","UNIVERSITARIO","POSTGRADUADO","DOCTORADO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="highest_school_level" class="validate">
+			<option value=""></option>
+			<% highest_school_level.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.highest_school_level){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="highest_school_level">¿Cual es su nivel escolar?</label>
+	</div>
+
+	<!-- OCCUPATION -->
+	<% var profesion = ["TRABAJADOR ESTATAL","CUENTAPROPISTA","ESTUDIANTE","AMA DE CASA","DESEMPLEADO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="occupation" class="validate">
+			<option value=""></option>
+			<% profesion.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.occupation){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="occupation">¿Cual es su profesión?</label>
+	</div>
+
+	<!-- COUNTRY -->
+	<div class="input-field col s12 m6">
+		<select id="country" class="validate" onchange="showStateOrProvince()">
+			<option value=""></option>
+			<% getCountries().forEach(function(country) { %>
+				<option value="<%= country.code %>" <%if(profile.country==country.code){%>selected<%}%>><%= country.name %></option>
+			<% }); %>
+		</select>
+		<label for="country">¿En que país vives?</label>
+	</div>
+
+	<!-- PROVINCE-->
+	<% var province = ["PINAR_DEL_RIO","LA_HABANA","ARTEMISA","MAYABEQUE","MATANZAS","VILLA_CLARA","CIENFUEGOS","SANCTI_SPIRITUS","CIEGO_DE_AVILA","CAMAGUEY","LAS_TUNAS","HOLGUIN","GRANMA","SANTIAGO_DE_CUBA","GUANTANAMO","ISLA_DE_LA_JUVENTUD"] %>
+	<div class="input-field province-div col s12 m6 <%= extra_fields %>">
+		<select id="province" class="validate">
+			<option value=""></option>
+			<% province.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.province){%>selected<%}%>><%= val.replaceAll('_', ' ').firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="province">¿En que provincia vives?</label>
+	</div>
+
+	<!-- STATE-->
+	<% var usstate = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"] %>
+	<% if(profile.usstate != "US") { %>
+	<div class="input-field usstate-div col s12 m6 <%= extra_fields %>">
+		<select id="usstate" class="validate">
+			<option value=""></option>
+			<% usstate.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.usstate){%>selected<%}%>><%= val %></option>
+			<% }); %>
+		</select>
+		<label for="usstate">¿En que estado vives?</label>
+	</div>
+	<% } %>
+
+	<!-- CITY -->
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<input id="city" type="text" value="<%= profile.city %>" class="validate"/>
+		<label for="city">¿En que ciudad o pueblo vives?</label>
+	</div>
+
+	<!-- INTERESTS -->
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<input id="interests" type="text" value="<%= profile.interests %>" class="validate"/>
+		<label for="interests">¿Cuales son sus intereses?</label>
+	</div>
+
+	<!-- RELIGION -->
+	<% var religion = ["CRISTIANISMO","CATOLICISMO","YORUBA","PROTESTANTE","SANTERO","ABAKUA","BUDISMO","ISLAM","ATEISMO","AGNOSTICISMO","SECULARISMO","OTRA"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<select id="religion" class="validate">
+			<option value=""></option>
+			<% religion.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.religion){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="religion">¿Cual es su religión?</label>
+	</div>
+</div>
+
+<!-- SAVE BUTTON -->
+<a class="btn-floating btn-large waves-effect waves-light floating-action" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>

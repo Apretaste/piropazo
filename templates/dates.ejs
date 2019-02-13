@@ -1,0 +1,70 @@
+<div class="row">
+	<div class="col s12 center-align">
+		<div class="img-wrap">
+			<!-- PICTURE -->
+			<% if(match.picture) var src = "{{APP_IMAGE_PATH}}" + match.picture;
+			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+			<img class="z-depth-2 <%= match.color %>-border" src="<%= src %>" alt="<%= match.username %>"/>
+
+			<!-- USER IS CROWNED -->
+			<% if(match.crown) { %>
+				<i class="material-icons yellow-text large position-top-right">favorite</i>
+			<% } %>
+
+			<!-- INTERESTS -->
+			<div class="position-bottom-left">
+				<% match.tags.forEach(function(tag){ %>
+					<div class="chip"><%= tag %></div>
+				<% }) %>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col s12">
+		<!-- DETAILS -->
+		<p onclick="toggleDescVisible()" class="pointer">
+			<span class="<%= match.color %>-color">@<%= match.username %></span>
+			&nbsp;&middot;&nbsp;
+			<%= match.age %> a&ntilde;os
+			&nbsp;&middot;&nbsp;
+			<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= match.country %>.png"/>
+			<%= match.location %>
+
+			<i id="arrowicon" status="closed" class="material-icons right">keyboard_arrow_down</i>
+		</p>
+
+		<div id="desc" class="hidden">
+			<!-- DESCRIPTION -->
+			<p><%= match.about_me %></p>
+
+			<!-- MY INTERESTS -->
+			<% if(match.interests.length > 0) { %>
+				<p class="interests">
+					<% match.interests.forEach(function(interest){ %>
+						<span class="interest"><%= interest %></span>
+					<% }); %>
+				</p>
+			<% } %>
+		</div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col s12 center-align">
+		<!-- BUTTONS -->
+		<div class="row" style="margin-top:20px;">
+			<div class="col s6">
+				<a class="waves-effect waves-light btn red lighten-2" onclick="respondToDate('<%= match.id %>', 'NO')">
+					<i class="material-icons left">clear</i> No
+				</a>
+			</div>
+			<div class="col s6">
+				<a class="waves-effect waves-light btn" onclick="respondToDate('<%= match.id %>', 'SI')">
+					<i class="material-icons left">check</i> Sí
+				</a>
+			</div>
+		</div>
+	</div>
+</div>

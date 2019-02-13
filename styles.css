@@ -1,0 +1,132 @@
+/* MENU */
+
+#btnFloatingMenu {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+}
+
+.floating-action {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+}
+
+/* COLORS */
+
+.male-border {
+	border: 2px solid #4863A0;
+}
+
+.male-color {
+	color: #4863A0;
+}
+
+.female-border {
+	border: 2px solid #F778A1;
+}
+
+.female-color {
+	color: #F778A1;
+}
+
+.neutral-border {
+	border: 2px solid gray;
+}
+
+.neutral-color {
+	color: gray;
+}
+
+/* GENERAL */
+
+.flag {
+	width: 20px;
+}
+
+.fab-align{
+	left: 80%;
+	margin-top: -40px;
+}
+
+.hidden {
+	display: none;
+}
+
+/* PIROPAZO CITAS */
+
+.profile-wrap {
+	height: 300px;
+}
+
+.pointer {
+	cursor: pointer;
+}
+
+.interest {
+	color: white;
+	background-color: #424242;
+	padding: 2px 5px;
+	margin: 0px 5px 5px 0px;
+	white-space: nowrap;
+	border-radius: 5px;
+	display: inline-block;
+	font-size: small;
+}
+
+/* PIROPAZO PAREJAS */
+
+.collection-item {
+	min-height: unset !important;
+}
+
+/* PIROPAZO PERFIL */
+
+.img-wrap {
+	width: 100%;
+	height: 200px;
+	position: relative;
+	display: inline-block;
+	overflow: hidden;
+	margin: 0;
+}
+
+.img-wrap img {
+	display: block;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	min-height: 100%;
+	min-width: 100%;
+	transform: translate(-50%, -50%);
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+.size-large {
+	font-size: 20px;
+}
+
+#denounce-link {
+	font-size: small;
+	color: grey;
+}
+
+.position-top-right {
+	position: absolute; 
+	right: 10px;
+}
+
+.position-bottom-left {
+	position: absolute; 
+	left: 10px;
+	bottom: 10px;
+}
+
+/* PIROPAZO TIENDA */
+
+.fixed-width {
+	width: 120px;
+}

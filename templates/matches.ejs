@@ -1,0 +1,125 @@
+<div class="row">
+	<div class="col s12">
+		<!--WAITING FOR YOU-->
+		<% if(waiting.length > 0) { %>
+			<section>
+			<h1>Esperando por ti</h1>
+			<ul class="collection">
+				<% waiting.forEach(function(person) { %>
+					<li class="collection-item avatar">
+						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+							<!-- PICTURE -->
+							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
+							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+
+							<!-- USERNAME -->
+							<span class="title <%= person.color %>-color">@<%= person.username %></span>
+						</a>
+						<p>
+							<!-- DETAILS -->
+							<%= person.age %> a&ntilde;os
+							&nbsp;&middot;&nbsp;
+							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+							<%= person.location %>
+						</p>
+						<span class="secondary-content">
+							<!-- BUTTONS -->
+							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons green-text">check</i></a>
+							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
+						</span>
+					</li>
+				<% }) %>
+			</ul>
+			</section>
+		<% } %>
+
+		<!--YOUR MATCHES-->
+		<% if(matched.length > 0) { %>
+			<section>
+			<h1>De pareja contigo</h1>
+			<ul class="collection">
+				<% matched.forEach(function(person) { %>
+					<li class="collection-item avatar">
+						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+							<!-- PICTURE -->
+							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
+							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+
+							<!-- USERNAME -->
+							<span class="title <%= person.color %>-color">@<%= person.username %></span>
+						</a>
+						<p>
+							<!-- DETAILS -->
+							<%= person.age %> a&ntilde;os
+							&nbsp;&middot;&nbsp;
+							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+							<%= person.location %><br/>
+							<span class="grey-text"><%= person.email %></span>
+						</p>
+						<span class="secondary-content">
+							<!-- BUTTONS -->
+							<a href="mailto:<%= person.email %>?subject=Hola, soy @<%= person.username %> de Piropazo"><i class="material-icons green-text">email</i></a>
+							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
+						</span>
+					</li>
+				<% }) %>
+			</ul>
+			</section>
+		<% } %>
+
+		<!--YOU ARE WAITING FOR THEM-->
+		<% if(liked.length > 0) { %>
+			<section>
+			<h1>Esperando por ellos</h1>
+			<ul class="collection">
+				<% liked.forEach(function(person) { %>
+					<li class="collection-item avatar">
+						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+							<!-- PICTURE -->
+							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
+							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+
+							<!-- USERNAME -->
+							<span class="title <%= person.color %>-color">@<%= person.username %></span>
+						</a>
+						<p>
+							<!-- DETAILS -->
+							<%= person.age %> a&ntilde;os
+							&nbsp;&middot;&nbsp;
+							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
+							<%= person.location %><br/>
+							<span class="grey-text"><%= person.time_left %> días para responder</span>
+						</p>
+						<span class="secondary-content">
+							<!-- BUTTONS -->
+							<a href="#!" onclick="openFlowerModal('<%= person.id %>', '<%= myflowers %>', '<%= person.username %>')"><i class="material-icons green-text">local_florist</i></a>
+							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
+						</span>
+					</li>
+				<% }) %>
+			</ul>
+			</section>
+		<% } %>
+
+		<!-- FLOWER POPUP -->
+		<div id="modalFlower" class="modal">
+			<div class="modal-content">
+				<h4>Enviar flor</h4>
+				<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a @<span id="flowerUsername"></span>, llamar su atención y agregar 7 días al tiempo de espera.</p>
+				<div class="row">
+					<div class="input-field col s12">
+						<textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
+						<label for="flowerMsg">Agrega un mensaje con tu flor</label>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+				<a href="#!" class="modal-close waves-effect waves-green btn-flat green-text" onclick="sendFlower()">Enviar</a>
+			</div>
+		</div>
+	</div>
+</div>
