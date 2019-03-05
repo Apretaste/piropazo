@@ -50,7 +50,7 @@
 				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
 			<% }); %>
 		</select>
-		<label for="year_of_birth">¿Que a&ntilde;o nacistes?</label>
+		<label for="year_of_birth">¿Que año nacistes?</label>
 	</div>
 
 	<!-- BODY TYPE -->
@@ -200,4 +200,6 @@
 </div>
 
 <!-- SAVE BUTTON -->
-<a class="btn-floating btn-large waves-effect waves-light floating-action" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
+<div class="fixed-action-btn">
+	<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
+</div>
