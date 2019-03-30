@@ -5,7 +5,6 @@
 $(document).ready(function(){
 	$('select').formSelect();
 	showStateOrProvince();
-	$("#picturefield").change(displayPicture);
 });
 
 //
@@ -149,23 +148,16 @@ function deleteNotification(id) {
 
 // open the popup to upload a new profile picture
 function uploadPicture() {
-	$("#picturefield").trigger("click");
+	loadFileToBase64()
 }
 
-// display the picture on the image
-function displayPicture() {
-	// get the file
-	var file = $('#picturefield').files[0];
-
-	file.toBase64().then(data => {
-		// send the picture
-		apretaste.send({
-		"command":"PERFIL FOTO",
-		"data": {'picture':data},
-		"redirect": false,
-		"callback":{"name":"updatePicture","data":file}
-		});
-	});
+function sendFile(base64File){
+    apretaste.send({
+        "command":"PERFIL FOTO",
+        "data":{'picture':base64File},
+        "redirect":false,
+        "callback":{"name":"updatePicture","data":base64File}
+    });
 }
 
 // submit the profile informacion 
@@ -224,6 +216,18 @@ function showStateOrProvince() {
 // CALLBACKS
 //
 
+function showToast(text){
+	M.toast({html: text});
+}
+
+function updatePicture(file){
+    // display the picture on the img
+    $('#picture').attr('src', "data:image/jpg;base64,"+file);
+
+    // show confirmation text
+    showToast('Su foto ha sido cambiada correctamente');
+}
+
 function callbackBringNewDate() {
 	apretaste.send({command: "PIROPAZO"});
 }
@@ -242,16 +246,6 @@ function callbackRemoveDateFromScreen(values) {
 	$(values.element).parents(toDelete).fadeOut('fast', function(){
 		$(this).remove();
 	});
-}
-
-function callbackUpdatePicture(file){
-    // display the picture on the img
-	var URL = window.URL || window.webkitURL;
-	var url = URL.createObjectURL(file);
-    $('#picture').attr('src', url);
-
-    // show confirmation text
-    showToast('Su foto ha sido cambiada correctamente');
 }
 
 //
