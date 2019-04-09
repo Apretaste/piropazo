@@ -180,11 +180,6 @@
 		<label for="city">¿En que ciudad o pueblo vives?</label>
 	</div>
 
-	<!-- INTERESTS -->
-	<div class="input-field col s12 m6 <%= extra_fields %>">
-		<input id="interests" type="text" value="<%= profile.interests %>" class="validate"/>
-		<label for="interests">¿Cuales son sus intereses?</label>
-	</div>
 
 	<!-- RELIGION -->
 	<% var religion = ["CRISTIANISMO","CATOLICISMO","YORUBA","PROTESTANTE","SANTERO","ABAKUA","BUDISMO","ISLAM","ATEISMO","AGNOSTICISMO","SECULARISMO","OTRA"] %>
@@ -197,6 +192,19 @@
 		</select>
 		<label for="religion">¿Cual es su religión?</label>
 	</div>
+
+	<!-- INTERESTS -->
+	<div class="col s12 m6 " id="inter-outside">
+		<div class="col s12 m12">
+			<label>¿Cuales son sus intereses?</label>
+		</div>
+		<div class="col s12 m12 <%= extra_fields %>" id="interests">
+			<div class= "col s12 chips chips-initial" id="inter-inside"></div>
+		</div>
+	</div>
+	
+	
+
 </div>
 
 <!-- SAVE BUTTON -->

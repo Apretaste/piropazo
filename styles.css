@@ -124,3 +124,15 @@
 .fixed-width {
 	width: 120px;
 }
+
+.focus{
+	border-bottom: 1px solid #57b23b !important;
+	box-shadow: 0 1px 0 0 #57b23b !important;
+
+}
+#inter-inside{
+	margin-top: 0px !important;
+}
+#inter-outside{
+	padding: 0px !important;
+}

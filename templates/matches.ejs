@@ -60,7 +60,9 @@
 						</p>
 						<span class="secondary-content">
 							<!-- BUTTONS -->
-							<a href="mailto:<%= person.email %>?subject=Hola, soy @<%= person.username %> de Piropazo"><i class="material-icons green-text">email</i></a>
+							
+							<a onclick="$('#per').html('<%=person.email%>')" href="#modal" class="modal-trigger"><i class="material-icons green-text">email</i></a>
+							
 							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
 						</span>
 					</li>
@@ -68,6 +70,15 @@
 			</ul>
 			</section>
 		<% } %>
+		<div id="modal" class="modal">
+				<div class="modal-content">
+					<h4>Copie el correo</h4>
+					<p id="per"></p>
+				</div>
+				<div class="modal-footer">
+					<a href="#!" class="modal-close waves-effect waves-green btn-flat">Hecho</a>
+				</div>
+		</div>
 
 		<!--YOU ARE WAITING FOR THEM-->
 		<% if(liked.length > 0) { %>

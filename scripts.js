@@ -5,6 +5,20 @@
 $(document).ready(function(){
 	$('select').formSelect();
 	showStateOrProvince();
+	$('.modal').modal();
+	
+	let interests = [];
+    profile.interests.forEach((interest) => {
+      interests.push({tag: interest});
+    });
+    profile.interests = JSON.stringify(interests);
+
+    $('.chips').chips();
+    $('.chips-initial').chips({
+      data: interests,
+		});
+
+		
 });
 
 //
@@ -179,6 +193,10 @@ function submitProfileData() {
 		if(data.gender=="M" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HOMO";
 		if(data.gender=="F" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HETERO";
 		if(data.gender=="F" && data.sexual_orientation=="MUJERES") data.sexual_orientation="HOMO";
+	}
+
+	if (profile.interests != JSON.stringify(M.Chips.getInstance($('.chips')).chipsData)) {
+		data.interests = M.Chips.getInstance($('.chips')).chipsData;
 	}
 
 	// save information in the backend
