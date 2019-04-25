@@ -1,30 +1,23 @@
 <div class="row">
 	<div class="col s12 center-align">
-		<div class="img-wrap">
 			<!-- PICTURE -->
 			<% if(match.picture) var src = "{{APP_IMAGE_PATH}}" + match.picture;
 			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-			<img class="z-depth-2 <%= match.color %>-border" src="<%= src %>" alt="<%= match.username %>"/>
-
-			<!-- USER IS CROWNED -->
-			<% if(match.crown) { %>
-				<i class="material-icons yellow-text large position-top-right">favorite</i>
-			<% } %>
+			<img class="responsive-img profile-img z-depth-2 materialboxed <%= match.color %>-border" src="<%= src %>" alt="<%= match.username %>"/>
 
 			<!-- INTERESTS -->
-			<div class="position-bottom-left">
+			<div class="position-bottom-left" id="interests">
 				<% match.tags.forEach(function(tag){ %>
 					<div class="chip"><%= tag %></div>
 				<% }) %>
 			</div>
-		</div>
 	</div>
 </div>
 
 <div class="row">
 	<div class="col s12">
 		<!-- DETAILS -->
-		<p onclick="toggleDescVisible()" class="pointer">
+		<p onclick="toggleDescVisible()" class="pointer center-align">
 			<span class="<%= match.color %>-color">@<%= match.username %></span>
 			&nbsp;&middot;&nbsp;
 			<%= match.age %> años
@@ -54,7 +47,7 @@
 <div class="row">
 	<div class="col s12 center-align">
 		<!-- BUTTONS -->
-		<div class="row" style="margin-top:20px;">
+		<div class="row">
 			<div class="col s6">
 				<a class="waves-effect waves-light btn red lighten-2" onclick="respondToDate('<%= match.id %>', 'NO')">
 					<i class="material-icons left">clear</i> No

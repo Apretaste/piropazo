@@ -6,19 +6,36 @@ $(document).ready(function(){
 	$('select').formSelect();
 	showStateOrProvince();
 	$('.modal').modal();
+	$('.materialboxed').materialbox({'onCloseEnd':()=> resizeImg()});
 	
-	let interests = [];
-    profile.interests.forEach((interest) => {
-      interests.push({tag: interest});
-    });
-    profile.interests = JSON.stringify(interests);
-
-    $('.chips').chips();
-    $('.chips-initial').chips({
-      data: interests,
+	if(typeof profile != "undefined"){
+		let interests = [];
+		profile.interests.forEach((interest) => {
+		interests.push({tag: interest});
 		});
+		profile.interests = JSON.stringify(interests);
 
-		
+		$('.chips').chips();
+		$('.chips-initial').chips({data: interests});
+	}
+
+	if(typeof match != "undefined"){
+		if(match.crown){
+			$('<i class="material-icons yellow-text medium position-top-right">favorite</i>').insertBefore('.profile-img');
+		}
+		var interestsElement = $('#interests');
+		$('#interests').remove();
+		$(interestsElement).insertBefore('.profile-img');
+	}
+	else{
+		if(crowned){
+			$('<i class="material-icons yellow-text medium position-top-right">favorite</i>').insertBefore('.profile-img');
+		}
+	}
+
+	resizeImg();
+	$(window).resize(() => resizeImg());
+	
 });
 
 //
@@ -55,6 +72,36 @@ function getCountries() {
 function openMenu() {
 	$('.sidenav').sidenav();
 	$('.sidenav').sidenav('open');
+}
+
+function resizeImg(){
+	$('.profile-img').css('height', '');
+	if(typeof match != 'undefined'){
+		if($('html').height() > $(window).height()+1){ //+1 to avoid decimals
+			if($('.container > .row').length == 2){
+				$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
+			}
+
+			$('.profile-img').height($('.profile-img').height() - $($('.col.s12:parent')[1]).outerHeight(true) - $($('.col.s12:parent')[2]).outerHeight(true) - 40)
+		}
+	}
+	else{
+		if($('html').height() > $(window).height()+1){
+			if($('.container > .row').length == 2){
+				$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
+			}
+
+			$('.profile-img').height($('.profile-img').height() - $($('.col.s12:parent')[1]).outerHeight(true) - 50)
+		}
+	}
+
+	if(typeof profile != "undefined" || typeof match != "undefined"){
+		var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
+		$('.material-placeholder .position-top-right').css("right", imgMargin+'px');
+		if(imgMargin == 0) imgMargin = 8;
+		$('.material-placeholder .position-bottom-left').css("left", imgMargin*1.2+'px');
+	}
+	
 }
 
 // say yes/no to a date
@@ -101,10 +148,10 @@ function toggleDescVisible() {
 	var status = $('#arrowicon').attr('status');
 
 	if(status == "closed") {
-		$('#desc').slideDown('fast');
+		$('#desc').slideDown('fast'); //, () => resizeImg() // add this to resize then opened or closed
 		$('#arrowicon').html('keyboard_arrow_up').attr('status', 'opened');
 	} else {
-		$('#desc').slideUp('fast');
+		$('#desc').slideUp('fast'); //, () => resizeImg()
 		$('#arrowicon').html('keyboard_arrow_down').attr('status', 'closed');
 	}
 }
@@ -136,6 +183,44 @@ function sendFlower() {
 
 	// send the flower
 	apretaste.send({'command':'PIROPAZO FLOR','data':{id:personId, msg:message}});
+}
+
+function deleteModalOpen() {
+    optionsModalActive = false;
+    M.Modal.getInstance($('#optionsModal')).close();
+    M.Modal.getInstance($('#deleteModal')).open();
+}
+
+function deleteMessage(){
+    apretaste.send({
+        'command': 'CHAT BORRAR',
+        'data':{'id':activeMessage, 'type': 'message'},
+        'redirect': false,
+        'callback':{'name':'deleteMessageCallback','data':activeMessage}
+    })
+}
+
+function sendMessage() {
+    var message = $('#message').val().trim();
+    if (message.length > 0) {
+        apretaste.send({
+            'command': "CHAT ESCRIBIR",
+            'data': { 'id': activeChat, 'message': message },
+            'redirect': false,
+            'callback': { 'name': 'sendMessageCallback', 'data': message }
+        });
+    }
+    else showToast("Mensaje vacio");
+}
+
+function messageLengthValidate() {
+    var message = $('#message').val().trim();
+    if (message.length <= 500) {
+        $('.helper-text').html('Restante: ' + (500 - message.length));
+    }
+    else {
+        $('.helper-text').html('Limite excedido');
+    }
 }
 
 // send the notificationd to be deleted

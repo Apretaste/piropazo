@@ -180,8 +180,8 @@ class Service
 			VALUES ({$request->person->id}, $violatorId, '$violationCode')");
 
 		// say NO to the user
-		$request->query = $violatorUsername;
-		$this->_no($request);
+		$request->query = $violatorId;
+		$this->_no($request, $response);
 	}
 
 	/**
@@ -347,6 +347,7 @@ class Service
 	{
 		// check if you have enought crowns
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
+		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
@@ -374,10 +375,46 @@ class Service
 			"text" => "Su perfil ha sido promovido, y en los próximos tres días se mostrará muchas más veces a otros usuarios, lo cual mejorará sus chances de recibir solicitudes. Manténganse revisando a diario su lista de parejas.",
 			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
-
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('message.ejs', $content, $images);
+	}
+
+	public function _chat(Request $request, Response $response){
+		// get the username of the note
+		$user = Utils::getPerson($request->input->data->userId);
+
+		// check if the username is valid
+		if(!$user){
+			$response->setTemplate("notFound.ejs");
+			return;
+		}
+
+		$messages = Social::chatConversation($request->person->id, $user->id);
+		
+		$chats = [];
+
+		foreach ($messages as $message) {
+			$chat = new stdClass();
+			$chat->id = $message->note_id;
+			$chat->username = $message->username;
+			$chat->text = $message->text;
+			$chat->sent = date_format((new DateTime($message->sent)), 'd/m/Y h:i a');
+			$chat->read = date('d/m/Y h:i a', strtotime($message->read));
+			$chat->readed = $message->readed;
+			$chats[] = $chat;
+		}
+
+		$content =  [
+			"messages" => $chats,
+			"username" => $user->username,
+			"myusername" => $request->person->username,
+			"id" => $user->id,
+			"online" => $user->online,
+			'last' => date('d/m/Y h:i a', strtotime($user->last_access))
+		];
+
+		$response->setlayout('piropazo.ejs');
+		$response->setTemplate("chat.ejs", $content);
 	}
 
 	/**

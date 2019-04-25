@@ -9,18 +9,10 @@
 				</a>
 			</div>
 		<% } %>
-
-		<div class="img-wrap">
 			<!-- PICTURE -->
 			<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
 			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-			<img class="z-depth-2 <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
-
-			<!-- USER IS CROWNED -->
-			<% if(crowned) { %>
-				<i class="material-icons yellow-text large position-top-right">favorite</i>
-			<% } %>
-		</div>
+			<img class="responsive-img profile-img z-depth-2 materialboxed <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
 	</div>
 </div>
 

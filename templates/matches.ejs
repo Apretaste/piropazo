@@ -56,12 +56,11 @@
 							&nbsp;&middot;&nbsp;
 							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
 							<%= person.location %><br/>
-							<span class="grey-text"><%= person.email %></span>
 						</p>
 						<span class="secondary-content">
 							<!-- BUTTONS -->
 							
-							<a onclick="$('#per').html('<%=person.email%>')" href="#modal" class="modal-trigger"><i class="material-icons green-text">email</i></a>
+							<a onclick="apretaste.send({'command':'PIROPAZO CHAT', 'data':{'userId':'<%=person.id>'}})"><i class="material-icons green-text">message</i></a>
 							
 							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
 						</span>
