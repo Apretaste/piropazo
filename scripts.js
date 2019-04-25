@@ -28,7 +28,7 @@ $(document).ready(function(){
 		$(interestsElement).insertBefore('.profile-img');
 	}
 	else{
-		if(crowned){
+		if(typeof crowned != "undefined" && crowned){
 			$('<i class="material-icons yellow-text medium position-top-right">favorite</i>').insertBefore('.profile-img');
 		}
 	}
@@ -75,6 +75,8 @@ function openMenu() {
 }
 
 function resizeImg(){
+	if(typeof profile == "undefined" && typeof match == "undefined") return;
+
 	$('.profile-img').css('height', '');
 	if(typeof match != 'undefined'){
 		if($('html').height() > $(window).height()+1){ //+1 to avoid decimals
@@ -95,12 +97,18 @@ function resizeImg(){
 		}
 	}
 
-	if(typeof profile != "undefined" || typeof match != "undefined"){
-		var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
-		$('.material-placeholder .position-top-right').css("right", imgMargin+'px');
-		if(imgMargin == 0) imgMargin = 8;
-		$('.material-placeholder .position-bottom-left').css("left", imgMargin*1.2+'px');
+	var lastWidth = 0;
+	while($('html').height() < $(window).height() - 1) {
+		$('.profile-img').height($('.profile-img').height()+1);
+
+		if($('.profile-img').width() == lastWidth) break;
+		lastWidth = $('.profile-img').width();
 	}
+
+	var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
+	$('.material-placeholder .position-top-right').css("right", imgMargin+'px');
+	imgMargin += 8;
+	$('.material-placeholder .position-bottom-left').css("left", imgMargin+'px');
 	
 }
 

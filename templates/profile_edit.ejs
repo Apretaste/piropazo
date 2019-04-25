@@ -3,7 +3,7 @@
 		<!-- PICTURE -->
 		<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
 		else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-		<img id="picture" class="responsive-img materialboxed" src="<%= src %>"/>
+		<img class="responsive-img materialboxed profile-img" src="<%= src %>"/>
 
 		<!-- EDIT PIC BUTTON -->
 		<input id="picturefield" type="file" class="hidden" />
