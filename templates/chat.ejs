@@ -10,7 +10,7 @@
 
 	<%if(messages.length>0){%>
 	<div class="chat">
-		<%messages.forEach(message => {%>
+		<%messages.forEach(function(message){%>
 		<%if(message.username == username) message.class = "you"; else message.class = "me";%>
 		<div class="bubble <%=message.class%>" id="<%=message.id%>">
 			<small>
