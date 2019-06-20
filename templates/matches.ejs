@@ -1,32 +1,63 @@
 <div class="row">
-	<div class="col s12">
+	<div class="col s12" id="matches-lists">
+	<!--YOUR MATCHES-->
+		<% if(matched.length > 0) { %>
+			<section>
+			<h4 class="piropazo-color-text">De pareja contigo</h4>
+			<ul class="collection" id="matches">
+				<% matched.forEach(function(person) { %>
+					<li class="collection-item avatar" id="<%=person.id%>">
+						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
+							<!-- PICTURE -->
+							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
+							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+							<img src="<%= src %>" alt="<%= person.first_name %>" class="circle"/>
+
+							<!-- FIRST NAME -->
+							<h5 class="black-text"><%= person.first_name %></h5>
+						</a>
+						<p>
+							<!-- DETAILS -->
+							<span>Se unieron el <%=person.matched_on%></span>
+						</p>
+						<span class="secondary-content">
+							<!-- BUTTONS -->
+							
+							<a onclick="apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'<%=person.id%>'}})"><i class="material-icons piropazo-color-text">message</i></a>
+							
+							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
+						</span>
+					</li>
+				<% }) %>
+			</ul>
+			</section>
+		<% } %>
+
+
 		<!--WAITING FOR YOU-->
 		<% if(waiting.length > 0) { %>
 			<section>
-			<h1>Esperando por ti</h1>
+			<h4 class="piropazo-color-text">Esperando por ti</h4>
 			<ul class="collection">
 				<% waiting.forEach(function(person) { %>
-					<li class="collection-item avatar">
+					<li class="collection-item avatar" id="<%=person.id%>">
 						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
 							<!-- PICTURE -->
 							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
 							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+							<img src="<%= src %>" alt="<%= person.first_name %>" class="circle"/>
 
-							<!-- USERNAME -->
-							<span class="title <%= person.color %>-color">@<%= person.username %></span>
+							<!-- FIRST NAME -->
+							<h5 class="black-text"><%= person.first_name %></h5>
 						</a>
 						<p>
 							<!-- DETAILS -->
-							<%= person.age %> años
-							&nbsp;&middot;&nbsp;
-							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
-							<%= person.location %>
+							<span class="second-line">Faltan <%= person.time_left %> días</span>
 						</p>
 						<span class="secondary-content">
 							<!-- BUTTONS -->
-							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons green-text">check</i></a>
-							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
+							<a href="#!" onclick="doMatch('<%= person.id %>')"><i class="material-icons piropazo-color-text">check</i></a>
+							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
 						</span>
 					</li>
 				<% }) %>
@@ -34,79 +65,41 @@
 			</section>
 		<% } %>
 
-		<!--YOUR MATCHES-->
-		<% if(matched.length > 0) { %>
-			<section>
-			<h1>De pareja contigo</h1>
-			<ul class="collection">
-				<% matched.forEach(function(person) { %>
-					<li class="collection-item avatar">
-						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
-							<!-- PICTURE -->
-							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
-							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
-
-							<!-- USERNAME -->
-							<span class="title <%= person.color %>-color">@<%= person.username %></span>
-						</a>
-						<p>
-							<!-- DETAILS -->
-							<%= person.age %> años
-							&nbsp;&middot;&nbsp;
-							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
-							<%= person.location %><br/>
-						</p>
-						<span class="secondary-content">
-							<!-- BUTTONS -->
-							
-							<a onclick="apretaste.send({'command':'PIROPAZO CHAT', 'data':{'userId':'<%=person.id>'}})"><i class="material-icons green-text">message</i></a>
-							
-							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
-						</span>
-					</li>
-				<% }) %>
-			</ul>
-			</section>
-		<% } %>
+		
 		<div id="modal" class="modal">
 				<div class="modal-content">
 					<h4>Copie el correo</h4>
 					<p id="per"></p>
 				</div>
 				<div class="modal-footer">
-					<a href="#!" class="modal-close waves-effect waves-green btn-flat">Hecho</a>
+					<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat">Hecho</a>
 				</div>
 		</div>
 
 		<!--YOU ARE WAITING FOR THEM-->
 		<% if(liked.length > 0) { %>
 			<section>
-			<h1>Esperando por ellos</h1>
+			<h4 class="piropazo-color-text">Esperando por ellos</h4>
 			<ul class="collection">
 				<% liked.forEach(function(person) { %>
-					<li class="collection-item avatar">
+					<li class="collection-item avatar" id="<%=person.id%>">
 						<a href="#!" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})">
 							<!-- PICTURE -->
 							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
 							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.username %>" class="circle <%= person.color %>-border"/>
+							<img src="<%= src %>" alt="<%= person.first_name %>" class="circle"/>
 
-							<!-- USERNAME -->
-							<span class="title <%= person.color %>-color">@<%= person.username %></span>
+							<!-- FIRST NAME -->
+							<h5 class="black-text"><%= person.first_name %></h5>
 						</a>
 						<p>
 							<!-- DETAILS -->
-							<%= person.age %> años
-							&nbsp;&middot;&nbsp;
-							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= person.country %>.png"/>
-							<%= person.location %><br/>
-							<span class="grey-text"><%= person.time_left %> días para responder</span>
+							<span>Faltan <%= person.time_left %> días</span>
 						</p>
 						<span class="secondary-content">
 							<!-- BUTTONS -->
-							<a href="#!" onclick="openFlowerModal('<%= person.id %>', '<%= myflowers %>', '<%= person.username %>')"><i class="material-icons green-text">local_florist</i></a>
-							<a href="#!" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons red-text">close</i></a>
+							<a href="#!" onclick="openFlowerModal('<%= person.id %>', '<%= myflowers %>', '<%= person.first_name %>')"><i class="material-icons piropazo-color-text">local_florist</i></a>
+							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
 						</span>
 					</li>
 				<% }) %>
@@ -118,7 +111,7 @@
 		<div id="modalFlower" class="modal">
 			<div class="modal-content">
 				<h4>Enviar flor</h4>
-				<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a @<span id="flowerUsername"></span>, llamar su atención y agregar 7 días al tiempo de espera.</p>
+				<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a @<span id="flowerfirst_name"></span>, llamar su atención y agregar 7 días al tiempo de espera.</p>
 				<div class="row">
 					<div class="input-field col s12">
 						<textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
@@ -127,8 +120,8 @@
 				</div>
 			</div>
 			<div class="modal-footer">
-				<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
-				<a href="#!" class="modal-close waves-effect waves-green btn-flat green-text" onclick="sendFlower()">Enviar</a>
+				<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat">Cerrar</a>
+				<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat piropazo-color-text" onclick="sendFlower()">Enviar</a>
 			</div>
 		</div>
 	</div>

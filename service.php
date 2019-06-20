@@ -56,18 +56,23 @@ class Service
 			return $response->setTemplate('message.ejs', $content);
 		}
 
-		// calculate the tags
-		$tags = [];
-		if(array_intersect($match->interests, $request->person->interests)) $tags[] = "Intereses Similares";
-		if(($match->city && ($match->city == $request->person->city)) || ($match->usstate && ($match->usstate == $request->person->usstate)) || ($match->province && ($match->province == $request->person->province))) $tags[] = "Viven Cerca";
-		if($match->age && abs($match->age - $request->person->age) <= 3) $tags[] = "Igual Edad";
-		if($match->religion && ($match->religion == $request->person->religion)) $tags[] = "Misma Religion";
-		if($match->highest_school_level && ($match->highest_school_level == $request->person->highest_school_level)) $tags[] = "Misma Educacion";
-		if($match->body_type == "ATLETICO") $tags[] = "Cita Caliente";
-		$match->tags = array_slice($tags, 0, 2); // show only two tags
+		$profileTags = [];
+		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer";
+		$profileTags[] = $match->skin;
+		$profileTags[] = strtolower($match->religion);
+		$profileTags[] = $match->age. " años";
+
+		$professionTags = [];
+		$professionTags[] = $match->highest_school_level;
+		$professionTags[] = $match->occupation;
+
+		$match->profile_tags = implode(' ,', $profileTags);
+		$match->profession_tags = implode(' ,', $professionTags);
+
+		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
 		// erase unwanted properties in the object
-		$properties = ["id","username","gender","interests","about_me","picture","picture","crown","country","location","age","tags","online","color"];
+		$properties = ["id","username", "first_name","gender","skin", "about_me", "profile_tags", "profession_tags", "picture","religion", "education", "country","location","age","online"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -77,9 +82,7 @@ class Service
 		$images = ($match->picture) ? [$match->picture] : [];
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 		$content = [
-			"match" => $match,
-			"menuicon" => "favorite",
-			"apptype" => $request->input->apptype];
+			"match" => $match];
 
 		// build the response
 		$response->setLayout('piropazo.ejs');
@@ -95,6 +98,7 @@ class Service
 	 */
 	public function _si (Request $request, Response $response)
 	{
+		die();
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
@@ -246,16 +250,12 @@ class Service
 			// get the full profile
 			$match = Social::prepareUserProfile($match);
 
-			// get the match color class based on gender
-			if($match->gender == "M") $match->color = "male";
-			elseif($match->gender == "F") $match->color = "female";
-			else $match->color = "neutral";
-
 			// get the link to the image
 			if($match->picture) $images[] = $match->picture;
+			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
 
 			// erase unwanted properties in the object
-			$properties = ["id","email","username","gender","age","type","location","picture","picture_public","picture","matched_on","time_left","country","online","color"];
+			$properties = ["id","username", "first_name", "gender","age","type","location","picture","matched_on","time_left","online"];
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
@@ -277,9 +277,7 @@ class Service
 			"myflowers" => $myFlowers[0]->flowers,
 			"liked" => $liked,
 			"waiting" => $waiting,
-			"matched" => $matched,
-			"menuicon" => "people",
-			"apptype" => $request->input->apptype];
+			"matched" => $matched];
 
 		// Building the response
 		$response->setLayout('piropazo.ejs');
@@ -379,7 +377,7 @@ class Service
 		$response->setTemplate('message.ejs', $content, $images);
 	}
 
-	public function _chat(Request $request, Response $response){
+	public function _conversacion(Request $request, Response $response){
 		// get the username of the note
 		$user = Utils::getPerson($request->input->data->userId);
 
@@ -414,7 +412,7 @@ class Service
 		];
 
 		$response->setlayout('piropazo.ejs');
-		$response->setTemplate("chat.ejs", $content);
+		$response->setTemplate("conversation.ejs", $content);
 	}
 
 	/**
@@ -426,16 +424,21 @@ class Service
 	 */
 	public function _tienda (Request $request, Response $response)
 	{
+		// get the user items
+		$user = Connection::query("
+			SELECT flowers, crowns
+			FROM _piropazo_people
+			WHERE id_person = {$request->person->id}")[0];
 
 		// get the user credit
 		$credit = Connection::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
 
 		// prepare content for the view
 		$content = [
-			"credit"=>$credit, 
-			"email"=>$request->person->email,
-			"menuicon" => "shopping_cart",
-			"apptype" => $request->input->apptype];
+			"credit" => $credit,
+			"flowers" => $user->flowers,
+			"crowns" => $user->crowns
+		];
 
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
@@ -468,7 +471,6 @@ class Service
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
 				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
-				"menuicon" => "notifications",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
 
 			$response->setLayout('piropazo.ejs');
@@ -477,9 +479,7 @@ class Service
 
 		// prepare content for the view
 		$content = [
-			"notifications" => $notifications,
-			"menuicon" => "notifications",
-			"apptype" => $request->input->apptype];
+			"notifications" => $notifications];
 
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
@@ -522,6 +522,11 @@ class Service
 	 */
 	public function _perfil (Request $request, Response $response)
 	{
+
+		if(!isset($request->input->data->id)){
+			$this->_editar($request, $response);
+			return;
+		}
 		// get the user's profile
 		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
 		$profile = Social::prepareUserProfile(Utils::getPerson($id));
@@ -561,15 +566,48 @@ class Service
 			"crowned" => $piropazo[0]->crowned,
 			"isMyOwnProfile" => $isMyOwnProfile,
 			"percentageMatch" => $percentageMatch,
-			"profile" => $profile,
-			"menuicon" => "face",
-			"apptype" => $request->input->apptype];
+			"profile" => $profile];
 
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 
 		// Building response
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('profile.ejs', $content, $images);
+	}
+
+	/**
+	 * Chats lists with matches filter
+	 * 
+	 * @author ricardo
+	 * @param Request
+	 * @param Response
+	 */
+
+	public function _chat(Request $request, Response $response)
+	{
+		// get the list of people chating with you
+		$chats = Social::chatsOpen($request->person->id);
+
+		$matches = Connection::query("SELECT id_from AS id
+		FROM _piropazo_relationships
+		WHERE status = 'match'
+		AND id_to = '{$request->person->id}'
+		UNION
+		SELECT id_to AS id
+		FROM _piropazo_relationships
+		WHERE status = 'match'
+		AND id_from = '{$request->person->id}'");
+
+		$matchesId = [];
+		foreach($matches as $match) $matchesId[] = $match->id;
+
+		$onlyMatchesChats = [];
+		foreach ($chats as $chat) {
+			if (in_array($chat->id, $matchesId)) $onlyMatchesChats[] = $chat;
+		}
+
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate("chats.ejs", ["chats" => $onlyMatchesChats, "myusername" => $request->person->username]);
 	}
 
 	/**
@@ -614,9 +652,7 @@ class Service
 		// list of values
 		$content = [
 			"extra_fields" => isset($request->extra_fields) ? $request->extra_fields : "",
-			"profile" => $request->person,
-			"menuicon" => "face",
-			"apptype" => $request->input->apptype];
+			"profile" => $request->person];
 
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 

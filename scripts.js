@@ -7,35 +7,31 @@ $(document).ready(function(){
 	showStateOrProvince();
 	$('.modal').modal();
 	$('.materialboxed').materialbox({'onCloseEnd':()=> resizeImg()});
-	
-	if(typeof profile != "undefined"){
-		let interests = [];
-		profile.interests.forEach((interest) => {
-		interests.push({tag: interest});
-		});
-		profile.interests = JSON.stringify(interests);
 
-		$('.chips').chips();
-		$('.chips-initial').chips({data: interests});
-	}
+	$('.profile-img').click(function(){
+		if($('#desc').attr('status') == "opened") {
+			$('#desc').slideToggle({direction: "up"}).attr('status', 'closed'); //, () => resizeImg()
+		}
+	})
 
 	if(typeof match != "undefined"){
-		if(match.crown){
-			$('<i class="material-icons yellow-text medium position-top-right">favorite</i>').insertBefore('.profile-img');
-		}
-		var interestsElement = $('#interests');
-		$('#interests').remove();
-		$(interestsElement).insertBefore('.profile-img');
-	}
-	else{
-		if(typeof crowned != "undefined" && crowned){
-			$('<i class="material-icons yellow-text medium position-top-right">favorite</i>').insertBefore('.profile-img');
-		}
+		var infoElement = $('#info');
+		$('#info').remove();
+		$(infoElement).insertBefore('.profile-img');
+
+		var moreElement = $('#more');
+		$('#more').remove();
+		$(moreElement).insertBefore('.profile-img');
+
+		var descElement = $('#desc');
+		$('#desc').remove();
+		$(descElement).insertBefore('.profile-img');
 	}
 
 	resizeImg();
 	$(window).resize(() => resizeImg());
-	
+
+	$('#chat-row').parent().css('margin-bottom','0');
 });
 
 //
@@ -84,32 +80,29 @@ function resizeImg(){
 				$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
 			}
 
-			$('.profile-img').height($('.profile-img').height() - $($('.col.s12:parent')[1]).outerHeight(true) - $($('.col.s12:parent')[2]).outerHeight(true) - 40)
+			$('.profile-img').height($('.profile-img').height() - $($('.row')[0]).outerHeight(true) - $($('#actions')[0]).outerHeight(true) - 40)
 		}
+
+		var lastWidth = 0;
+		while($('html').height() < $(window).height() - 1) {
+			$('.profile-img').height($('.profile-img').height()+1);
+
+			if($('.profile-img').width() == lastWidth) break;
+			lastWidth = $('.profile-img').width();
+		}
+
+		var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
+		$('#profile .position-bottom.right').css("right", imgMargin+'px');
+		imgMargin += 8;
+		$('#profile .position-bottom.left').css("left", imgMargin+'px');
 	}
 	else{
-		if($('html').height() > $(window).height()+1){
-			if($('.container > .row').length == 2){
-				$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
-			}
-
-			$('.profile-img').height($('.profile-img').height() - $($('.col.s12:parent')[1]).outerHeight(true) - 50)
-		}
+		$('#profile-rounded-img').height($(window).height()/4); // picture must be 1/4 of the screen
+		$('#profile-rounded-img').width($(window).height()/4);
+		$('#profile-rounded-img').css('top',(-4-$(window).height()/8)+'px'); // align the picture with the div
+		$('#edit-fields').css('margin-top',(5-$(window).height()/8)+'px'); // move the row before to the top to fill the empty space
+		$('#img-pre').height($('#profile-rounded-img').height()*0.8); // set the height of the colored div after the photo
 	}
-
-	var lastWidth = 0;
-	while($('html').height() < $(window).height() - 1) {
-		$('.profile-img').height($('.profile-img').height()+1);
-
-		if($('.profile-img').width() == lastWidth) break;
-		lastWidth = $('.profile-img').width();
-	}
-
-	var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
-	$('.material-placeholder .position-top-right').css("right", imgMargin+'px');
-	imgMargin += 8;
-	$('.material-placeholder .position-bottom-left').css("left", imgMargin+'px');
-	
 }
 
 // say yes/no to a date
@@ -151,16 +144,28 @@ function sayNoAndBlock(personId, element) {
 	});
 }
 
+// do match
+
+function doMatch(personId){
+	apretaste.send({
+		command: 'PIROPAZO SI',
+		data: {'id': personId},
+		redirect: false,
+		callback: {
+			name: "callbackMoveToMatches", 
+			data: personId
+		}
+	});
+}
+
 // toggles the user description visible/invisible on the "dates" page
 function toggleDescVisible() {
-	var status = $('#arrowicon').attr('status');
+	var status = $('#desc').attr('status');
 
 	if(status == "closed") {
-		$('#desc').slideDown('fast'); //, () => resizeImg() // add this to resize then opened or closed
-		$('#arrowicon').html('keyboard_arrow_up').attr('status', 'opened');
+		$('#desc').slideToggle({direction: "up"}).attr('status', 'opened'); //, () => resizeImg() // add this to resize then opened or closed
 	} else {
-		$('#desc').slideUp('fast'); //, () => resizeImg()
-		$('#arrowicon').html('keyboard_arrow_down').attr('status', 'closed');
+		$('#desc').slideToggle({direction: "up"}).attr('status', 'closed'); //, () => resizeImg()
 	}
 }
 
@@ -270,13 +275,17 @@ function sendFile(base64File){
 // submit the profile informacion 
 function submitProfileData() {
 	// get the array of fields and  
-	var fields = ['picture','first_name','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
+	var fields = ['picture','full_name', 'username', 'about_me','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
 
 	// create the JSON of data
 	var data = new Object;
 	fields.forEach(function(field) {
 		var value = $('#'+field).val();
-		if(value) data[field] = value;
+		if(field == 'full_name' && value && value.trim() != ''){
+			data['first_name'] = value.split(' ')[0];
+			if (value.split(' ')[1] != undefined) data['last_name'] = value.split(' ')[1];
+		}
+		if(value && value.trim() != '') data[field] = value;
 	});
 
 	// translate "que buscas" to sexual_orientation
@@ -286,10 +295,6 @@ function submitProfileData() {
 		if(data.gender=="M" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HOMO";
 		if(data.gender=="F" && data.sexual_orientation=="HOMBRES") data.sexual_orientation="HETERO";
 		if(data.gender=="F" && data.sexual_orientation=="MUJERES") data.sexual_orientation="HOMO";
-	}
-
-	if (profile.interests != JSON.stringify(M.Chips.getInstance($('.chips')).chipsData)) {
-		data.interests = M.Chips.getInstance($('.chips')).chipsData;
 	}
 
 	// save information in the backend
@@ -357,6 +362,169 @@ function callbackRemoveDateFromScreen(values) {
 	$(values.element).parents(toDelete).fadeOut('fast', function(){
 		$(this).remove();
 	});
+}
+
+function callbackMoveToMatches(id){
+	var element = $('#'+id);
+	var today = new Date();
+	callbackRemoveDateFromScreen(element[0]);
+	$(element).appendTo('#matches');
+	$('#'+id+' .second-line').html('Se unieron el '+today.toLocaleDateString('es-ES'));
+	$('#'+id+' .secondary-content a:nth-child(1) > i').html('message');
+	$('#'+id+' .secondary-content a:nth-child(1)').attr('onclick',"apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'"+id+"'}})");
+}
+
+
+///////// CHAT SCRIPTS /////////
+
+var optionsModalActive = false;
+var moved = false;
+var activeChat;
+var activeMessage;
+var activeUsername;
+var timer;
+
+$(() => {
+    if (typeof messages != "undefined") {
+		resizeChat();
+		$(window).resize(() => resizeChat());
+		$('.chat').scrollTop($('.bubble:last-of-type').offset().top);
+        $('#message').focus();
+		activeChat = id;
+        activeUsername = username;
+
+        $('.bubble')
+            .on("touchstart", event => { runTimer(); activeMessage = event.currentTarget.id; })
+            .on("touchmove", event => { clearTimeout(timer); moved = true; })
+            .on("touchend", event => { clearTimeout(timer); });
+
+        $('.bubble')
+            .on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
+            .on("mouseup", event => {clearTimeout(timer);});
+    }
+    
+    $('.modal').modal();
+    $('.openchat')
+        .on("touchstart", event => { runTimer(); activeChat = event.currentTarget.id; activeUsername = event.currentTarget.getAttribute('username'); })
+        .on("touchmove", event => { clearTimeout(timer); moved = true; })
+        .on("touchend", event => { openChat() });
+
+    $('.openchat')
+        .on("mousedown", event => { runTimer(); activeChat = event.currentTarget.id; activeUsername = event.currentTarget.getAttribute('username'); })
+        .on("mouseup", event => { openChat() });
+});
+
+function openChat() {
+    if (!optionsModalActive && !moved) apretaste.send({ 'command': 'CHAT', 'data': { 'userId': activeChat } });
+    optionsModalActive = false;
+    moved = false;
+    clearTimeout(timer);
+}
+
+function viewProfile() {
+    apretaste.send({ 'command': 'PERFIL', 'data': { 'username': activeChat } });
+}
+
+function writeModalOpen() {
+    optionsModalActive = false;
+    M.Modal.getInstance($('#optionsModal')).close();
+    M.Modal.getInstance($('#writeMessageModal')).open();
+}
+
+function deleteModalOpen() {
+    optionsModalActive = false;
+    M.Modal.getInstance($('#optionsModal')).close();
+    if(typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con @'+ activeUsername +'?');
+    M.Modal.getInstance($('#deleteModal')).open();
+}
+
+function searchProfile(){
+    var username = $('#usernameToSearch').val().trim();
+    if(username.length > 2){
+        apretaste.send({
+            'command':'CHAT BUSCAR',
+            'data':{'username': username}
+        })
+    }
+    else showToast("Ingrese un username valido")
+    
+}
+
+function deleteChat(){
+    apretaste.send({
+        'command': 'CHAT BORRAR',
+        'data':{'id':activeChat, 'type': 'chat'},
+        'redirect': false,
+        'callback':{'name':'deleteChatCallback','data':activeChat}
+    })
+}
+
+function deleteMessage(){
+    apretaste.send({
+        'command': 'CHAT BORRAR',
+        'data':{'id':activeMessage, 'type': 'message'},
+        'redirect': false,
+        'callback':{'name':'deleteMessageCallback','data':activeMessage}
+    })
+}
+
+function deleteChatCallback(chatId){
+    $('#'+chatId).remove();
+    showToast('Chat eliminado');
+}
+
+function deleteMessageCallback(messageId){
+    $('#'+messageId).remove();
+    showToast('Mensaje eliminado');
+}
+
+function runTimer() {
+    timer = setTimeout(function () {
+        optionsModalActive = true;
+        M.Modal.getInstance($('#optionsModal')).open();
+    }, 800);
+}
+
+function sendMessage() {
+    var message = $('#message').val().trim();
+    if (message.length > 0) {
+        apretaste.send({
+            'command': "CHAT ESCRIBIR",
+            'data': { 'id': activeChat, 'message': message },
+            'redirect': false,
+            'callback': { 'name': 'sendMessageCallback', 'data': message }
+        });
+    }
+    else showToast("Mensaje vacio");
+}
+
+function sendMessageCallback(message) {
+    if (typeof messages != "undefined") {
+        if (messages.length == 0) {
+            $('#nochats').remove();
+            $('#messageField').insertBefore("<div class=\"chat\"></div>");
+        }
+
+        $('.chat').append(
+            "<div class=\"bubble me\" id=\"last\">" +
+			message +
+			"<br>"+
+			"<small>"+(new Date()).toLocaleString('es-ES')+"</small>"+
+            "</div>"
+        );
+    }
+    else{
+        if(message.length > 70) message = message.substr(0, 70)+'...';
+        $('#'+activeChat+' msg').html(message)
+    }
+    $('#message').val('')
+}
+
+function resizeChat(){
+	if($('.row').length == 3){
+		$('.chat').height($(window).height() - $($('.row')[0]).outerHeight(true) - $('#messageField').outerHeight(true)-20);
+	}
+	else $('.chat').height($(window).height() - $('#messageField').outerHeight(true)-20);
 }
 
 //
