@@ -57,17 +57,11 @@ class Service
 		}
 
 		$profileTags = [];
-		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer";
-		$profileTags[] = $match->skin;
-		$profileTags[] = strtolower($match->religion);
-		$profileTags[] = $match->age. " años";
-
 		$professionTags = [];
-		$professionTags[] = $match->highest_school_level;
-		$professionTags[] = $match->occupation;
+		$this->getTags($profileTags, $professionTags, $match);
 
-		$match->profile_tags = implode(' ,', $profileTags);
-		$match->profession_tags = implode(' ,', $professionTags);
+		$match->profile_tags = implode(', ', $profileTags);
+		$match->profession_tags = implode(', ', $professionTags);
 
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
@@ -862,5 +856,17 @@ class Service
 		if($diff >= 6 && $diff <= 10) $percentage += 5;
 
 		return $percentage;
+	}
+
+	private function getTags(&$profileTags, &$professionTags, $match){
+		$genderLetter = $match->gender == 'M' ? 'o' : 'a';
+
+		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer"; 
+		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
+		$profileTags[] = strtolower($match->religion);
+		$profileTags[] = $match->age. " años";
+		
+		$professionTags[] = $match->highest_school_level;
+		$professionTags[] = $match->occupation;
 	}
 }
