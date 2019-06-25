@@ -112,8 +112,8 @@ class Service
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 				// create notifications for both you and your date
-				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", '{"command":"PIROPAZO PAREJAS"}', 'chat_bubble_outline');
-				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", '{"command":"PIROPAZO PAREJAS"}', "chat_bubble_outline");
+				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", '{"command":"PIROPAZO PAREJAS"}', 'people');
+				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", '{"command":"PIROPAZO PAREJAS"}', "people");
 			}
 
 			// if they dislike you, block that match
@@ -271,7 +271,8 @@ class Service
 			"myflowers" => $myFlowers[0]->flowers,
 			"liked" => $liked,
 			"waiting" => $waiting,
-			"matched" => $matched];
+			"matched" => $matched,
+			"title" => "Parejas"];
 
 		// Building the response
 		$response->setLayout('piropazo.ejs');
@@ -358,7 +359,7 @@ class Service
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias",'', 'favorite_border');
+		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'piropazo', 'favorite');
 
 		// build the response
 		$content = [
@@ -402,7 +403,8 @@ class Service
 			"myusername" => $request->person->username,
 			"id" => $user->id,
 			"online" => $user->online,
-			'last' => date('d/m/Y h:i a', strtotime($user->last_access))
+			"last" => date('d/m/Y h:i a', strtotime($user->last_access)),
+			"title" => $user->first_name
 		];
 
 		$response->setlayout('piropazo.ejs');
@@ -457,7 +459,7 @@ class Service
 			FROM notification
 			WHERE `to` = {$request->person->id} 
 			AND service = 'piropazo'
-			AND `read` IS NULL");
+			ORDER BY inserted DESC");
 
 		// if no notifications, let the user know
 		if(empty($notifications)) {
@@ -465,15 +467,20 @@ class Service
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
 				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
-				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
+				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]
+			];
 
 			$response->setLayout('piropazo.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
+		foreach($notifications as $noti) $noti->inserted = strtoupper(date('d/m/Y h:ia', strtotime(($noti->inserted))));
+
 		// prepare content for the view
 		$content = [
-			"notifications" => $notifications];
+			"notifications" => $notifications,
+			"title" => "Notificaciones"
+		];
 
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
@@ -560,7 +567,8 @@ class Service
 			"crowned" => $piropazo[0]->crowned,
 			"isMyOwnProfile" => $isMyOwnProfile,
 			"percentageMatch" => $percentageMatch,
-			"profile" => $profile];
+			"profile" => $profile
+		];
 
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 
@@ -582,7 +590,7 @@ class Service
 		// get the list of people chating with you
 		$chats = Social::chatsOpen($request->person->id);
 
-		$matches = Connection::query("SELECT id_from AS id
+		$matches = Connection::query("SELECT id, first_name, picture FROM person WHERE id IN(SELECT id_from AS id
 		FROM _piropazo_relationships
 		WHERE status = 'match'
 		AND id_to = '{$request->person->id}'
@@ -590,18 +598,25 @@ class Service
 		SELECT id_to AS id
 		FROM _piropazo_relationships
 		WHERE status = 'match'
-		AND id_from = '{$request->person->id}'");
+		AND id_from = '{$request->person->id}')");
 
 		$matchesId = [];
-		foreach($matches as $match) $matchesId[] = $match->id;
+		foreach($matches as $match) $matchesId[$match->id] = $match;
 
 		$onlyMatchesChats = [];
+		$images = [];
 		foreach ($chats as $chat) {
-			if (in_array($chat->id, $matchesId)) $onlyMatchesChats[] = $chat;
+			if (key_exists($chat->id,  $matchesId)){
+				$chat->first_name = $matchesId[$chat->id]->first_name;
+				$chat->picture = $matchesId[$chat->id]->picture;
+				$chat->last_sent = explode(' ', $chat->last_sent)[0];
+				$images[] = $chat->picture;
+				$onlyMatchesChats[] = $chat;
+			}
 		}
 
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate("chats.ejs", ["chats" => $onlyMatchesChats, "myusername" => $request->person->username]);
+		$response->setTemplate("chats.ejs", ["chats" => $onlyMatchesChats, "myuserid" => $request->person->id, "title" => "Chat"], $images);
 	}
 
 	/**
@@ -646,7 +661,8 @@ class Service
 		// list of values
 		$content = [
 			"extra_fields" => isset($request->extra_fields) ? $request->extra_fields : "",
-			"profile" => $request->person];
+			"profile" => $request->person,
+			"title" => ""];
 
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 

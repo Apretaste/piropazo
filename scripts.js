@@ -405,24 +405,24 @@ $(() => {
     
     $('.modal').modal();
     $('.openchat')
-        .on("touchstart", event => { runTimer(); activeChat = event.currentTarget.id; activeUsername = event.currentTarget.getAttribute('username'); })
+        .on("touchstart", event => { runTimer(); activeChat = event.currentTarget.id; activeName = event.currentTarget.getAttribute('name'); })
         .on("touchmove", event => { clearTimeout(timer); moved = true; })
         .on("touchend", event => { openChat() });
 
     $('.openchat')
-        .on("mousedown", event => { runTimer(); activeChat = event.currentTarget.id; activeUsername = event.currentTarget.getAttribute('username'); })
+        .on("mousedown", event => { runTimer(); activeChat = event.currentTarget.id; activeName = event.currentTarget.getAttribute('name'); })
         .on("mouseup", event => { openChat() });
 });
 
 function openChat() {
-    if (!optionsModalActive && !moved) apretaste.send({ 'command': 'CHAT', 'data': { 'userId': activeChat } });
+    if (!optionsModalActive && !moved) apretaste.send({ 'command': 'PIROPAZO CONVERSACION', 'data': { 'userId': activeChat } });
     optionsModalActive = false;
     moved = false;
     clearTimeout(timer);
 }
 
 function viewProfile() {
-    apretaste.send({ 'command': 'PERFIL', 'data': { 'username': activeChat } });
+    apretaste.send({ 'command': 'PIROPAZO PERFIL', 'data': { 'id': activeChat } });
 }
 
 function writeModalOpen() {
@@ -434,20 +434,8 @@ function writeModalOpen() {
 function deleteModalOpen() {
     optionsModalActive = false;
     M.Modal.getInstance($('#optionsModal')).close();
-    if(typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con @'+ activeUsername +'?');
+    if(typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con '+ activeName.trim() +'?');
     M.Modal.getInstance($('#deleteModal')).open();
-}
-
-function searchProfile(){
-    var username = $('#usernameToSearch').val().trim();
-    if(username.length > 2){
-        apretaste.send({
-            'command':'CHAT BUSCAR',
-            'data':{'username': username}
-        })
-    }
-    else showToast("Ingrese un username valido")
-    
 }
 
 function deleteChat(){

@@ -184,9 +184,16 @@
 
 /* Matches */
 
-#matches-lists img, #matches-lists .secondary-content{
-	top: 35%;
-	right: 4px;
+#matches-lists .secondary-content, #noti-list .secondary-content{
+	top: 30%;
+	right: 6px;
+}
+
+#matches-lists img, #chats-list img{
+	width: 55px;
+	height: 55px;
+	left: 5px;
+	top: 20%;
 }
 
 .btn-x{
@@ -197,11 +204,43 @@
 	margin-left: 6px;
 }
 
-#matches-lists .collection, #matches-lists li{
+#matches-lists .collection, #matches-lists li, #chats-list, #noti-list{
 	border: none;
 }
 
+/* Notifications */
+
+#noti-list li{
+	padding: 5px 28px 5px 72px;
+}
+
+.collection-item.avatar{
+	min-height: 65px !important;
+}
+
+#noti-list > li > i{
+	position: absolute;
+	left: 24px !important
+}
+
+#noti-list i{
+	top: 35%;
+}
+
 /* Chat */
+
+#chats-list .secondary-content{
+	right: 8px;
+	top: 22px;
+}
+
+msg{
+	word-break: break-word;
+}
+
+.modal > .collection{
+	margin: 0;
+}
 
 .chat {
 	overflow:auto;

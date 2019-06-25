@@ -1,49 +1,44 @@
 <div class="row">
-	<div class="col s12"><h1>Chats</h1></div>
+		<% if(chats.length > 0) { %>
+			<section>
+			<ul class="collection" id="chats-list">
+				<% chats.forEach(function(chat) { %>
+					<li class="collection-item avatar openchat" id="<%=chat.id%>" name='<%= chat.first_name %>'>
+						<a>
+							<!-- PICTURE -->
+							<% if(chat.picture) var src = "{{APP_IMAGE_PATH}}" + chat.picture;
+							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+							<img src="<%= src %>" alt="<%= chat.first_name %>" class="circle"/>
 
-	<ul class="collection">
-		<%chats.forEach(function(chat){%>
-			<%var color = ""%>
-			<li class="collection-item avatar noselect openchat" id="<%=chat.id%>" username="<%=chat.username%>">
-
-			<%if(chat.gender=="F") var color = "purple"; else if(chat.gender=="M") var color = "blue";%>
-
-			<i class="circle <%=color%> lighten-2"><%=chat.username[0].toUpperCase()%></i>
-
-			<span>
-				<b>@<%=chat.username%></b>
-				<%if(chat.online=="1"){%>
-					<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
-				<%}%>
-					<small class="right"><%=chat.last_sent%></small>
-				<br/>
-
-				<!-- TEXT -->
-				<msg>
-					<%if(chat.read_date != null && chat.username != myusername){%>
-						<b><%=chat.last_note%></b>
-					<%}else{%>
-						<%=chat.last_note%>
-						<%if(chat.last_note_read){%>&#10004;<%}%>
+							<!-- FIRST NAME -->
+							<h6 class="black-text"><%= chat.first_name %></h6>
+						</a>
+						<!-- TEXT -->
+						<msg>
+							<%if(!chat.last_note_read && chat.last_note_user != myuserid){%>
+								<b><%=chat.last_note%></b>
+							<%}else{%>
+								<%=chat.last_note%>
+							<%}%>
+						</msg>
+						<span class="secondary-content">
+							<small class="right black-text"><%=chat.last_sent%></small>
+						</span>
+					</li>
+					<%if(chat.online=="1"){%>
+						<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
 					<%}%>
-				</msg>
-			</span>
-			</li>
-		<%})%>
-	</ul>
-</div>
-
-<div class="fixed-action-btn">
-	<a onclick="apretaste.send({'command':'CHAT ONLINE'})" class="btn-floating btn-large waves-effect waves-light modal-trigger">
-		<i class="large material-icons">people</i>
-	</a>
+				<% }) %>
+			</ul>
+			</section>
+		<% } %>
 </div>
 
 <div class="modal bottom-sheet" id="optionsModal">
 	<ul class="collection">
-		<li class="collection-item" onclick="viewProfile()"><div>Perfil<a class="secondary-content"><i class="material-icons">person</i></a></div></li>
-		<li class="collection-item" onclick="writeModalOpen()"><div>Escribir<a class="secondary-content"><i class="material-icons">message</i></a></div></li>
-		<li class="collection-item" onclick="deleteModalOpen()"><div>Borrar<a class="secondary-content"><i class="material-icons">delete</i></a></div></li>
+		<li class="collection-item" onclick="viewProfile()"><div>Perfil<a class="secondary-content"><i class="material-icons piropazo-color-text">person</i></a></div></li>
+		<li class="collection-item" onclick="writeModalOpen()"><div>Escribir<a class="secondary-content"><i class="material-icons piropazo-color-text">message</i></a></div></li>
+		<li class="collection-item" onclick="deleteModalOpen()"><div>Borrar<a class="secondary-content"><i class="material-icons piropazo-color-text">delete</i></a></div></li>
 	</ul>
 </div>
 
