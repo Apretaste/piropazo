@@ -315,6 +315,11 @@ html {
 	margin-bottom: 0;
 }
 
+#nochats{
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
 #messageField{
     position: absolute;
     width: 100%;
