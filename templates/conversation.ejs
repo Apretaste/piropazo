@@ -15,7 +15,7 @@
 	<p id="nochats">Usted no tienen ningun mensaje con este usuario.</p>
 	<%}%>
 
-	<div class="valign-wrapper" id="messageField">
+	<div class="valign-wrapper container" id="messageField">
 		<div class="col s10 m11" style="margin-bottom: 0;">
 			<textarea id="message" placeholder="Escribe un mensaje" class="materialize-textarea" oninput="messageLengthValidate(500)"></textarea>
 			<!--span class="helper-text">Restante: 500</span-->
@@ -25,7 +25,7 @@
 </div>
 
 <div class="modal bottom-sheet" id="optionsModal">
-	<ul class="collection" style="margin: 0;">
+	<ul class="collection" style="margin: 0;"> 
 		<li class="collection-item" onclick="deleteModalOpen()"><div>Borrar mensaje<a class="secondary-content"><i class="material-icons piropazo-color-text">delete</i></a></div></li>
 	</ul>
 </div>
