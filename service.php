@@ -76,7 +76,9 @@ class Service
 		$images = ($match->picture) ? [$match->picture] : [];
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 		$content = [
-			"match" => $match];
+			"match" => $match,
+			"menuicon" => "favorite"
+		];
 
 		// build the response
 		$response->setLayout('piropazo.ejs');
@@ -92,7 +94,6 @@ class Service
 	 */
 	public function _si (Request $request, Response $response)
 	{
-		die();
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
@@ -272,7 +273,8 @@ class Service
 			"liked" => $liked,
 			"waiting" => $waiting,
 			"matched" => $matched,
-			"title" => "Parejas"];
+			"title" => "Parejas",
+			"menuicon" => "people"];
 
 		// Building the response
 		$response->setLayout('piropazo.ejs');
@@ -433,7 +435,8 @@ class Service
 		$content = [
 			"credit" => $credit,
 			"flowers" => $user->flowers,
-			"crowns" => $user->crowns
+			"crowns" => $user->crowns,
+			"menuicon" => "shopping_cart"
 		];
 
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
@@ -479,7 +482,8 @@ class Service
 		// prepare content for the view
 		$content = [
 			"notifications" => $notifications,
-			"title" => "Notificaciones"
+			"title" => "Notificaciones",
+			"menuicon" => "notifications"
 		];
 
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
@@ -512,69 +516,6 @@ class Service
 		
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('message.ejs', $content, $images);
-	}
-
-	/**
-	 * Open the user's profile
-	 *
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _perfil (Request $request, Response $response)
-	{
-
-		if(!isset($request->input->data->id)){
-			$this->_editar($request, $response);
-			return;
-		}
-		// get the user's profile
-		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
-		$profile = Social::prepareUserProfile(Utils::getPerson($id));
-
-		// erase unwanted properties in the object
-		$properties = ['username','date_of_birth','gender','eyes','skin','body_type','hair','province','city','highest_school_level','occupation','marital_status','interests','about_me','lang','picture','sexual_orientation','religion','country','usstate','full_name','picture_public','picture','location','age','completion'];
-		$profile = $this->filterObjectProperties($properties, $profile);
-
-		// check the specific values of piropazo
-		$piropazo = Connection::query("
-			SELECT flowers, crowns, (IFNULL(DATEDIFF(CURRENT_TIMESTAMP, crowned),99) < 3) AS crowned
-			FROM _piropazo_people
-			WHERE id_person = $id");
-
-		// ensure the user exists
-		if(empty($profile) || empty($piropazo)) return $response;
-
-		// check if is my own profile
-		$isMyOwnProfile = $id == $request->person->id;
-
-		// calculate the percentage of a math
-		$percentageMatch = $isMyOwnProfile ? "" : $this->getPercentageMatch($id, $request->person->id);
-
-		// get the match color class based on gender
-		if($profile->gender == "M") $profile->color = "male";
-		elseif($profile->gender == "F") $profile->color = "female";
-		else $profile->color = "neutral";
-
-		// get the profile image
-		$images = [];
-		if($request->person->picture) $images[] = $profile->picture;
-
-		// create the response object
-		$content = [
-			"flowers" => $piropazo[0]->flowers,
-			"crowns" => $piropazo[0]->crowns,
-			"crowned" => $piropazo[0]->crowned,
-			"isMyOwnProfile" => $isMyOwnProfile,
-			"percentageMatch" => $percentageMatch,
-			"profile" => $profile
-		];
-
-		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
-
-		// Building response
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('profile.ejs', $content, $images);
 	}
 
 	/**
@@ -615,8 +556,52 @@ class Service
 			}
 		}
 
+		$content = [
+			"chats" => $onlyMatchesChats,
+			"myuserid" => $request->person->id,
+			"title" => "Chat",
+			"menuicon" => "message"
+		];
+
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate("chats.ejs", ["chats" => $onlyMatchesChats, "myuserid" => $request->person->id, "title" => "Chat"], $images);
+		$response->setTemplate("chats.ejs", $content, $images);
+	}
+
+	/**
+	 *
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
+	 */
+	public function _escribir(Request $request, Response $response)
+	{
+		if(!isset($request->input->data->id)) return;
+		$userTo = Utils::getPerson($request->input->data->id);
+		if(!$userTo) return;
+		$message = $request->input->data->message;
+
+		$blocks = Social::isBlocked($request->person->id ,$userTo->id);
+		if ($blocks->blocked>0 || $blocks->blockedByMe>0){
+			Utils::addNotification(
+				$request->person->id, 
+				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.", 
+				"{}",
+				'error'
+			);
+			return;
+		}
+		
+		// store the note in the database
+		$message = Connection::escape($message, 499);
+		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
+
+		// send notification for the app
+		Utils::addNotification(
+			$userTo->id,
+			"@{$request->person->username} le ha enviado un mensaje",
+			"{'command':'PIROPAZO CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
+			'message'
+		);
 	}
 
 	/**
@@ -630,7 +615,7 @@ class Service
 	{
 		// get the edit response
 		$request->extra_fields = "hidden";
-		$this->_editar ($request, $response);
+		$this->_perfil ($request, $response);
 	}
 
 	/**
@@ -640,35 +625,82 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _editar (Request $request, Response $response)
+	public function _perfil(Request $request, Response $response)
 	{
+		// get the user's profile
+		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
+		$isMyOwnProfile = $id == $request->person->id;
+		$profile = Social::prepareUserProfile(Utils::getPerson($id));
+
 		// get what gender do you search for
-		if($request->person->sexual_orientation == "BI") $request->person->searchfor = "AMBOS";
-		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "MUJERES";
-		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HETERO") $request->person->searchfor = "HOMBRES";		
-		elseif($request->person->gender == "M" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "HOMBRES";
-		elseif($request->person->gender == "F" && $request->person->sexual_orientation == "HOMO") $request->person->searchfor = "MUJERES";
-		else $request->person->searchfor = "";
+		if($profile->sexual_orientation == "BI") $profile->searchfor = "AMBOS";
+		elseif($profile->gender == "M" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "MUJERES";
+		elseif($profile->gender == "F" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "HOMBRES";		
+		elseif($profile->gender == "M" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "HOMBRES";
+		elseif($profile->gender == "F" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "MUJERES";
+		else $profile->searchfor = "";
 
 		// get array of images
 		$images = [];
-		if($request->person->picture) {
+		if($profile->picture) {
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
 			$wwwroot = $di->get('path')['root'];
-			$images[] = $request->person->picture;
+			$images[] = $profile->picture;
 		}
 
 		// list of values
 		$content = [
 			"extra_fields" => isset($request->extra_fields) ? $request->extra_fields : "",
-			"profile" => $request->person,
-			"title" => ""];
+			"profile" => $profile,
+			"isMyOwnProfile" => $isMyOwnProfile,
+			"title" => "Perfil",
+			"menuicon" => "person"
+		];
 
 		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('profile_edit.ejs', $content, $images);
+		$response->setTemplate('profile.ejs', $content, $images);
+	}
+
+	/**
+	 * Show the list of support messages
+	 *
+	 * @param Request
+	 * @param Response
+	 */
+	public function _soporte(Request $request, Response $response)
+	{
+		// @TODO replace email with ids
+		$email = $request->person->email;
+		$username = $request->person->username;
+
+		// get the list of messages
+		$tickets = Connection::query("
+			SELECT A.*, B.username 
+			FROM support_tickets A 
+			JOIN person B
+			ON A.from = B.email
+			WHERE A.from = '$email' 
+			OR A.requester = '$email' 
+			ORDER BY A.creation_date ASC");
+
+		// prepare chats for the view
+		$chat = [];
+		foreach($tickets as $ticket) {
+			$message = new stdClass();
+			$message->class = $ticket->from == $email ? "me" : "you";
+			$message->from = $ticket->username;
+			$message->text = preg_replace('/[\x00-\x1F\x7F]/u', '', $ticket->body);
+			$message->date = date_format((new DateTime($ticket->creation_date)),'d/m/Y h:i a');
+			$message->status = $ticket->status;
+			$chat[] = $message;
+		}
+
+		// send data to the view
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('soporte.ejs',['messages' => $chat, 'myusername' => $username, "title" => "Soporte"]);
 	}
 
 	/**

@@ -1,91 +1,219 @@
-<div class="row">
-	<div class="col s12 center-align">
-		<!-- PROFILE COMPLETION MESSAGE -->
-		<% if(isMyOwnProfile && profile.completion < 80) { %>
-			<div class="message danger">
-				Complete al menos el 65% del perfil
-				<a href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">
-					<i class="material-icons right green-text">create</i>
-				</a>
-			</div>
-		<% } %>
-			<!-- PICTURE -->
-			<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
-			else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-			<img class="responsive-img profile-img z-depth-2 materialboxed <%= profile.color %>-border" src="<%= src %>" alt="<%= profile.username %>"/>
+<%var isDisabled = !isMyOwnProfile ? "disabled" : "";%>
+<%if(!isMyOwnProfile){%>
+	<style>.caret{display: none;}</style>
+<%}%>
+<div id="img-pre" class="piropazo-color"></div>
+
+<!-- PICTURE -->
+<% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
+else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+<div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
+	<!-- EDIT PIC BUTTON -->
+	<%if(isMyOwnProfile){%>
+	<input <%=isDisabled%> id="picturefield" type="file" class="hide"/>
+	<a class="btn-floating white" id="picture-upload-btn" onclick="uploadPicture()"><i class="material-icons grey-text text-darken-4">camera_alt</i></a>
+	<%}%>
+</div>
+
+<div class="row" id="edit-fields">
+
+	<!-- USERNAME -->
+	<div class="input-field col s8 m4 offset-s2 offset-m4">
+		<input <%=isDisabled%> id="username" type="text" value="@<%= profile.username %>" class="validate"/>
+		<label for="username">Username</label>
+	</div>
+
+	<!-- DESCRIPTION -->
+	<div class="input-field col s12">
+		<i class="material-icons prefix grey-text text-darken-2">account_circle</i>
+		<textarea <%=isDisabled%> id="about_me" type="text" class="materialize-textarea"><%= profile.about_me %></textarea>
+		<label for="about_me">Cuéntanos algo sobre ti</label>
+	</div>
+
+	<!-- NAME -->
+	<div class="input-field col s12 m6">
+		<i class="material-icons prefix grey-text text-darken-2">person</i>
+		<input <%=isDisabled%> id="full_name" type="text" value="<%= profile.first_name + ' ' + profile.last_name %>" class="validate"/>
+		<label for="full_name">Nombre y Apellido</label>
+	</div>
+
+	<!-- GENDER -->
+	<div class="input-field col s12 m6">
+		<i class="material-icons prefix grey-text text-darken-2">wc</i>
+		<select <%=isDisabled%> id="gender" class="validate">
+			<option value=""></option>
+			<option value="M" <%if(profile.gender=='M'){%>selected<%}%>>Hombre</option>
+			<option value="F" <%if(profile.gender=='F'){%>selected<%}%>>Mujer</option>
+		</select>
+		<label for="gender">Sexo</label>
+	</div>
+
+	<!-- SEXUAL ORIENTATION -->
+	<% var orientation = ["MUJERES","HOMBRES","AMBOS"] %>
+	<div class="input-field col s12 m6">
+		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
+		<select <%=isDisabled%> id="sexual_orientation" class="validate">
+			<option value=""></option>
+			<% orientation.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.searchfor){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="sexual_orientation">Preferencias</label>
+	</div>
+
+	<!-- BIRTH YEAR -->
+	<div class="input-field col s12 m6">
+		<i class="material-icons prefix grey-text text-darken-2">cake</i>
+		<select <%=isDisabled%> id="year_of_birth" class="validate">
+			<option value=""></option>
+			<% getYears().forEach(function(year) { %>
+				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
+			<% }); %>
+		</select>
+		<label for="year_of_birth">Año de nacimiento</label>
+	</div>
+
+	<!-- BODY TYPE -->
+	<% var body_type = ["DELGADO","MEDIO","EXTRA","ATLETICO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<i class="material-icons prefix grey-text text-darken-2">face</i>
+		<select <%=isDisabled%> id="body_type" class="validate">
+			<option value="" selected></option>
+			<% body_type.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.body_type){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="body_type">Cuerpo</label>
+	</div>
+
+	<!-- EYES -->
+	<% var eyes = ["NEGRO","CARMELITA","VERDE","AZUL","AVELLANA","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<i class="material-icons prefix grey-text text-darken-2">face</i>
+		<select <%=isDisabled%> id="eyes" class="validate">
+			<option value=""></option>
+			<% eyes.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.eyes){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="eyes">Ojos</label>
+	</div>
+
+	<!-- HAIR -->
+	<% var hair = ["TRIGUENO","CASTANO","RUBIO","NEGRO","ROJO","BLANCO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<i class="material-icons prefix grey-text text-darken-2">face</i>
+		<select <%=isDisabled%> id="hair" class="validate">
+			<option value=""></option>
+			<% hair.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.hair){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="hair">Cabello</label>
+	</div>
+
+	<!-- SKIN -->
+	<% var skin = ["BLANCO","NEGRO","MESTIZO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<i class="material-icons prefix grey-text text-darken-2">face</i>
+		<select <%=isDisabled%> id="skin" class="validate">
+			<option value=""></option>
+			<% skin.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.skin){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="skin">Piel</label>
+	</div>
+
+	<!-- MARITAL STATUS -->
+	<% var marital_status = ["SOLTERO","SALIENDO","COMPROMETIDO","CASADO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
+		<select <%=isDisabled%> id="marital_status" class="validate">
+			<option value=""></option>
+			<% marital_status.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.marital_status){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="marital_status">Estado Civil</label>
+	</div>
+
+	<!-- HIGHEST SCHOOL LEVEL-->
+	<% var highest_school_level = ["PRIMARIO","SECUNDARIO","TECNICO","UNIVERSITARIO","POSTGRADUADO","DOCTORADO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">school</i>
+		<select <%=isDisabled%> id="highest_school_level" class="validate">
+			<option value=""></option>
+			<% highest_school_level.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.highest_school_level){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="highest_school_level">Nivel Educativo</label>
+	</div>
+
+	<!-- OCCUPATION -->
+	<% var profesion = ["TRABAJADOR ESTATAL","CUENTAPROPISTA","ESTUDIANTE","AMA DE CASA","DESEMPLEADO","OTRO"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">business_center</i>
+		<select <%=isDisabled%> id="occupation" class="validate">
+			<option value=""></option>
+			<% profesion.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.occupation){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="occupation">Ocupación</label>
+	</div>
+
+	<!-- COUNTRY -->
+	<div class="input-field col s12 m6">
+		<i class="material-icons prefix grey-text text-darken-2">place</i>
+		<select <%=isDisabled%> id="country" class="validate" onchange="showStateOrProvince()">
+			<option value=""></option>
+			<% getCountries().forEach(function(country) { %>
+				<option value="<%= country.code %>" <%if(profile.country==country.code){%>selected<%}%>><%= country.name %></option>
+			<% }); %>
+		</select>
+		<label for="country">País</label>
+	</div>
+
+	<!-- PROVINCE-->
+	<% var province = ["PINAR_DEL_RIO","LA_HABANA","ARTEMISA","MAYABEQUE","MATANZAS","VILLA_CLARA","CIENFUEGOS","SANCTI_SPIRITUS","CIEGO_DE_AVILA","CAMAGUEY","LAS_TUNAS","HOLGUIN","GRANMA","SANTIAGO_DE_CUBA","GUANTANAMO","ISLA_DE_LA_JUVENTUD"] %>
+	<div class="input-field province-div col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">place</i>
+		<select <%=isDisabled%> id="province" class="validate">
+			<option value=""></option>
+			<% province.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.province){%>selected<%}%>><%= val.replaceAll('_', ' ').firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="province">Provincia</label>
+	</div>
+
+	<!-- CITY -->
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">place</i>
+		<input <%=isDisabled%> id="city" type="text" value="<%= profile.city %>" class="validate"/>
+		<label for="city">¿En que ciudad o pueblo vives?</label>
+	</div>
+
+
+	<!-- RELIGION -->
+	<% var religion = ["CRISTIANISMO","CATOLICISMO","YORUBA","PROTESTANTE","SANTERO","ABAKUA","BUDISMO","ISLAM","ATEISMO","AGNOSTICISMO","SECULARISMO","OTRA"] %>
+	<div class="input-field col s12 m6 <%= extra_fields %>">
+		<i class="material-icons prefix grey-text text-darken-2">flare</i>
+		<select <%=isDisabled%> id="religion" class="validate">
+			<option value=""></option>
+			<% religion.forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.religion){%>selected<%}%>><%= val.firstUpper() %></option>
+			<% }); %>
+		</select>
+		<label for="religion">Religión</label>
 	</div>
 </div>
 
-<div class="row">
-	<div class="col s12">
-		<!--PERCENTAGE-->
-		<% if( ! isMyOwnProfile) { %>
-			<p class="size-large <%= profile.color %>-color"><%= percentageMatch %>% IGUALES</p>
-		<% } %>
-
-		<p>
-			<!-- USERNAME, AGE AND LOCATION -->
-			<span class="<%= profile.color %>-color">@<%= profile.username %></span>
-			&nbsp;<b>&middot;</b>&nbsp;
-			<%= profile.age %> años
-			&nbsp;<b>&middot;</b>&nbsp;
-			<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= profile.country %>.png"/>
-			<%= profile.location %>
-
-			<!-- FLOWERS AND CROWN -->
-			<% if(isMyOwnProfile) { %>
-				<span class="right">
-					<span class="green-text">
-						<i class="material-icons tiny">local_florist</i> <%= flowers %>
-					</span>
-					&nbsp;&nbsp;
-					<span>
-						<a class="underline green-text underline" href="#" onclick="apretaste.send({command:'PIROPAZO CORONA'})">
-							<i class="material-icons tiny underline">favorite</i> <%= crowns %>
-						</a>
-					</span>
-				</span>
-			<% } %>
-		</p>
-
-		<!-- ABOUT ME -->
-		<p><%= profile.about_me %></p>
-
-		<!-- MY INTERESTS -->
-		<% if(profile.interests.length > 0) { %>
-			<p class="interests">
-				<% profile.interests.forEach(function(interest){ %>
-					<span class="interest"><%= interest %></span>
-				<% }); %>
-			</p>
-		<% } %>
-
-		<!-- BUTTON EDITAR -->
-		<% if(isMyOwnProfile) { %>
-			<a class="waves-effect waves-light btn-small" href="#" onclick="apretaste.send({command:'PIROPAZO EDITAR'})">Editar Perfil</a>
-		<% } %>
-	</div>
+<!-- SAVE BUTTON -->
+<%if(isMyOwnProfile){%>
+<div class="fixed-action-btn">
+	<a class="btn-floating btn-large waves-effect waves-light piropazo-color" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
 </div>
-
-<!-- DENOUNCE BUTTON -->
-<% if( ! isMyOwnProfile) { %>
-<div class="row">
-	<div class="col s12 center-align">
-		<p id="value_report">
-			<a id="denounce-link" href="#" onclick="showDenounceMenu()">Denuncie a este usuario</a>
-			<div id="denounce-menu" class="input-field hidden">
-				<select onchange="denounceUser(this.value, '<%= profile.id %>')">
-					<option value="" disabled selected>Escoja una razón</option>
-					<option value="OFFENSIVE">La foto o el texto es ofensivo</option>
-					<option value="FAKE">El perfil tiene información falsa</option>
-					<option value="MISLEADING">La persona no luce como el perfil</option>
-					<option value="IMPERSONATING">Está impersonando a alguien</option>
-					<option value="COPYRIGHT">El perfil viola los derechos de autor</option>
-				</select>
-				<label>Denuncie a este usuario</label>
-			</div>
-			<p id="denounce-done" class="hidden red-text">Gracias por denunciar a este usuario</p>	
-		</p>
-	</div>
-</div>
-<% } %>
+<%}%>

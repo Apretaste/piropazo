@@ -8,7 +8,7 @@ $(document).ready(function(){
 	$('.modal').modal();
 	$('.materialboxed').materialbox({'onCloseEnd':()=> resizeImg()});
 
-	$('.profile-img').click(function(){
+	$('.profile-img, .col.s4').click(function(){
 		if($('#desc').attr('status') == "opened") {
 			$('#desc').slideToggle({direction: "up"}).attr('status', 'closed'); //, () => resizeImg()
 		}
@@ -107,6 +107,8 @@ function resizeImg(){
 
 // say yes/no to a date
 function respondToDate(personId, answer) {
+	if($('#desc').attr('status') == "opened") return;
+	
 	apretaste.send({
 		command: "PIROPAZO " + answer,
 		data: {id: personId}, 
@@ -198,38 +200,10 @@ function sendFlower() {
 	apretaste.send({'command':'PIROPAZO FLOR','data':{id:personId, msg:message}});
 }
 
-function deleteModalOpen() {
-    optionsModalActive = false;
-    M.Modal.getInstance($('#optionsModal')).close();
-    M.Modal.getInstance($('#deleteModal')).open();
-}
-
-function deleteMessage(){
-    apretaste.send({
-        'command': 'CHAT BORRAR',
-        'data':{'id':activeMessage, 'type': 'message'},
-        'redirect': false,
-        'callback':{'name':'deleteMessageCallback','data':activeMessage}
-    })
-}
-
-function sendMessage() {
+function messageLengthValidate(max) {
     var message = $('#message').val().trim();
-    if (message.length > 0) {
-        apretaste.send({
-            'command': "CHAT ESCRIBIR",
-            'data': { 'id': activeChat, 'message': message },
-            'redirect': false,
-            'callback': { 'name': 'sendMessageCallback', 'data': message }
-        });
-    }
-    else showToast("Mensaje vacio");
-}
-
-function messageLengthValidate() {
-    var message = $('#message').val().trim();
-    if (message.length <= 500) {
-        $('.helper-text').html('Restante: ' + (500 - message.length));
+    if (message.length <= max) {
+        $('.helper-text').html('Restante: ' + (max - message.length));
     }
     else {
         $('.helper-text').html('Limite excedido');
@@ -274,6 +248,7 @@ function sendFile(base64File){
 
 // submit the profile informacion 
 function submitProfileData() {
+	if(isMyOwnProfile) return;
 	// get the array of fields and  
 	var fields = ['picture','full_name', 'username', 'about_me','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
 
@@ -473,17 +448,21 @@ function runTimer() {
     }, 800);
 }
 
-function sendMessage() {
-    var message = $('#message').val().trim();
-    if (message.length > 0) {
+function sendMessage(toService) {
+	var message = $('#message').val().trim();
+	var minLength = toService == 'CHAT' ? 1 : 30;
+    if (message.length >= minLength) {
         apretaste.send({
-            'command': "CHAT ESCRIBIR",
+            'command': toService+" ESCRIBIR",
             'data': { 'id': activeChat, 'message': message },
             'redirect': false,
             'callback': { 'name': 'sendMessageCallback', 'data': message }
         });
     }
-    else showToast("Mensaje vacio");
+    else {
+		if(toService == "CHAT") showToast("Mensaje vacio")
+		else showToast("Por favor describanos mejor su solicitud")
+	}
 }
 
 function sendMessageCallback(message) {

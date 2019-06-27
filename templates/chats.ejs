@@ -12,6 +12,9 @@
 
 							<!-- FIRST NAME -->
 							<h6 class="black-text"><%= chat.first_name %></h6>
+							<%if(chat.online=="1"){%>
+								<i class="material-icons green-text online-icon">brightness_1</i>
+							<%}%>
 						</a>
 						<!-- TEXT -->
 						<msg>
@@ -25,9 +28,7 @@
 							<small class="right black-text"><%=chat.last_sent%></small>
 						</span>
 					</li>
-					<%if(chat.online=="1"){%>
-						<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
-					<%}%>
+					
 				<% }) %>
 			</ul>
 			</section>
@@ -45,14 +46,14 @@
 <div id="writeMessageModal" class="modal bottom-sheet">
 	<div class="modal-content">
 		<div class="input-field">
-          <textarea id="message" class="materialize-textarea" oninput="messageLengthValidate()"></textarea>
+          <textarea id="message" class="materialize-textarea" oninput="messageLengthValidate(500)"></textarea>
 		  <label for="message">Escriba su mensaje</label>
 		  <span class="helper-text">Restante: 500</span>
     	</div>
 	</div>	
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="sendMessage()" class="modal-close waves-effect waves-green btn-flat">Enviar</a>
+		<a onclick="sendMessage('CHAT')" class="modal-close waves-effect waves-green btn-flat">Enviar</a>
 	</div>
 </div>
 
