@@ -2,7 +2,6 @@
 
 /**
  * Apretaste Piropazo Service
- * @version 3.0
  */
 class Service
 {
@@ -36,7 +35,11 @@ class Service
 			empty($request->person->sexual_orientation) ||
 			$request->person->age < 10 || $request->person->age > 110 ||
 			empty($request->person->country)
-		) return $this->_inicio($request, $response);
+		){
+			// get the edit response
+			$request->extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
 
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->person->id);
@@ -50,7 +53,7 @@ class Service
 				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
-				"button" => ["href"=>"PIROPAZO EDITAR", "caption"=>"Editar perfil"]];
+				"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Editar perfil"]];
 
 			$response->setLayout('piropazo.ejs');
 			return $response->setTemplate('message.ejs', $content);
@@ -541,6 +544,20 @@ class Service
 		WHERE status = 'match'
 		AND id_from = '{$request->person->id}')");
 
+		// if no matches, let the user know
+		if(empty($chats) || empty($matches)) {
+			$content = [
+				"header"=>"No tiene conversaciones",
+				"icon"=>"sentiment_very_dissatisfied",
+				"text" => "Aun no has hablado con nadie, busca pareja y animate a escribirle",
+				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar pareja"],
+				"title" => "chats",
+				"menuicon" => "message"];
+
+			$response->setLayout('piropazo.ejs');
+			return $response->setTemplate('message.ejs', $content);
+		}
+
 		$matchesId = [];
 		foreach($matches as $match) $matchesId[$match->id] = $match;
 
@@ -602,20 +619,6 @@ class Service
 			"{'command':'PIROPAZO CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
 			'message'
 		);
-	}
-
-	/**
-	 * Edit the user profile at start
-	 * 
-	 * @author salvipascual
-	 * @param Request
-	 * @param Response
-	 */
-	public function _inicio(Request $request, Response $response)
-	{
-		// get the edit response
-		$request->extra_fields = "hidden";
-		$this->_perfil ($request, $response);
 	}
 
 	/**
@@ -734,7 +737,6 @@ class Service
 		// return the best match as a Person object
 		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
 		$person->crown = $match->crown;
-		$person->match = $this->getPercentageMatch($user->id, $match->user);
 
 		// get the match color class based on gender
 		if($person->gender == "M") $person->color = "male";

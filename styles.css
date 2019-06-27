@@ -91,7 +91,7 @@
 #profile-rounded-img{
     background-position: 50% 50%;
 	background-repeat: no-repeat;
-	background-size: 168px;
+	background-size: 168px 168px;
 	position: relative;
 	margin: auto;
 	border: 4px solid white;
