@@ -248,7 +248,7 @@ function sendFile(base64File){
 
 // submit the profile informacion 
 function submitProfileData() {
-	if(isMyOwnProfile) return;
+	if(!isMyOwnProfile) return;
 	// get the array of fields and  
 	var fields = ['picture','full_name', 'username', 'about_me','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
 
