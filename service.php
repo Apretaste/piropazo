@@ -27,20 +27,12 @@ class Service
 	 */
 	public function _citas(Request $request, Response $response)
 	{
-		// ensure your profile is completed
-		if(
-			empty($request->person->picture) ||
-			empty($request->person->first_name) ||
-			empty($request->person->gender) ||
-			empty($request->person->sexual_orientation) ||
-			$request->person->age < 10 || $request->person->age > 110 ||
-			empty($request->person->country)
-		){
+		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$request->extra_fields = "hide";
+			$extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
-
+		
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->person->id);
 
@@ -195,6 +187,12 @@ class Service
 	 */
 	public function _parejas (Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->person->id);
 
@@ -293,6 +291,12 @@ class Service
 	 */
 	public function _flor (Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// check if you have enought flowers to send
 		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
 		if(empty($flowers)) {
@@ -343,6 +347,12 @@ class Service
 	 */
 	public function _corazon (Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// check if you have enought crowns
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
@@ -378,6 +388,12 @@ class Service
 	}
 
 	public function _conversacion(Request $request, Response $response){
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// get the username of the note
 		$user = Utils::getPerson($request->input->data->userId);
 
@@ -425,6 +441,12 @@ class Service
 	 */
 	public function _tienda (Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// get the user items
 		$user = Connection::query("
 			SELECT flowers, crowns
@@ -458,6 +480,11 @@ class Service
 	 */
 	public function _notificaciones (Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
 
 		// get all unread notifications
 		$notifications = Connection::query("
@@ -531,6 +558,12 @@ class Service
 
 	public function _chat(Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)){
+			// get the edit response
+			$extra_fields = "hide";
+			return $this->_perfil ($request, $response);
+		}
+
 		// get the list of people chating with you
 		$chats = Social::chatsOpen($request->person->id);
 
@@ -630,6 +663,8 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
+		if($this->isProfileIncomplete($request->person)) $extra_fields = "hide";
+
 		// get the user's profile
 		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
 		$isMyOwnProfile = $id == $request->person->id;
@@ -918,5 +953,17 @@ class Service
 		
 		$professionTags[] = $match->highest_school_level;
 		$professionTags[] = $match->occupation;
+	}
+
+	private function isProfileIncomplete($person){
+		// ensure your profile is completed
+		return (
+			empty($person->picture) ||
+			empty($person->first_name) ||
+			empty($person->gender) ||
+			empty($person->sexual_orientation) ||
+			$person->age < 10 || $person->age > 110 ||
+			empty($person->country)
+		);
 	}
 }
