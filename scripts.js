@@ -313,7 +313,7 @@ function showToast(text){
 
 function updatePicture(file){
     // display the picture on the img
-    $('#picture').attr('src', "data:image/jpg;base64,"+file);
+    $('#profile-rounded-img').css('background-image', "url(data:image/jpg;base64,"+file+')');
 
     // show confirmation text
     showToast('Su foto ha sido cambiada correctamente');
