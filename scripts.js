@@ -75,26 +75,21 @@ function resizeImg(){
 
 	$('.profile-img').css('height', '');
 	if(typeof match != 'undefined'){
-		if($('html').height() > $(window).height()+1){ //+1 to avoid decimals
-			if($('.container > .row').length == 2){
-				$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
-			}
+		var floating_btns = $('.actions .btn-floating');
+		var size = $(window).height()*.10;
+		floating_btns.css('transition','none');
+		floating_btns.height(size);
+		floating_btns.width(size);
+		$('.actions .btn-floating i').css('line-height',(size)+'px');
+		$('.actions .btn-floating i').css('font-size',(size/20)+'rem');
 
-			$('.profile-img').height($('.profile-img').height() - $($('.row')[0]).outerHeight(true) - $($('#actions')[0]).outerHeight(true) - 40)
+		floating_btns.css('transition','');
+
+		if ($('.container > .row').length == 2) {
+			$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
 		}
 
-		var lastWidth = 0;
-		while($('html').height() < $(window).height() - 1) {
-			$('.profile-img').height($('.profile-img').height()+1);
-
-			if($('.profile-img').width() == lastWidth) break;
-			lastWidth = $('.profile-img').width();
-		}
-
-		var imgMargin = parseFloat($('.profile-img').css('margin-left').replace("px",""));
-		$('#profile .position-bottom.right').css("right", imgMargin+'px');
-		imgMargin += 8;
-		$('#profile .position-bottom.left').css("left", imgMargin+'px');
+		$('.profile-img').height($('.profile-img').height() - $($('#actions')[0]).outerHeight(true) - 31);
 	}
 	else{
 		$('#profile-rounded-img').height($(window).height()/4); // picture must be 1/4 of the screen
