@@ -29,7 +29,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 		
@@ -189,7 +189,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -293,7 +293,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -349,7 +349,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -390,7 +390,7 @@ class Service
 	public function _conversacion(Request $request, Response $response){
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -443,7 +443,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -482,7 +482,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
@@ -560,7 +560,7 @@ class Service
 	{
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
-			$extra_fields = "hide";
+			$request->extra_fields = "hide";
 			return $this->_perfil ($request, $response);
 		}
 
