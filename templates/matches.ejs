@@ -24,7 +24,7 @@
 							
 							<a onclick="apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'<%=person.id%>'}})"><i class="material-icons piropazo-color-text">message</i></a>
 							
-							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
+							<a href="#!" class="grey darken-2 btn-x" onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.first_name %>')"><i class="material-icons white-text">close</i></a>
 						</span>
 					</li>
 				<% }) %>
@@ -36,7 +36,7 @@
 		<!--WAITING FOR YOU-->
 		<% if(waiting.length > 0) { %>
 			<section>
-			<h4 class="piropazo-color-text">Esperando por ti</h4>
+			<h4 class="piropazo-color-text">Esperando por tí</h4>
 			<ul class="collection">
 				<% waiting.forEach(function(person) { %>
 					<li class="collection-item avatar" id="<%=person.id%>">
@@ -56,7 +56,7 @@
 						<span class="secondary-content">
 							<!-- BUTTONS -->
 							<a href="#!" onclick="doMatch('<%= person.id %>')"><i class="material-icons piropazo-color-text">check</i></a>
-							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
+							<a href="#!" class="grey darken-2 btn-x" onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.first_name %>')"><i class="material-icons white-text">close</i></a>
 						</span>
 					</li>
 				<% }) %>
@@ -97,8 +97,8 @@
 						</p>
 						<span class="secondary-content">
 							<!-- BUTTONS -->
-							<a href="#!" onclick="openFlowerModal('<%= person.id %>', '<%= myflowers %>', '<%= person.first_name %>')"><i class="material-icons piropazo-color-text">local_florist</i></a>
-							<a href="#!" class="grey darken-2 btn-x" onclick="sayNoAndBlock('<%= person.id %>', this)"><i class="material-icons white-text">close</i></a>
+							<a href="#!" onclick="openFlowerModal('<%= person.id %>', '<%= person.first_name %>')"><i class="material-icons piropazo-color-text">local_florist</i></a>
+							<a href="#!" class="grey darken-2 btn-x" onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.first_name %>')"><i class="material-icons white-text">close</i></a>
 						</span>
 					</li>
 				<% }) %>
@@ -109,8 +109,8 @@
 		<!-- FLOWER POPUP -->
 		<div id="modalFlower" class="modal">
 			<div class="modal-content">
-				<h4>Enviar flor</h4>
-				<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a @<span id="flowerfirst_name"></span>, llamar su atención y agregar 7 días al tiempo de espera.</p>
+				<h4 class="piropazo-color-text">Enviar flor</h4>
+				<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a <b class="name"></b>, llamar su atención y agregar 7 días al tiempo de espera.</p>
 				<div class="row">
 					<div class="input-field col s12">
 						<textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
@@ -119,9 +119,19 @@
 				</div>
 			</div>
 			<div class="modal-footer">
-				<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat">Cerrar</a>
+				<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-piropazo-color btn-flat">Cerrar</a>
 				<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat piropazo-color-text" onclick="sendFlower()">Enviar</a>
 			</div>
 		</div>
+	</div>
+</div>
+
+<div id="deleteModal" class="modal">
+	<div class="modal-content">
+		<p>¿Seguro que deseas quitar a <b class="name"></b>? Esta desición es irreversible.</p>
+	</div>	
+	<div class="modal-footer">
+		<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+		<a onclick="sayNoAndBlock(activeId)" class="modal-close waves-effect waves-red btn-flat red-text">Borrar</a>
 	</div>
 </div>

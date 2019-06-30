@@ -28,8 +28,12 @@ $(document).ready(function(){
 		$(descElement).insertBefore('.profile-img');
 	}
 
-	resizeImg();
 	$(window).resize(() => resizeImg());
+
+	var resizeInterval = setInterval(function(){ // check until the img has the correct size
+		resizeImg();
+		if($('#profile-rounded-img').css('background-size') != 'auto') clearTimeout(resizeInterval);
+	}, 1)
 
 	$('#chat-row').parent().css('margin-bottom','0');
 });
@@ -37,6 +41,8 @@ $(document).ready(function(){
 //
 // FUCTIONS FOR THE SERVICE
 //
+
+var activeId;
 
 // get list of years fort the age
 function getYears() {
@@ -92,11 +98,27 @@ function resizeImg(){
 		$('.profile-img').height($('.profile-img').height() - $($('#actions')[0]).outerHeight(true) - 31);
 	}
 	else{
-		$('#profile-rounded-img').height($(window).height()/4); // picture must be 1/4 of the screen
-		$('#profile-rounded-img').width($(window).height()/4);
-		$('#profile-rounded-img').css('top',(-4-$(window).height()/8)+'px'); // align the picture with the div
+		var img = $('#profile-rounded-img');
+		var size = $(window).height()/4; // picture must be 1/4 of the screen
+		img.height(size); 
+		img.width(size);
+
+		var src = img.css('background-image');
+		src = src.search('url') == 0 ? src.replace('url("','').replace('")','') : src;
+        var bg = new Image;
+		bg.src = src;
+		if(bg.height>=bg.width){
+			var scale = bg.height/bg.width;
+			img.css('background-size', size+'px '+(size*scale)+'px');
+		}
+		else{
+			var scale = bg.width/bg.height;
+			img.css('background-size', (size*scale)+'px '+size+'px');
+		}
+
+		img.css('top',(-4-$(window).height()/8)+'px'); // align the picture with the div
 		$('#edit-fields').css('margin-top',(5-$(window).height()/8)+'px'); // move the row before to the top to fill the empty space
-		$('#img-pre').height($('#profile-rounded-img').height()*0.8); // set the height of the colored div after the photo
+		$('#img-pre').height(img.height()*0.8); // set the height of the colored div after the photo
 	}
 }
 
@@ -129,14 +151,14 @@ function denounceUser(violation, violator) {
 }
 
 // terminates a date on the parejas section
-function sayNoAndBlock(personId, element) {
+function sayNoAndBlock(personId) {
 	apretaste.send({
 		command: 'PIROPAZO NO',
 		data: {'id': personId},
 		redirect: false,
 		callback: {
 			name: "callbackRemoveDateFromScreen", 
-			data: {element: element}
+			data: personId
 		}
 	});
 }
@@ -167,17 +189,15 @@ function toggleDescVisible() {
 }
 
 // open the modal to send a flower
-function openFlowerModal(personId, count, username) {
+function openFlowerModal(personId, name) {
 	// do not open if the user do not have flowers
-	if(count <= 0) {
+	if(myflowers < 1) {
 		M.toast({html: 'Tristemente, usted no tiene ninguna flor. Puede comprar más flores en nuestra tienda'});
 		return false;
 	}
 
-	// replace values on the modal
-	$('#flowerCount').html(count);
-	$('#flowerUsername').html(username);
-	$('#modalFlower').attr('toId', personId);
+	activeId = personId;
+	$('#modalFlower .name').html(name);
 
 	// open the modal
 	var popup = document.getElementById('modalFlower');
@@ -188,11 +208,23 @@ function openFlowerModal(personId, count, username) {
 // send a flower
 function sendFlower() {
 	// get data
-	var personId = $('#modalFlower').attr('toId');
 	var message = $('#flowerMsg').val();
 
+	if(typeof match != "undefined"){
+		apretaste.send({
+			command: "PIROPAZO SI",
+			data: {id: activeId}, 
+			redirect: false
+		});
+	}
+
 	// send the flower
-	apretaste.send({'command':'PIROPAZO FLOR','data':{id:personId, msg:message}});
+	apretaste.send({
+		'command':'PIROPAZO FLOR',
+		'data':{'id': activeId, 'msg': message},
+		redirect: typeof match == "undefined",
+		callback: {name: "callbackBringNewDate"}
+	});
 }
 
 function messageLengthValidate(max) {
@@ -220,9 +252,19 @@ function deleteNotification(id) {
 
 		// show message if all notifications were deleted
 		var count = $("ul.collection li").length;
-		if(count <= 0) {
+		if (count <= 0) {
+			var parent = $('#noti-list').parent();
 			$('ul.collection').remove();
-			$('div.col').append('<p>No hay más notificaciones por leer</p>');
+			parent.append(`
+				<div class="col s12 center">
+				<h1 class="black-text">Nada por leer</h1>
+				<i class="material-icons large">notifications_off</i>
+				<p>Por ahora usted no tiene ninguna notificación por leer.</p>
+				<a class="waves-effect waves-light btn piropazo-color" href="#!" onclick="apretaste.send({'command':'PIROPAZO CITAS'})">
+					Buscar Pareja
+				</a>
+				</div>
+				`);
 		}
 	});
 }
@@ -251,10 +293,6 @@ function submitProfileData() {
 	var data = new Object;
 	fields.forEach(function(field) {
 		var value = $('#'+field).val();
-		if(field == 'full_name' && value && value.trim() != ''){
-			data['first_name'] = value.split(' ')[0];
-			if (value.split(' ')[1] != undefined) data['last_name'] = value.split(' ')[1];
-		}
 		if(value && value.trim() != '') data[field] = value;
 	});
 
@@ -276,6 +314,12 @@ function submitProfileData() {
 
 	// show confirmation text
 	M.toast({html: 'Su informacion se ha salvado correctamente'});
+
+	if(extra_fields == "hide"){
+		apretaste.send({
+			"command": "PIROPAZO"
+		});
+	}
 }
 
 // hide state or province based on country
@@ -308,7 +352,8 @@ function showToast(text){
 
 function updatePicture(file){
     // display the picture on the img
-    $('#profile-rounded-img').css('background-image', "url(data:image/jpg;base64,"+file+')');
+	$('#profile-rounded-img').css('background-image', "url(data:image/jpg;base64,"+file+')');
+	resizeImg();
 
     // show confirmation text
     showToast('Su foto ha sido cambiada correctamente');
@@ -323,13 +368,9 @@ function callbackDenounceFinish() {
 	$('#denounce-done').show();
 }
 
-function callbackRemoveDateFromScreen(values) {
-	// delete the whole section if only one match is left
-	var liCnt = $(values.element).parents('ul.collection').find('li').length;
-	var toDelete = liCnt > 1 ? '.collection-item' : 'section';
-
+function callbackRemoveDateFromScreen(id) {
 	// delete the element or the section
-	$(values.element).parents(toDelete).fadeOut('fast', function(){
+	$('#'+id).fadeOut('fast', function(){
 		$(this).remove();
 	});
 }
@@ -337,7 +378,7 @@ function callbackRemoveDateFromScreen(values) {
 function callbackMoveToMatches(id){
 	var element = $('#'+id);
 	var today = new Date();
-	callbackRemoveDateFromScreen(element[0]);
+	callbackRemoveDateFromScreen(id);
 	$(element).appendTo('#matches');
 	$('#'+id+' .second-line').html('Se unieron el '+today.toLocaleDateString('es-ES'));
 	$('#'+id+' .secondary-content a:nth-child(1) > i').html('message');
@@ -358,19 +399,12 @@ $(() => {
     if (typeof messages != "undefined") {
 		resizeChat();
 		$(window).resize(() => resizeChat());
-		$('.chat').scrollTop($('.bubble:last-of-type').offset().top);
+		if(messages.length > 0) $('.chat').scrollTop($('.bubble:last-of-type').offset().top);
         $('#message').focus();
 		activeChat = id;
-        activeUsername = username;
-
-        $('.bubble')
-            .on("touchstart", event => { runTimer(); activeMessage = event.currentTarget.id; })
-            .on("touchmove", event => { clearTimeout(timer); moved = true; })
-            .on("touchend", event => { clearTimeout(timer); });
-
-        $('.bubble')
-            .on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
-            .on("mouseup", event => {clearTimeout(timer);});
+		activeUsername = username;
+		
+		setMessagesEventListener();
     }
     
     $('.modal').modal();
@@ -445,7 +479,7 @@ function runTimer() {
 
 function sendMessage(toService) {
 	var message = $('#message').val().trim();
-	var minLength = toService == 'CHAT' ? 1 : 30;
+	var minLength = toService == 'PIROPAZO' ? 1 : 30;
     if (message.length >= minLength) {
         apretaste.send({
             'command': toService+" ESCRIBIR",
@@ -455,16 +489,25 @@ function sendMessage(toService) {
         });
     }
     else {
-		if(toService == "CHAT") showToast("Mensaje vacio")
+		if(toService == "PIROPAZO") showToast("Mensaje vacio")
 		else showToast("Por favor describanos mejor su solicitud")
 	}
+}
+
+function deleteMatchModalOpen(id, name){
+	$('#deleteModal .name').html(name);
+	activeId = id;
+    M.Modal.getInstance($('#deleteModal')).open();
 }
 
 function sendMessageCallback(message) {
     if (typeof messages != "undefined") {
         if (messages.length == 0) {
-            $('#nochats').remove();
-            $('#messageField').insertBefore("<div class=\"chat\"></div>");
+			// Jquery Bug, fixed in 1.9, insertBefore or After deletes the element and inserts nothing
+			// $('#messageField').insertBefore("<div class=\"chat\"></div>");
+
+			$('#nochats').remove();
+			$('#chat-row').append("<div class=\"chat\"></div>");
         }
 
         $('.chat').append(
@@ -479,7 +522,8 @@ function sendMessageCallback(message) {
         if(message.length > 70) message = message.substr(0, 70)+'...';
         $('#'+activeChat+' msg').html(message)
     }
-    $('#message').val('')
+	$('#message').val('')
+	setMessagesEventListener();
 }
 
 function resizeChat(){
@@ -487,6 +531,17 @@ function resizeChat(){
 		$('.chat').height($(window).height() - $($('.row')[0]).outerHeight(true) - $('#messageField').outerHeight(true)-20);
 	}
 	else $('.chat').height($(window).height() - $('#messageField').outerHeight(true)-20);
+}
+
+function setMessagesEventListener(){
+	$('.bubble')
+		.on("touchstart", event => { runTimer(); activeMessage = event.currentTarget.id; })
+		.on("touchmove", event => { clearTimeout(timer); moved = true; })
+		.on("touchend", event => { clearTimeout(timer); });
+
+	$('.bubble')
+		.on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
+		.on("mouseup", event => { clearTimeout(timer); });
 }
 
 //

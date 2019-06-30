@@ -18,23 +18,23 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 <div class="row" id="edit-fields">
 
 	<!-- USERNAME -->
-	<div class="input-field col s8 m4 offset-s2 offset-m4">
+	<div class="input-field col s8 m4 offset-s2 offset-m4 <%= extra_fields %>">
 		<input <%=isDisabled%> id="username" type="text" value="@<%= profile.username %>" class="validate"/>
-		<label for="username">Username</label>
+		<label for="username">Nombre de usuario</label>
 	</div>
 
 	<!-- DESCRIPTION -->
-	<div class="input-field col s12">
+	<div class="input-field col s12 <%= extra_fields %>">
 		<i class="material-icons prefix grey-text text-darken-2">account_circle</i>
-		<textarea <%=isDisabled%> id="about_me" type="text" class="materialize-textarea"><%= profile.about_me %></textarea>
+		<textarea <%=isDisabled%> id="about_me" maxlength="200" type="text" class="materialize-textarea validate"><%= profile.about_me %></textarea>
 		<label for="about_me">Cuéntanos algo sobre ti</label>
 	</div>
 
 	<!-- NAME -->
 	<div class="input-field col s12 m6">
 		<i class="material-icons prefix grey-text text-darken-2">person</i>
-		<input <%=isDisabled%> id="full_name" type="text" value="<%= profile.first_name + ' ' + profile.last_name %>" class="validate"/>
-		<label for="full_name">Nombre y Apellido</label>
+		<input <%=isDisabled%> id="first_name" type="text" value="<%= profile.first_name %>" class="validate"/>
+		<label for="first_name">Nombre</label>
 	</div>
 
 	<!-- GENDER -->
@@ -58,7 +58,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 				<option value="<%= val %>" <%if(val==profile.searchfor){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
-		<label for="sexual_orientation">Preferencias</label>
+		<label for="sexual_orientation">¿Qué buscas?</label>
 	</div>
 
 	<!-- BIRTH YEAR -->

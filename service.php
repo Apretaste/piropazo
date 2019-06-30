@@ -67,12 +67,15 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
+		// get the number of flowers for the logged user 
+		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
+
 		// get match images into an array and the content
 		$images = ($match->picture) ? [$match->picture] : [];
-		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
 		$content = [
 			"match" => $match,
-			"menuicon" => "favorite"
+			"menuicon" => "favorite",
+			"myflowers" => $myFlowers[0]->flowers
 		];
 
 		// build the response
@@ -266,8 +269,6 @@ class Service
 		// get the number of flowers for the logged user 
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
-		$images[] = Utils::getPathToService($response->serviceName)."/images/icon.png";
-
 		// create response array
 		$content = [
 			"myflowers" => $myFlowers[0]->flowers,
@@ -312,9 +313,10 @@ class Service
 
 		// get the message sent with the flower
 		$message = trim(Connection::escape($request->input->data->msg, 200));
+		$message = !empty($message) ? "{$request->person->first_name} le envia una flor: $message" : "{$request->person->first_name} le envia una flor";
 
 		// get the recipient's username
-		$username = Connection::query("SELECT username FROM person WHERE id='{$request->input->data->id}'")[0]->username;
+		$name = Connection::query("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")[0]->first_name;
 
 		// send the flower and increase response time in 7 days
 		Connection::query("
@@ -323,16 +325,14 @@ class Service
 			UPDATE _piropazo_relationships SET expires_matched_blocked=ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from='{$request->person->id}' AND id_to='{$request->input->data->id}';");
 
 		// create a notification for the user
-		Utils::addNotification($request->input->data->id, "@{$request->person->username} le envia una flor: $message", '{"command":"PIROPAZO PAREJAS"}');
+		Utils::addNotification($request->input->data->id, "$message", '{"command":"PIROPAZO PAREJAS"}'. 'local_florist');
 
 		// let the sender know the flower was delivered
 		$content = [
 			"header"=>"Su flor fue enviada",
 			"icon"=>"local_florist",
-			"text" => "@$username recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
+			"text" => "$name recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
-
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('message.ejs', $content);
@@ -355,7 +355,6 @@ class Service
 
 		// check if you have enought crowns
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 
 		// return error response if the user has no crowns
 		if(empty($crowns)) {
@@ -366,7 +365,7 @@ class Service
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
 			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content, $images);
+			$response->setTemplate('message.ejs', $content);
 
 		}
 
@@ -464,11 +463,9 @@ class Service
 			"menuicon" => "shopping_cart"
 		];
 
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
-
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('store.ejs', $content, $images);
+		$response->setTemplate('store.ejs', $content);
 	}
 
 	/**
@@ -492,6 +489,7 @@ class Service
 			FROM notification
 			WHERE `to` = {$request->person->id} 
 			AND service = 'piropazo'
+			AND `read` IS NULL
 			ORDER BY inserted DESC");
 
 		// if no notifications, let the user know
@@ -516,11 +514,9 @@ class Service
 			"menuicon" => "notifications"
 		];
 
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
-
 		// build the response
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('notifications.ejs', $content, $images);
+		$response->setTemplate('notifications.ejs', $content);
 	}
 
 	/**
@@ -541,11 +537,9 @@ class Service
 			"icon"=>"directions_walk",
 			"text" => "No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.",
 			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
-
-		$images = [Utils::getPathToService($response->serviceName)."/images/icon.png"];
 		
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('message.ejs', $content, $images);
+		$response->setTemplate('message.ejs', $content);
 	}
 
 	/**
@@ -582,7 +576,7 @@ class Service
 			$content = [
 				"header"=>"No tiene conversaciones",
 				"icon"=>"sentiment_very_dissatisfied",
-				"text" => "Aun no has hablado con nadie, busca pareja y animate a escribirle",
+				"text" => "Aún no ha hablado con nadie. Cuando dos personas se gustan, pueden empezar una conversación.",
 				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar pareja"],
 				"title" => "chats",
 				"menuicon" => "message"];
