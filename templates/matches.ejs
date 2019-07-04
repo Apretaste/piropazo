@@ -22,7 +22,7 @@
 						<span class="secondary-content">
 							<!-- BUTTONS -->
 							
-							<a onclick="apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'<%=person.id%>'}})"><i class="material-icons piropazo-color-text">message</i></a>
+							<a onclick="apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'<%=person.id%>', 'firstName':'<%= person.first_name %>'}})"><i class="material-icons piropazo-color-text">message</i></a>
 							
 							<a href="#!" class="grey darken-2 btn-x" onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.first_name %>')"><i class="material-icons white-text">close</i></a>
 						</span>

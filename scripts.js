@@ -419,7 +419,11 @@ $(() => {
 });
 
 function openChat() {
-    if (!optionsModalActive && !moved) apretaste.send({ 'command': 'PIROPAZO CONVERSACION', 'data': { 'userId': activeChat } });
+    if (!optionsModalActive && !moved){
+		var firstName = $('#'+activeChat+' .name').html();
+		apretaste.send({ 'command': 'PIROPAZO CONVERSACION', 'data': { 'userId': activeChat, 'firstName': firstName }})
+	};
+	
     optionsModalActive = false;
     moved = false;
     clearTimeout(timer);
