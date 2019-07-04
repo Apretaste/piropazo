@@ -2,7 +2,7 @@
 
 *:disabled{
 	color: black !important;
-	border-bottom: 1px solid #545454 !important;
+	border-bottom: none !important;
 }
 
 .profile-img{
@@ -54,7 +54,7 @@
 	display: inline;
 }
 
-.row {margin-bottom: 5px};
+.row {margin-bottom: 5px;}
 
 .row:last-of-type{ margin-bottom: 0;}
 
@@ -189,14 +189,6 @@
 	top: 20%;
 }
 
-.btn-x{
-	display: inline-block;
-	width: 24px;
-	height: 24px;
-	border-radius: 50%;
-	margin-left: 6px;
-}
-
 #matches-lists .collection, #matches-lists li, #chats-list, #noti-list{
 	border: none;
 }
@@ -222,7 +214,7 @@
 
 /* Chat */
 
-p #nochats{
+p#nochats{
     position: absolute;
     top: 50%;
     left: calc(50% - 160px);

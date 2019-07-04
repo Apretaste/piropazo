@@ -1,6 +1,14 @@
-<%var isDisabled = !isMyOwnProfile ? "disabled" : "";%>
-<%if(!isMyOwnProfile){%>
-	<style>.caret{display: none;}</style>
+<%var isDisabled = !isMyOwnProfile ? "disabled" : "";
+var colSize = isDisabled ? "s6" : "s12 m6";
+if(!isMyOwnProfile){%>
+	<style>
+		.caret, label{display: none;}
+		.input-field{margin: 0;}
+		textarea{
+			margin-bottom: 0;
+			padding: 0;
+		}
+	</style>
 <%}%>
 <div id="img-pre" class="piropazo-color"></div>
 
@@ -31,14 +39,14 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	</div>
 
 	<!-- NAME -->
-	<div class="input-field col s12 m6">
+	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">person</i>
 		<input <%=isDisabled%> id="first_name" type="text" value="<%= profile.first_name %>" class="validate"/>
 		<label for="first_name">Nombre</label>
 	</div>
 
 	<!-- GENDER -->
-	<div class="input-field col s12 m6">
+	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">wc</i>
 		<select <%=isDisabled%> id="gender" class="validate">
 			<option value=""></option>
@@ -50,7 +58,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- SEXUAL ORIENTATION -->
 	<% var orientation = ["MUJERES","HOMBRES","AMBOS"] %>
-	<div class="input-field col s12 m6">
+	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
 		<select <%=isDisabled%> id="sexual_orientation" class="validate">
 			<option value=""></option>
@@ -62,7 +70,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	</div>
 
 	<!-- BIRTH YEAR -->
-	<div class="input-field col s12 m6">
+	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">cake</i>
 		<select <%=isDisabled%> id="year_of_birth" class="validate">
 			<option value=""></option>
@@ -75,7 +83,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- BODY TYPE -->
 	<% var body_type = ["DELGADO","MEDIO","EXTRA","ATLETICO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.body_type == "" ? "hide" : ""%>>">
 	<i class="material-icons prefix grey-text text-darken-2">face</i>
 		<select <%=isDisabled%> id="body_type" class="validate">
 			<option value="" selected></option>
@@ -88,7 +96,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- EYES -->
 	<% var eyes = ["NEGRO","CARMELITA","VERDE","AZUL","AVELLANA","OTRO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.eyes == "" ? "hide" : ""%>">
 	<i class="material-icons prefix grey-text text-darken-2">face</i>
 		<select <%=isDisabled%> id="eyes" class="validate">
 			<option value=""></option>
@@ -101,7 +109,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- HAIR -->
 	<% var hair = ["TRIGUENO","CASTANO","RUBIO","NEGRO","ROJO","BLANCO","OTRO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.hair == "" ? "hide" : ""%>">
 	<i class="material-icons prefix grey-text text-darken-2">face</i>
 		<select <%=isDisabled%> id="hair" class="validate">
 			<option value=""></option>
@@ -114,7 +122,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- SKIN -->
 	<% var skin = ["BLANCO","NEGRO","MESTIZO","OTRO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.skin == "" ? "hide" : ""%>">
 	<i class="material-icons prefix grey-text text-darken-2">face</i>
 		<select <%=isDisabled%> id="skin" class="validate">
 			<option value=""></option>
@@ -127,7 +135,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- MARITAL STATUS -->
 	<% var marital_status = ["SOLTERO","SALIENDO","COMPROMETIDO","CASADO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.marital_status == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
 		<select <%=isDisabled%> id="marital_status" class="validate">
 			<option value=""></option>
@@ -140,7 +148,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- HIGHEST SCHOOL LEVEL-->
 	<% var highest_school_level = ["PRIMARIO","SECUNDARIO","TECNICO","UNIVERSITARIO","POSTGRADUADO","DOCTORADO","OTRO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.highest_school_level == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">school</i>
 		<select <%=isDisabled%> id="highest_school_level" class="validate">
 			<option value=""></option>
@@ -153,19 +161,19 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- OCCUPATION -->
 	<% var profesion = ["TRABAJADOR ESTATAL","CUENTAPROPISTA","ESTUDIANTE","AMA DE CASA","DESEMPLEADO","OTRO"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.occupation == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">business_center</i>
 		<select <%=isDisabled%> id="occupation" class="validate">
 			<option value=""></option>
 			<% profesion.forEach(function(val) { %>
-				<option value="<%= val %>" <%if(val==profile.occupation){%>selected<%}%>><%= val.firstUpper() %></option>
+				<option value="<%= val %>" <%if(val==profile.occupation.toUpperCase()){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
 		</select>
 		<label for="occupation">Ocupación</label>
 	</div>
 
 	<!-- COUNTRY -->
-	<div class="input-field col s12 m6">
+	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">place</i>
 		<select <%=isDisabled%> id="country" class="validate" onchange="showStateOrProvince()">
 			<option value=""></option>
@@ -178,7 +186,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- PROVINCE-->
 	<% var province = ["PINAR_DEL_RIO","LA_HABANA","ARTEMISA","MAYABEQUE","MATANZAS","VILLA_CLARA","CIENFUEGOS","SANCTI_SPIRITUS","CIEGO_DE_AVILA","CAMAGUEY","LAS_TUNAS","HOLGUIN","GRANMA","SANTIAGO_DE_CUBA","GUANTANAMO","ISLA_DE_LA_JUVENTUD"] %>
-	<div class="input-field province-div col s12 m6 <%= extra_fields %>">
+	<div class="input-field province-div col <%=colSize%> <%= extra_fields %> <%=profile.province == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">place</i>
 		<select <%=isDisabled%> id="province" class="validate">
 			<option value=""></option>
@@ -190,7 +198,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	</div>
 
 	<!-- CITY -->
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.city == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">place</i>
 		<input <%=isDisabled%> id="city" type="text" value="<%= profile.city %>" class="validate"/>
 		<label for="city">¿En que ciudad o pueblo vives?</label>
@@ -199,7 +207,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 	<!-- RELIGION -->
 	<% var religion = ["CRISTIANISMO","CATOLICISMO","YORUBA","PROTESTANTE","SANTERO","ABAKUA","BUDISMO","ISLAM","ATEISMO","AGNOSTICISMO","SECULARISMO","OTRA"] %>
-	<div class="input-field col s12 m6 <%= extra_fields %>">
+	<div class="input-field col <%=colSize%> <%= extra_fields %> <%=profile.religion == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">flare</i>
 		<select <%=isDisabled%> id="religion" class="validate">
 			<option value=""></option>

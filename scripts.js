@@ -12,7 +12,7 @@ $(document).ready(function(){
 		if($('#desc').attr('status') == "opened") {
 			$('#desc').slideToggle({direction: "up"}).attr('status', 'closed'); //, () => resizeImg()
 		}
-	})
+	});
 
 	if(typeof match != "undefined"){
 		var infoElement = $('#info');
@@ -287,7 +287,7 @@ function sendFile(base64File){
 function submitProfileData() {
 	if(!isMyOwnProfile) return;
 	// get the array of fields and  
-	var fields = ['picture','full_name', 'username', 'about_me','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
+	var fields = ['picture','first_name', 'username', 'about_me','gender','sexual_orientation','year_of_birth','body_type','eyes','hair','skin','marital_status','highest_school_level','occupation','country','province','usstate','city','religion'];
 
 	// create the JSON of data
 	var data = new Object;
