@@ -86,16 +86,16 @@ class Service
 	/**
 	 * Say Yes to a match
 	 *
-	 * @author salvipascual
 	 * @param Request
 	 * @param Response
+	 * @author salvipascual
 	 */
 	public function _si (Request $request, Response $response)
-	{die();
+	{
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if(empty($idTo)) return $response;
+		if(empty($idTo)) return;
 
 		// check if there is any previous record between you and that person
 		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
@@ -117,7 +117,7 @@ class Service
 
 			// if they dislike you, block that match
 			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
-			return $response;
+			return;
 		}
 
 		// insert the new relationship
@@ -144,7 +144,7 @@ class Service
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if(empty($idTo)) return $response;
+		if(empty($idTo)) return;
 
 		// mark the transaction as blocked
 		Connection::query("
@@ -308,7 +308,8 @@ class Service
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
 
 			$response->setLayout('piropazo.ejs');
-			return $response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content);
+			return;
 		}
 
 		// get the message sent with the flower
@@ -366,7 +367,7 @@ class Service
 
 			$response->setLayout('piropazo.ejs');
 			$response->setTemplate('message.ejs', $content);
-
+			return;
 		}
 
 		// set the crown and substract a crown
@@ -383,7 +384,7 @@ class Service
 			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
 
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('message.ejs', $content, $images);
+		$response->setTemplate('message.ejs', $content);
 	}
 
 	public function _conversacion(Request $request, Response $response){
@@ -593,7 +594,6 @@ class Service
 		foreach ($chats as $chat) {
 			if (key_exists($chat->id,  $matchesId)){
 				$chat->first_name = $matchesId[$chat->id]->first_name;
-				$chat->picture = $matchesId[$chat->id]->picture;
 				$chat->last_sent = explode(' ', $chat->last_sent)[0];
 				$images[] = $chat->picture;
 				$onlyMatchesChats[] = $chat;
