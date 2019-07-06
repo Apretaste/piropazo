@@ -177,6 +177,10 @@
 	right: 6px;
 }
 
+#matches-lists .secondary-content a:first-child{
+	margin-right: 5px;
+}
+
 #noti-list .secondary-content{
 	top: 32%;
 	right: 20px;

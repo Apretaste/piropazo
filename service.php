@@ -91,7 +91,7 @@ class Service
 	 * @param Response
 	 */
 	public function _si (Request $request, Response $response)
-	{
+	{die();
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;

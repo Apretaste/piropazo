@@ -376,10 +376,17 @@ function callbackRemoveDateFromScreen(id) {
 }
 
 function callbackMoveToMatches(id){
-	var element = $('#'+id);
+	var element = $('#'+id).clone();
 	var today = new Date();
-	callbackRemoveDateFromScreen(id);
+	if($('#matches-lists > section:nth-child(2) > ul').children().length === 1){
+		$('#matches-lists > section:nth-child(2)').fadeOut('fast', function(){
+			$(this).remove();
+		})
+	} else callbackRemoveDateFromScreen(id);
+
+	element.hide();
 	$(element).appendTo('#matches');
+	element.fadeIn('fast');
 	$('#'+id+' .second-line').html('Se unieron el '+today.toLocaleDateString('es-ES'));
 	$('#'+id+' .secondary-content a:nth-child(1) > i').html('message');
 	$('#'+id+' .secondary-content a:nth-child(1)').attr('onclick',"apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'"+id+"'}})");

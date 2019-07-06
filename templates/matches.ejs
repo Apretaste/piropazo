@@ -10,7 +10,7 @@
 							<!-- PICTURE -->
 							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
 							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})" class="circle"/>
+							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>', 'firstName':'<%= person.first_name %>'}})" class="circle"/>
 
 							<!-- FIRST NAME -->
 							<h5 class="black-text"><%= person.first_name %></h5>
@@ -44,7 +44,7 @@
 							<!-- PICTURE -->
 							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
 							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})" class="circle"/>
+							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>', 'firstName':'<%= person.first_name %>'}})" class="circle"/>
 
 							<!-- FIRST NAME -->
 							<h5 class="black-text"><%= person.first_name %></h5>
@@ -86,7 +86,7 @@
 							<!-- PICTURE -->
 							<% if(person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
 							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>'}})" class="circle"/>
+							<img src="<%= src %>" alt="<%= person.first_name %>" onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>', 'firstName':'<%= person.first_name %>'}})" class="circle"/>
 
 							<!-- FIRST NAME -->
 							<h5 class="black-text"><%= person.first_name %></h5>
