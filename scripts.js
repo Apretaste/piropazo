@@ -36,6 +36,17 @@ $(document).ready(function(){
 	}, 1)
 
 	$('#chat-row').parent().css('margin-bottom','0');
+
+	if ($('#btnFloatingMenu').css('display') == "block"){
+		$('.container').append(
+			"<style>\n" +
+				"@media (max-width: 600px){\n" +
+					"#matches-lists, #chats-list, #noti-list, #store-row{\n" +
+					"margin-top: 30px;\n" +
+					"}\n" +
+				"}\n" +
+			"</style>")
+	}
 });
 
 //

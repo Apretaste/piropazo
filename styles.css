@@ -5,6 +5,12 @@
 	border-bottom: none !important;
 }
 
+#btnFloatingMenu {
+	position: fixed;
+	top: 10px;
+	right: 10px;
+}
+
 .profile-img{
 	margin: auto;
 	display: block;

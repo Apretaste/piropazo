@@ -11,7 +11,7 @@
 
 <!-- MENU -->
 <div class="row" style="margin-bottom: 0;">
-	<div class="navbar hide-on-unique">
+	<div class="navbar hide-on-small-only hide-on-unique">
 		<nav>
 			<div class="nav-wrapper">
 				<a class="brand-logo left" style="margin-left: 1rem;">
@@ -19,7 +19,7 @@
 					<%= typeof title != 'undefined' ? title : 'Piropazo' %>
 				</a>
 				<!-- ICONS ON THE MENU -->
-				<ul class="right hide-on-small-only hide-on-med-only"> 
+				<ul class="right hide-on-med-only">
 					<% menu.forEach(function(e) { %>
 						<li class="<%= e.icon==menuicon ? 'active' : '' %>">
 							<a href="#!" class="<%= e.icon==menuicon ? 'piropazo-color-text' : '' %>" onclick="apretaste.send({'command':'PIROPAZO <%= e.link %>'})">
@@ -30,18 +30,23 @@
 				</ul>
 			</div>
 		</nav>
-		
-		<!-- SIDE BAR TO BE OPENED ON MOBILE -->
-		<ul class="sidenav hide-on-large-only">
-			<% menu.forEach(function(e) { %>
-				<li class="<%= e.icon==menuicon ? 'active' : '' %>">
-					<a href="#!" class="<%= e.icon==menuicon ? 'piropazo-color-text' : '' %>" onclick="apretaste.send({'command':'PIROPAZO <%= e.link %>'})">
-						<i class="material-icons <%= e.icon==menuicon ? 'piropazo-color-text' : 'grey-text text-darken-2' %>"><%= e.icon %></i> <%= e.caption %>
-					</a>
-				</li>
-			<% }); %>
-		</ul>
 	</div>
+
+	<!-- FLOATING MOBILE BTN -->
+	<a id="btnFloatingMenu" href="#" class="btn-floating waves-effect waves-light hide-on-med-and-up hide-on-unique piropazo-color" onclick="openMenu();">
+		<i class="material-icons"><%= menuicon %></i>
+	</a>
+
+	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
+	<ul class="sidenav hide-on-large-only">
+		<% menu.forEach(function(e) { %>
+			<li class="<%= e.icon==menuicon ? 'active' : '' %>">
+				<a href="#!" class="<%= e.icon==menuicon ? 'piropazo-color-text' : '' %>" onclick="apretaste.send({'command':'PIROPAZO <%= e.link %>'})">
+					<i class="material-icons <%= e.icon==menuicon ? 'piropazo-color-text' : 'grey-text text-darken-2' %>"><%= e.icon %></i> <%= e.caption %>
+				</a>
+			</li>
+		<% }); %>
+	</ul>
 </div>
 
 <!-- CONTENT -->
