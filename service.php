@@ -562,7 +562,7 @@ class Service
 		// get the list of people chating with you
 		$chats = Social::chatsOpen($request->person->id);
 
-		$matches = Connection::query("SELECT id, first_name, picture FROM person WHERE id IN(SELECT id_from AS id
+		$matches = Connection::query("SELECT id_from AS id
 		FROM _piropazo_relationships
 		WHERE status = 'match'
 		AND id_to = '{$request->person->id}'
@@ -570,7 +570,7 @@ class Service
 		SELECT id_to AS id
 		FROM _piropazo_relationships
 		WHERE status = 'match'
-		AND id_from = '{$request->person->id}')");
+		AND id_from = '{$request->person->id}'");
 
 		// if no matches, let the user know
 		if(empty($chats) || empty($matches)) {
@@ -593,7 +593,6 @@ class Service
 		$images = [];
 		foreach ($chats as $chat) {
 			if (key_exists($chat->id,  $matchesId)){
-				$chat->first_name = $matchesId[$chat->id]->first_name;
 				$chat->last_sent = explode(' ', $chat->last_sent)[0];
 				$images[] = $chat->picture;
 				$onlyMatchesChats[] = $chat;
