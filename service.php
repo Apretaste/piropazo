@@ -1,5 +1,7 @@
 <?php
 
+use Phalcon\DI\FactoryDefault;
+
 /**
  * Apretaste Piropazo Service
  */
@@ -61,7 +63,7 @@ class Service
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
 		// erase unwanted properties in the object
-		$properties = ["id","username", "first_name","gender","skin", "about_me", "profile_tags", "profession_tags", "picture","religion", "education", "country","location","age","online"];
+		$properties = ["id","username", "first_name", "heart", "gender", "about_me", "profile_tags", "profession_tags", "picture", "country","location","age","online"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -358,33 +360,13 @@ class Service
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 
 		// return error response if the user has no crowns
-		if(empty($crowns)) {
-			$content = [
-				"header"=>"No tiene suficientes corazones",
-				"icon"=>"favorite",
-				"text" => "Actualmente usted no tiene suficientes corazones para usar. Puede comprar más en la tienda de Piropazo.",
-				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
-
-			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content);
-			return;
-		}
+		if(empty($crowns)) return;
 
 		// set the crown and substract a crown
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
 		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'piropazo', 'favorite');
-
-		// build the response
-		$content = [
-			"header"=>"Su perfil ha sido promovido",
-			"icon"=>"favorite",
-			"text" => "Su perfil ha sido promovido, y en los próximos tres días se mostrará muchas más veces a otros usuarios, lo cual mejorará sus chances de recibir solicitudes. Manténganse revisando a diario su lista de parejas.",
-			"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Ver perfil"]];
-
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('message.ejs', $content);
 	}
 
 	public function _conversacion(Request $request, Response $response){
@@ -663,6 +645,15 @@ class Service
 		$isMyOwnProfile = $id == $request->person->id;
 		$profile = Social::prepareUserProfile(Utils::getPerson($id));
 
+		$user = Connection::query("
+			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left
+			FROM _piropazo_people
+			WHERE id_person = {$request->person->id}");
+
+		$profile->hearts = $user[0]->crowns;
+		$profile->heart = $user[0]->heart;
+		$profile->heart_time_left = 60*60*24*3 - $user[0]->heart_time_left;
+
 		// get what gender do you search for
 		if($profile->sexual_orientation == "BI") $profile->searchfor = "AMBOS";
 		elseif($profile->gender == "M" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "MUJERES";
@@ -674,8 +665,6 @@ class Service
 		// get array of images
 		$images = [];
 		if($profile->picture) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
 			$images[] = $profile->picture;
 		}
 
@@ -750,12 +739,12 @@ class Service
 		$match = Connection::query("
 			SELECT 
 				A.id, A.suggestion AS user, 
-				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS crown
+				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
 			FROM _piropazo_cache A
 			JOIN _piropazo_people B
 			ON A.suggestion = B.id_person
 			WHERE A.user = {$user->id}
-			ORDER BY crown DESC, A.match DESC, A.id
+			ORDER BY heart DESC, A.match DESC, A.id
 			LIMIT 1");
 
 		// return false if no match
@@ -764,7 +753,7 @@ class Service
 
 		// return the best match as a Person object
 		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
-		$person->crown = $match->crown;
+		$person->heart = $match->heart;
 
 		// get the match color class based on gender
 		if($person->gender == "M") $person->color = "male";

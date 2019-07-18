@@ -14,6 +14,12 @@ $(document).ready(function(){
 		}
 	});
 
+	if(typeof profile != "undefined"){
+		setInterval(function(){
+			profile.heart_time_left--;
+		}, 1000)
+	}
+
 	if(typeof match != "undefined"){
 		var infoElement = $('#info');
 		$('#info').remove();
@@ -246,6 +252,34 @@ function messageLengthValidate(max) {
     else {
         $('.helper-text').html('Limite excedido');
     }
+}
+
+function heartModalOpen() {
+	if(profile.heart == 0) {
+		if(profile.hearts == 0){
+			apretaste.send({'command':'PIROPAZO TIENDA'});
+		}
+		else M.Modal.getInstance($('#heartModal')).open();
+	}
+	else{
+		var totalLeft = profile.heart_time_left;
+		var hours = Math.floor(totalLeft / 3600);
+		totalLeft -= hours*3600;
+		var minutes = Math.floor(totalLeft / 60);
+		totalLeft -= minutes*60;
+		var seconds = totalLeft;
+
+		$('#timeLeftModal h3').html(hours+'h: '+minutes+'min: '+seconds+'sec');
+		M.Modal.getInstance($('#timeLeftModal')).open();
+	}
+}
+
+function exchangeHeart() {
+	apretaste.send({
+		'command': "PIROPAZO CORAZON",
+		'redirect': false,
+		'callback': {"name": "exchangeHeartCallback", 'data':{}}
+	})
 }
 
 // send the notificationd to be deleted
@@ -564,6 +598,19 @@ function setMessagesEventListener(){
 	$('.bubble')
 		.on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
 		.on("mouseup", event => { clearTimeout(timer); });
+}
+
+function exchangeHeartCallback(){
+	M.Modal.getInstance($('#congratsModal')).open();
+	var heartCount = $('#heart-btn > span');
+	profile.hearts--;
+	profile.heart = 1;
+	heartCount.html(profile.hearts);
+	heartCount.removeClass('piropazo-color-text');
+
+	profile.heart_time_left = 60*60*24*3;
+
+	$('#heart-btn > i').html('favorite');
 }
 
 //

@@ -5,6 +5,12 @@
 			<%var src = "{{APP_IMAGE_PATH}}" + match.picture;%>
 			<img class="responsive-img profile-img" src="<%= src %>" alt="<%= match.username %>"/>
 
+			<%if(match.heart == 1){%>
+				<div class="main-heart">
+					<i class="material-icons medium piropazo-color-text">favorite</i>
+				</div>
+			<%}%>
+
 			<!-- INFO -->
 			<div class="position-bottom left" id="info">
 				<h1><%=match.first_name%></h1><h2><%=match.age%></h2>

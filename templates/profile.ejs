@@ -16,10 +16,16 @@ if(!isMyOwnProfile){%>
 <% if(profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
 else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 <div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
-	<!-- EDIT PIC BUTTON -->
+	<!-- EDIT PIC AND HEART BUTTON -->
 	<%if(isMyOwnProfile){%>
 	<input <%=isDisabled%> id="picturefield" type="file" class="hide"/>
 	<a class="btn-floating white" id="picture-upload-btn" onclick="uploadPicture()"><i class="material-icons grey-text text-darken-4">camera_alt</i></a>
+	<a class="btn-floating white" id="heart-btn" onclick="heartModalOpen()">
+		<%var icon = profile.heart == 0 ? "favorite_outline" : "favorite";
+		var color = profile.heart == 0 ? "piropazo-color-text" : ""%>
+		<i class="material-icons piropazo-color-text"><%=icon%></i>
+		<span class="<%=color%>"><%= profile.hearts %></span>
+	</a>
 	<%}%>
 </div>
 
@@ -225,3 +231,33 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	<a class="btn-floating btn-large waves-effect waves-light piropazo-color" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
 </div>
 <%}%>
+
+<div id="heartModal" class="modal">
+	<div class="modal-content">
+		<p>¿Desea que éste corazòn aparezca en su perfil por 3 dias, haciendo que su perfil se muestre con mayor frecuencia?</p>
+	</div>
+	<div class="modal-footer">
+		<a onclick="exchangeHeart()" class="modal-close waves-effect waves-red btn-flat piropazo-color-text">Aceptar</a>
+		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+	</div>
+</div>
+
+<div id="congratsModal" class="modal">
+	<a href="#!" class="modal-close waves-effect waves-light btn-flat right"><i class="material-icons red-text">close</i></a>
+	<div class="modal-content center-align">
+		<br>
+		<h3 class="piropazo-color-text">¡Felicidades!</h3>
+		<p class="piropazo-color-text">Usted ha canjeado un corazón</p>
+		<br>
+	</div>
+</div>
+
+<div id="timeLeftModal" class="modal">
+	<a href="#!" class="modal-close waves-effect waves-light btn-flat right"><i class="material-icons red-text">close</i></a>
+	<div class="modal-content center-align">
+		<p class="piropazo-color-text">Tiempo restante:</p>
+		<br>
+		<h3 class="piropazo-color-text"></h3>
+		<br>
+	</div>
+</div>
