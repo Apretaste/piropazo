@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Model\Person;
 use Phalcon\DI\FactoryDefault;
 
 /**
@@ -32,9 +33,10 @@ class Service
 		if($this->isProfileIncomplete($request->person)){
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			$this->_perfil ($request, $response);
+			return;
 		}
-		
+
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->person->id);
 
@@ -53,12 +55,7 @@ class Service
 			return $response->setTemplate('message.ejs', $content);
 		}
 
-		$profileTags = [];
-		$professionTags = [];
-		$this->getTags($profileTags, $professionTags, $match);
-
-		$match->profile_tags = implode(', ', $profileTags);
-		$match->profession_tags = implode(', ', $professionTags);
+		$this->getTags($match);
 
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
@@ -632,12 +629,16 @@ class Service
 	/**
 	 * Open the user's profile
 	 *
-	 * @author salvipascual
 	 * @param Request
 	 * @param Response
+	 * @throws Exception
+	 * @author salvipascual
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
+		$this->activatePiropazoUser($request->person->id);
+
+		$extra_fields = isset($request->extra_fields) ? $request->extra_fields : "";
 		if($this->isProfileIncomplete($request->person)) $extra_fields = "hide";
 
 		// get the user's profile
@@ -670,7 +671,7 @@ class Service
 
 		// list of values
 		$content = [
-			"extra_fields" => isset($request->extra_fields) ? $request->extra_fields : "",
+			"extra_fields" => $extra_fields,
 			"profile" => $profile,
 			"isMyOwnProfile" => $isMyOwnProfile,
 			"title" => "Perfil",
@@ -689,6 +690,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @throws Exception
 	 */
 	public function _soporte(Request $request, Response $response)
 	{
@@ -726,9 +728,10 @@ class Service
 	/**
 	 * Get the person who best matches with you
 	 *
-	 * @author salvipascual
 	 * @param Person $user
-	 * @return Person
+	 * @return object | Person
+	 * @throws Exception
+	 * @author salvipascual
 	 */
 	private function getMatchFromCache($user)
 	{
@@ -925,16 +928,39 @@ class Service
 		return $percentage;
 	}
 
-	private function getTags(&$profileTags, &$professionTags, $match){
+	private function getTags(&$match){
+		$profileTags = [];
+		$professionTags = [];
+
+		$countries = [
+			'cu' => 'Cuba',
+			'us' => 'Estados Unidos',
+			'es' => 'Espana',
+			'it' => 'Italia',
+			'mx' => 'Mexico',
+			'br' => 'Brasil',
+			'ec' => 'Ecuador',
+			'ca' => 'Canada',
+			'vz' => 'Venezuela',
+			'al' => 'Alemania',
+			'co' => 'Colombia',
+			'OTRO' => 'Otro'
+		];
+
 		$genderLetter = $match->gender == 'M' ? 'o' : 'a';
+
+		$match->country = $countries[$match->country];
 
 		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer"; 
 		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
-		$profileTags[] = strtolower($match->religion);
+		if( $match->religion != "OTRA") $profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
 		$profileTags[] = $match->age. " años";
-		
-		$professionTags[] = $match->highest_school_level;
+
+		if( $match->highest_school_level != "OTRO") $professionTags[] = ucfirst(strtolower($match->highest_school_level));
 		$professionTags[] = $match->occupation;
+
+		$match->profile_tags = implode(', ', $profileTags);
+		$match->profession_tags = implode(', ', $professionTags);
 	}
 
 	private function isProfileIncomplete($person){
