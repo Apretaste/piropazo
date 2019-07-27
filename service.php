@@ -953,10 +953,10 @@ class Service
 
 		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer"; 
 		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
-		if( $match->religion != "OTRA") $profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
+		if($match->religion && $match->religion != "OTRA") $profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
 		$profileTags[] = $match->age. " años";
 
-		if( $match->highest_school_level != "OTRO") $professionTags[] = ucfirst(strtolower($match->highest_school_level));
+		if($match->highest_school_level && $match->highest_school_level != "OTRO") $professionTags[] = ucfirst(strtolower($match->highest_school_level));
 		$professionTags[] = $match->occupation;
 
 		$match->profile_tags = implode(', ', $profileTags);
