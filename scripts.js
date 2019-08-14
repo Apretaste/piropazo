@@ -51,7 +51,11 @@ $(document).ready(function () {
   if ($('#btnFloatingMenu').css('display') == "block") {
     $('.container').append("<style>\n" + "@media (max-width: 600px){\n" + "#matches-lists, #chats-list, #noti-list, #store-row{\n" + "margin-top: 30px;\n" + "}\n" + "}\n" + "</style>");
   }
-}); //
+
+  showStateOrProvince()
+});
+
+//
 // FUCTIONS FOR THE SERVICE
 //
 
@@ -410,6 +414,24 @@ function submitProfileData() {
   }
 } // hide state or province based on country
 
+var province = {
+  'PINAR_DEL_RIO': 'Pinar del Río',
+  'ARTEMISA': 'Artemisa',
+  'LA_HABANA': 'La Habana',
+  'MAYABEQUE': 'Mayabeque',
+  'MATANZAS': 'Matanzas',
+  'CIENFUEGOS': 'Cienfuegos',
+  'VILLA_CLARA': 'Villa Clara',
+  'SANCTI_SPIRITUS': 'Sancti Spíritus',
+  'CIEGO_DE_AVILA': 'Ciego de Ávila',
+  'CAMAGUEY': 'Camagüey',
+  'LAS_TUNAS': 'Las Tunas',
+  'GRANMA': 'Granma',
+  'HOLGUIN': 'Holguín',
+  'SANTIAGO_DE_CUBA': 'Santiago de Cuba',
+  'GUANTANAMO': 'Guantánamo',
+  'ISLA_DE_LA_JUVENTUD': 'Isla de la Juventud'
+};
 
 function showStateOrProvince() {
   var country = $('#country').val();
@@ -432,7 +454,9 @@ function showStateOrProvince() {
       province.hide();
       break;
   }
-} //
+}
+
+//
 // CALLBACKS
 //
 
@@ -511,7 +535,7 @@ $(function () {
   $('.openchat').on("touchstart", function (event) {
     runTimer();
     activeChat = event.currentTarget.id;
-    activeName = event.currentTarget.getAttribute('name');
+    var activeName = event.currentTarget.getAttribute('name');
   }).on("touchmove", function (event) {
     clearTimeout(timer);
     moved = true;
@@ -521,7 +545,7 @@ $(function () {
   $('.openchat').on("mousedown", function (event) {
     runTimer();
     activeChat = event.currentTarget.id;
-    activeName = event.currentTarget.getAttribute('name');
+    var activeName = event.currentTarget.getAttribute('name');
   }).on("mouseup", function (event) {
     openChat();
   });
@@ -706,4 +730,57 @@ String.prototype.replaceAll = function (search, replacement) {
 String.prototype.firstUpper = function () {
   return this.charAt(0).toUpperCase() + this.substr(1).toLowerCase();
 };
+
+// POLYFILL
+
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function _typeof(obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function _typeof(obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+  return _typeof(obj);
+}
+
+if (!Object.keys) {
+  Object.keys = function () {
+    'use strict';
+
+    var hasOwnProperty = Object.prototype.hasOwnProperty,
+        hasDontEnumBug = !{
+          toString: null
+        }.propertyIsEnumerable('toString'),
+        dontEnums = ['toString', 'toLocaleString', 'valueOf', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'constructor'],
+        dontEnumsLength = dontEnums.length;
+    return function (obj) {
+      if (_typeof(obj) !== 'object' && (typeof obj !== 'function' || obj === null)) {
+        throw new TypeError('Object.keys called on non-object');
+      }
+
+      var result = [],
+          prop,
+          i;
+
+      for (prop in obj) {
+        if (hasOwnProperty.call(obj, prop)) {
+          result.push(prop);
+        }
+      }
+
+      if (hasDontEnumBug) {
+        for (i = 0; i < dontEnumsLength; i++) {
+          if (hasOwnProperty.call(obj, dontEnums[i])) {
+            result.push(dontEnums[i]);
+          }
+        }
+      }
+
+      return result;
+    };
+  }();
+}
 

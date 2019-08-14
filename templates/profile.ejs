@@ -191,13 +191,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	</div>
 
 	<!-- PROVINCE-->
-	<% var province = ["PINAR_DEL_RIO","LA_HABANA","ARTEMISA","MAYABEQUE","MATANZAS","VILLA_CLARA","CIENFUEGOS","SANCTI_SPIRITUS","CIEGO_DE_AVILA","CAMAGUEY","LAS_TUNAS","HOLGUIN","GRANMA","SANTIAGO_DE_CUBA","GUANTANAMO","ISLA_DE_LA_JUVENTUD"] %>
 	<div class="input-field province-div col <%=colSize%> <%= extra_fields %> <%=profile.province == "" ? "hide" : ""%>">
 		<i class="material-icons prefix grey-text text-darken-2">place</i>
 		<select <%=isDisabled%> id="province" class="validate">
 			<option value=""></option>
-			<% province.forEach(function(val) { %>
-				<option value="<%= val %>" <%if(val==profile.province){%>selected<%}%>><%= val.replaceAll('_', ' ').firstUpper() %></option>
+			<% Object.keys(province).forEach(function(val) { %>
+				<option value="<%= val %>" <%if(val==profile.province){%>selected<%}%>><%= province[val] %></option>
 			<% }); %>
 		</select>
 		<label for="province">Provincia</label>
