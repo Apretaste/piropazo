@@ -469,7 +469,7 @@ class Service
 			FROM notification
 			WHERE `to` = {$request->person->id} 
 			AND service = 'piropazo'
-			AND `read` IS NULL
+			AND `hidden` = 0
 			ORDER BY inserted DESC");
 
 		// if no notifications, let the user know

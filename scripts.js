@@ -111,7 +111,9 @@ function getCountries() {
     code: 'OTRO',
     name: 'Otro'
   }];
-} // open the menu for small devices
+}
+
+// open the menu for small devices
 
 
 function openMenu() {
