@@ -54,8 +54,8 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	<!-- GENDER -->
 	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">wc</i>
-		<select <%=isDisabled%> id="gender" class="validate">
-			<option value=""></option>
+		<select <%=isDisabled%> id="gender" class="validate" onchange="$('#sexual_orientation').removeAttr('disabled'); $('select').formSelect();;">
+			<option value="" <%if(profile.gender==''){%>selected<%}%> disabled></option>
 			<option value="M" <%if(profile.gender=='M'){%>selected<%}%>>Hombre</option>
 			<option value="F" <%if(profile.gender=='F'){%>selected<%}%>>Mujer</option>
 		</select>
@@ -66,8 +66,8 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	<% var orientation = ["MUJERES","HOMBRES","AMBOS"] %>
 	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
-		<select <%=isDisabled%> id="sexual_orientation" class="validate">
-			<option value=""></option>
+		<select <%=isDisabled%> id="sexual_orientation" class="validate" <%=profile.gender == "" ? "disabled":""%>>
+			<option value="" <%if(profile.sexual_orientation==''){%>selected<%}%> disabled></option>
 			<% orientation.forEach(function(val) { %>
 				<option value="<%= val %>" <%if(val==profile.searchfor){%>selected<%}%>><%= val.firstUpper() %></option>
 			<% }); %>
@@ -79,7 +79,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 	<div class="input-field col <%=colSize%>">
 		<i class="material-icons prefix grey-text text-darken-2">cake</i>
 		<select <%=isDisabled%> id="year_of_birth" class="validate">
-			<option value=""></option>
+			<option value="" disabled></option>
 			<% getYears().forEach(function(year) { %>
 				<option value="<%= year %>" <%if(profile.year_of_birth==year){%>selected<%}%>><%= year %></option>
 			<% }); %>
