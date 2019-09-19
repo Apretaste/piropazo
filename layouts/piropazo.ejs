@@ -33,11 +33,13 @@
 	</div>
 
 	<!-- FLOATING MOBILE BTN -->
-	<a id="btnFloatingMenu" href="#"
-	   class="btn-floating waves-effect waves-light hide-on-med-and-up hide-on-unique piropazo-color <%=typeof extra_fields != "undefined" ? extra_fields : ""%>"
-	   onclick="openMenu();">
-		<i class="material-icons"><%= menuicon %></i>
-	</a>
+	<% if(menuicon != "") { %>
+		<a id="btnFloatingMenu" href="#"
+		   class="btn-floating waves-effect waves-light hide-on-med-and-up hide-on-unique piropazo-color <%=typeof extra_fields != "undefined" ? extra_fields : ""%>"
+		   onclick="openMenu();">
+			<i class="material-icons"><%= menuicon %></i>
+		</a>
+	<% } %>
 
 	<!-- SIDE BAR TO BE OPENED ON MOBILE -->
 	<ul class="sidenav hide-on-large-only">

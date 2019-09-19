@@ -45,13 +45,12 @@ class Service
 
 		// if no matches, let the user know
 		if( ! $match) {
-			$content = [
+			$content = [  
 				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href"=>"PIROPAZO PERFIL", "caption"=>"Editar perfil"]];
-
-			$response->setLayout('piropazo.ejs');
+			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
@@ -237,8 +236,7 @@ class Service
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.",
 				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
-
-			$response->setLayout('piropazo.ejs');
+			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
@@ -305,10 +303,8 @@ class Service
 				"icon"=>"local_florist",
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Tienda"]];
-
-			$response->setLayout('piropazo.ejs');
-			$response->setTemplate('message.ejs', $content);
-			return;
+			$response->setLayout('empty.ejs');
+			return $response->setTemplate('message.ejs', $content);
 		}
 
 		// get the message sent with the flower
@@ -333,8 +329,7 @@ class Service
 			"icon"=>"local_florist",
 			"text" => "$name recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
 			"button" => ["href"=>"PIROPAZO PAREJAS", "caption"=>"Mis parejas"]];
-
-		$response->setLayout('piropazo.ejs');
+		$response->setLayout('empty.ejs');
 		$response->setTemplate('message.ejs', $content);
 	}
 
@@ -478,10 +473,8 @@ class Service
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
 				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
-				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]
-			];
-
-			$response->setLayout('piropazo.ejs');
+				"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar Pareja"]];
+			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
@@ -517,8 +510,7 @@ class Service
 			"icon"=>"directions_walk",
 			"text" => "No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.",
 			"button" => ["href"=>"SERVICIOS", "caption"=>"Otros Servicios"]];
-		
-		$response->setLayout('piropazo.ejs');
+		$response->setLayout('empty.ejs');
 		$response->setTemplate('message.ejs', $content);
 	}
 
@@ -557,11 +549,8 @@ class Service
 				"header"=>"No tiene conversaciones",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Aún no ha hablado con nadie. Cuando dos personas se gustan, pueden empezar una conversación.",
-				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar pareja"],
-				"title" => "chats",
-				"menuicon" => "message"];
-
-			$response->setLayout('piropazo.ejs');
+				"button" => ["href"=>"PIROPAZO", "caption"=>"Buscar pareja"]];
+			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
