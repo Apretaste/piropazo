@@ -797,8 +797,8 @@ function buy() {
 
 	// execute the transfer
 	apretaste.send({
-		command: "CREDITO PURCHASE", 
-		data: {'item': code},
+		command: "PIROPAZO PAY", 
+		data: {'code': code},
 		redirect: true
 	});
 }

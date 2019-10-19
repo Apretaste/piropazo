@@ -715,6 +715,53 @@ class Service
 	}
 
 	/**
+	 * Pay for an item and add the items to the database
+	 *
+	 * @param Request
+	 * @param Response
+	 * @throws Exception
+	 */
+	public function _pay(Request $request, Response $response)
+	{
+		// get buyer and code
+		$buyer = $request->person->id;
+		$code = $request->input->data->code;
+
+		// process the payment
+		try {
+			MoneyNew::buy($buyer, $code);
+		} catch (Exception $e) {
+			$response->setLayout('empty.ejs');
+			return $response->setTemplate('message.ejs', [
+				"header"=>"Error inesperado",
+				"icon"=>"sentiment_very_dissatisfied",
+				"text" => "Hemos encontrado un error procesando su canje. Por favor regrese a la tienda e intente nuevamente.",
+				"button" => ["href"=>"PIROPAZO TIENDA", "caption"=>"Reintentar"]]);
+		}
+
+		// get the number of flowers and hearts, and the message
+		$flowers = 0; $hearts = 0; $message = "";
+		if($code == "FLOWER") {$flowers = 1; $message = "una flor";}
+		if($code == "HEART") {$hearts = 1; $message = "un corazón";}
+		if($code == "PACK_ONE") {$flowers = 7; $hearts = 2; $message = "siete flores y dos corazones";}
+		if($code == "PACK_TWO") {$flowers = 15; $hearts = 4; $message = "quince flores y cuatro corazones";}
+
+		// save the articles in the database
+		Connection::query("
+			UPDATE _piropazo_people
+			SET flowers=flowers+$flowers, crowns=crowns+$hearts
+			WHERE id_person=$buyer");
+
+		// possitive response
+		$response->setLayout('empty.ejs');
+		return $response->setTemplate('message.ejs', [  
+			"header"=>"Caje realizado",
+			"icon"=>"sentiment_very_satisfied",
+			"text" => "Su canje se ha realizado satisfactoriamente, por lo cual ahora tiene $message a su disposición para ayudarle a buscar su pareja ideal.",
+			"button" => ["href"=>"PIROPAZO CITAS", "caption"=>"Buscar pareja"]]);
+	}
+
+	/**
 	 * Get the person who best matches with you
 	 *
 	 * @param Person $user
@@ -791,7 +838,7 @@ class Service
 		// select all users to filter by
 		$clauseSubquery = "
 			SELECT 
-				A.id, A.username, A.first_name, A.date_of_birth, A.gender, A.province, A.city, A.picture, A.country, A.usstate, A.religion,
+				A.id, A.username, A.first_name, A.year_of_birth, A.gender, A.province, A.city, A.picture, A.country, A.usstate, A.religion,
 				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
 			FROM person A 
 			JOIN _piropazo_people B
@@ -802,7 +849,7 @@ class Service
 			AND A.marital_status = 'SOLTERO' 
 			AND NOT ISNULL(A.picture)
 			AND $clauseSex 
-			AND (IFNULL(TIMESTAMPDIFF(YEAR,date_of_birth,NOW()), 0) >= 17 OR A.date_of_birth IS NULL)
+			AND (A.year_of_birth IS NULL OR IFNULL(YEAR()-year_of_birth,0) >= 17)
 			AND NOT A.id = '$user->id'";
 
 		// create final query with the match score
@@ -811,7 +858,7 @@ class Service
 				(IFNULL(country, 'NO') = '$user->country') * 10 +
 				(IFNULL(province, 'NO') = '$user->province') * 50 +
 				(IFNULL(usstate, 'NO') = '$user->usstate') * 50 +
-				(ABS(IFNULL(TIMESTAMPDIFF(YEAR,date_of_birth,NOW()), 0) - $user->age) <= 5) * 20 +
+				(ABS(IFNULL(YEAR()-year_of_birth,0) - $user->age) <= 5) * 20 +
 				crown * 25 +
 				(IFNULL(religion, 'NO') = '$user->religion') * 20
 				AS percent_match
@@ -882,7 +929,7 @@ class Service
 	{
 		// get both profiles
 		$p = Connection::query("
-			SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, date_of_birth 
+			SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, year_of_birth 
 			FROM person 
 			WHERE id='$idOne' 
 			OR id='$idTwo'");
@@ -907,8 +954,8 @@ class Service
 		if($intersect) $percentage += 20;
 
 		// calculate age
-		$ageOne = date("Y") - date("Y", strtotime($p[0]->date_of_birth));
-		$ageTwo = date("Y") - date("Y", strtotime($p[1]->date_of_birth));
+		$ageOne = date("Y") - $p[0]->year_of_birth;
+		$ageTwo = date("Y") - $p[1]->year_of_birth;
 		$diff = abs($ageOne - $ageTwo);
 		if($diff == 0) $percentage += 15;
 		if($diff >= 1 && $diff <= 5) $percentage += 10;
