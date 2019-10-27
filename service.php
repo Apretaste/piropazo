@@ -23,7 +23,7 @@ class Service
 
 	/**
 	 * Get dates for your profile
-	 * 
+	 *
 	 * @author salvipascual
 	 * @param Request
 	 * @param Response
@@ -45,7 +45,7 @@ class Service
 
 		// if no matches, let the user know
 		if( ! $match) {
-			$content = [  
+			$content = [
 				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
@@ -65,7 +65,7 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// get the number of flowers for the logged user 
+		// get the number of flowers for the logged user
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// get match images into an array and the content
@@ -128,6 +128,8 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**
@@ -153,6 +155,8 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**
@@ -263,7 +267,7 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// get the number of flowers for the logged user 
+		// get the number of flowers for the logged user
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// create response array
@@ -378,7 +382,7 @@ class Service
 		}
 
 		$messages = Social::chatConversation($request->person->id, $user->id);
-		
+
 		$chats = [];
 
 		foreach ($messages as $message) {
@@ -516,7 +520,7 @@ class Service
 
 	/**
 	 * Chats lists with matches filter
-	 * 
+	 *
 	 * @author ricardo
 	 * @param Request
 	 * @param Response
@@ -594,14 +598,14 @@ class Service
 		$blocks = Social::isBlocked($request->person->id ,$userTo->id);
 		if ($blocks->blocked>0 || $blocks->blockedByMe>0){
 			Utils::addNotification(
-				$request->person->id, 
-				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.", 
+				$request->person->id,
+				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
 				"{}",
 				'error'
 			);
 			return;
 		}
-		
+
 		// store the note in the database
 		$message = Connection::escape($message, 499);
 		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
@@ -647,7 +651,7 @@ class Service
 		// get what gender do you search for
 		if($profile->sexual_orientation == "BI") $profile->searchfor = "AMBOS";
 		elseif($profile->gender == "M" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "MUJERES";
-		elseif($profile->gender == "F" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "HOMBRES";		
+		elseif($profile->gender == "F" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "HOMBRES";
 		elseif($profile->gender == "M" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "HOMBRES";
 		elseif($profile->gender == "F" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "MUJERES";
 		else $profile->searchfor = "";
@@ -754,7 +758,7 @@ class Service
 
 		// possitive response
 		$response->setLayout('empty.ejs');
-		return $response->setTemplate('message.ejs', [  
+		return $response->setTemplate('message.ejs', [
 			"header"=>"Caje realizado",
 			"icon"=>"sentiment_very_satisfied",
 			"text" => "Su canje se ha realizado satisfactoriamente, por lo cual ahora tiene $message a su disposición para ayudarle a buscar su pareja ideal.",
@@ -987,7 +991,7 @@ class Service
 
 		$match->country = $countries[$match->country];
 
-		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer"; 
+		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer";
 		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
 		if($match->religion && $match->religion != "OTRA") $profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
 		$profileTags[] = $match->age. " años";
