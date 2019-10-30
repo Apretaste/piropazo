@@ -108,6 +108,10 @@ class Service
 				// update to create a match
 				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 
+				// add the experience
+				Level::setExperience('PIROPAZO_MATCH', $idFrom);
+				Level::setExperience('PIROPAZO_MATCH', $idTo);
+
 				// create notifications for both you and your date
 				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", '{"command":"PIROPAZO PAREJAS"}', 'people');
 				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", '{"command":"PIROPAZO PAREJAS"}', "people");
