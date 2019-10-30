@@ -132,6 +132,9 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		// add challenge
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**
@@ -157,6 +160,9 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		// add challenge
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**
