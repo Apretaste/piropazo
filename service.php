@@ -1,7 +1,6 @@
 <?php
 
 use Apretaste\Model\Person;
-use Phalcon\DI\FactoryDefault;
 
 /**
  * Apretaste Piropazo Service
@@ -15,7 +14,7 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _main (Request $request, Response $response)
+	public function _main(Request $request, Response $response)
 	{
 		// by default, open citas
 		$this->_citas($request, $response);
@@ -23,17 +22,17 @@ class Service
 
 	/**
 	 * Get dates for your profile
-	 * 
+	 *
 	 * @author salvipascual
 	 * @param Request
 	 * @param Response
 	 */
 	public function _citas(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			$this->_perfil ($request, $response);
+			$this->_perfil($request, $response);
 			return;
 		}
 
@@ -44,8 +43,8 @@ class Service
 		$match = $this->getMatchFromCache($request->person);
 
 		// if no matches, let the user know
-		if( ! $match) {
-			$content = [  
+		if (! $match) {
+			$content = [
 				"header"=>"No hay citas",
 				"icon"=>"sentiment_very_dissatisfied",
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
@@ -65,7 +64,7 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// get the number of flowers for the logged user 
+		// get the number of flowers for the logged user
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// get match images into an array and the content
@@ -88,20 +87,22 @@ class Service
 	 * @param Response
 	 * @author salvipascual
 	 */
-	public function _si (Request $request, Response $response)
+	public function _si(Request $request, Response $response)
 	{
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if(empty($idTo)) return;
+		if (empty($idTo)) {
+			return;
+		}
 
 		// check if there is any previous record between you and that person
 		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 		// if they liked you, like too; if they dislike you, block
-		if($record) {
+		if ($record) {
 			// if they liked you, create a match
-			if($record[0]->status == "like") {
+			if ($record[0]->status == "like") {
 				// get the target @username
 				$username = Connection::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
 
@@ -118,7 +119,9 @@ class Service
 			}
 
 			// if they dislike you, block that match
-			if($record[0]->status == "dislike") Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+			if ($record[0]->status == "dislike") {
+				Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+			}
 			return;
 		}
 
@@ -144,12 +147,14 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _no (Request $request, Response $response)
+	public function _no(Request $request, Response $response)
 	{
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if(empty($idTo)) return;
+		if (empty($idTo)) {
+			return;
+		}
 
 		// mark the transaction as blocked
 		Connection::query("
@@ -172,12 +177,14 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _reportar (Request $request, Response $response)
+	public function _reportar(Request $request, Response $response)
 	{
 		// do not allow empty codes
 		$violatorId = $request->input->data->id;
 		$violationCode = $request->input->data->violation;
-		if(empty($violatorId) || empty($violationCode)) return $response;
+		if (empty($violatorId) || empty($violationCode)) {
+			return $response;
+		}
 
 		// save the report
 		Connection::query("
@@ -196,12 +203,12 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _parejas (Request $request, Response $response)
+	public function _parejas(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// activate new users and people who left
@@ -240,7 +247,7 @@ class Service
 			AND id_from = '{$request->person->id}'");
 
 		// if no matches, let the user know
-		if(empty($matches)) {
+		if (empty($matches)) {
 			$content = [
 				"header"=>"No tiene parejas",
 				"icon"=>"sentiment_very_dissatisfied",
@@ -257,7 +264,9 @@ class Service
 			$match = Social::prepareUserProfile($match);
 
 			// get the link to the image
-			if($match->picture) $images[] = $match->picture;
+			if ($match->picture) {
+				$images[] = $match->picture;
+			}
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
 
 			// erase unwanted properties in the object
@@ -265,15 +274,21 @@ class Service
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
-			if($match->type == "LIKE") $liked[] = $match;
-			if($match->type == "WAITING") $waiting[] = $match;
-			if($match->type == "MATCH") $matched[] = $match;
+			if ($match->type == "LIKE") {
+				$liked[] = $match;
+			}
+			if ($match->type == "WAITING") {
+				$waiting[] = $match;
+			}
+			if ($match->type == "MATCH") {
+				$matched[] = $match;
+			}
 		}
 
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// get the number of flowers for the logged user 
+		// get the number of flowers for the logged user
 		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// create response array
@@ -297,17 +312,17 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _flor (Request $request, Response $response)
+	public function _flor(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// check if you have enought flowers to send
 		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
-		if(empty($flowers)) {
+		if (empty($flowers)) {
 			$content = [
 				"header"=>"No tiene suficientes flores",
 				"icon"=>"local_florist",
@@ -350,19 +365,21 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _corazon (Request $request, Response $response)
+	public function _corazon(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// check if you have enought crowns
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 
 		// return error response if the user has no crowns
-		if(empty($crowns)) return;
+		if (empty($crowns)) {
+			return;
+		}
 
 		// set the crown and substract a crown
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
@@ -371,24 +388,25 @@ class Service
 		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'piropazo', 'favorite');
 	}
 
-	public function _conversacion(Request $request, Response $response){
-		if($this->isProfileIncomplete($request->person)){
+	public function _conversacion(Request $request, Response $response)
+	{
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// get the username of the note
 		$user = Utils::getPerson($request->input->data->userId);
 
 		// check if the username is valid
-		if(!$user){
+		if (!$user) {
 			$response->setTemplate("notFound.ejs");
 			return;
 		}
 
 		$messages = Social::chatConversation($request->person->id, $user->id);
-		
+
 		$chats = [];
 
 		foreach ($messages as $message) {
@@ -423,12 +441,12 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _tienda (Request $request, Response $response)
+	public function _tienda(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// get the user items
@@ -460,12 +478,12 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _notificaciones (Request $request, Response $response)
+	public function _notificaciones(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// get all unread notifications
@@ -478,7 +496,7 @@ class Service
 			ORDER BY inserted DESC");
 
 		// if no notifications, let the user know
-		if(empty($notifications)) {
+		if (empty($notifications)) {
 			$content = [
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
@@ -488,7 +506,9 @@ class Service
 			return $response->setTemplate('message.ejs', $content);
 		}
 
-		foreach($notifications as $noti) $noti->inserted = strtoupper(date('d/m/Y h:ia', strtotime(($noti->inserted))));
+		foreach ($notifications as $noti) {
+			$noti->inserted = strtoupper(date('d/m/Y h:ia', strtotime(($noti->inserted))));
+		}
 
 		// prepare content for the view
 		$content = [
@@ -509,7 +529,7 @@ class Service
 	 * @param Request
 	 * @param Response
 	 */
-	public function _salir (Request $request, Response $response)
+	public function _salir(Request $request, Response $response)
 	{
 		// remove from piropazo
 		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
@@ -526,7 +546,7 @@ class Service
 
 	/**
 	 * Chats lists with matches filter
-	 * 
+	 *
 	 * @author ricardo
 	 * @param Request
 	 * @param Response
@@ -534,10 +554,10 @@ class Service
 
 	public function _chat(Request $request, Response $response)
 	{
-		if($this->isProfileIncomplete($request->person)){
+		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil ($request, $response);
+			return $this->_perfil($request, $response);
 		}
 
 		// get the list of people chating with you
@@ -554,7 +574,7 @@ class Service
 		AND id_from = '{$request->person->id}'");
 
 		// if no matches, let the user know
-		if(empty($chats) || empty($matches)) {
+		if (empty($chats) || empty($matches)) {
 			$content = [
 				"header"=>"No tiene conversaciones",
 				"icon"=>"sentiment_very_dissatisfied",
@@ -565,12 +585,14 @@ class Service
 		}
 
 		$matchesId = [];
-		foreach($matches as $match) $matchesId[$match->id] = $match;
+		foreach ($matches as $match) {
+			$matchesId[$match->id] = $match;
+		}
 
 		$onlyMatchesChats = [];
 		$images = [];
 		foreach ($chats as $chat) {
-			if (key_exists($chat->id,  $matchesId)){
+			if (key_exists($chat->id, $matchesId)) {
 				$chat->last_sent = explode(' ', $chat->last_sent)[0];
 				$images[] = $chat->picture;
 				$onlyMatchesChats[] = $chat;
@@ -596,24 +618,28 @@ class Service
 	 */
 	public function _escribir(Request $request, Response $response)
 	{
-		if(!isset($request->input->data->id)) return;
+		if (!isset($request->input->data->id)) {
+			return;
+		}
 		$userTo = Utils::getPerson($request->input->data->id);
-		if(!$userTo) return;
+		if (!$userTo) {
+			return;
+		}
 		$message = $request->input->data->message;
 
-		$blocks = Social::isBlocked($request->person->id ,$userTo->id);
-		if ($blocks->blocked>0 || $blocks->blockedByMe>0){
+		$blocks = Social::isBlocked($request->person->id, $userTo->id);
+		if ($blocks->blocked>0 || $blocks->blockedByMe>0) {
 			Utils::addNotification(
-				$request->person->id, 
-				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.", 
+				$request->person->id,
+				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
 				"{}",
 				'error'
 			);
 			return;
 		}
-		
+
 		// store the note in the database
-		$message = Connection::escape($message, 499);
+		$message = Connection::escape($message, 499, 'utf8mb4');
 		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
 
 		// send notification for the app
@@ -638,7 +664,9 @@ class Service
 		$this->activatePiropazoUser($request->person->id);
 
 		$extra_fields = isset($request->extra_fields) ? $request->extra_fields : "";
-		if($this->isProfileIncomplete($request->person)) $extra_fields = "hide";
+		if ($this->isProfileIncomplete($request->person)) {
+			$extra_fields = "hide";
+		}
 
 		// get the user's profile
 		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
@@ -655,16 +683,23 @@ class Service
 		$profile->heart_time_left = 60*60*24*3 - $user[0]->heart_time_left;
 
 		// get what gender do you search for
-		if($profile->sexual_orientation == "BI") $profile->searchfor = "AMBOS";
-		elseif($profile->gender == "M" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "MUJERES";
-		elseif($profile->gender == "F" && $profile->sexual_orientation == "HETERO") $profile->searchfor = "HOMBRES";		
-		elseif($profile->gender == "M" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "HOMBRES";
-		elseif($profile->gender == "F" && $profile->sexual_orientation == "HOMO") $profile->searchfor = "MUJERES";
-		else $profile->searchfor = "";
+		if ($profile->sexual_orientation == "BI") {
+			$profile->searchfor = "AMBOS";
+		} elseif ($profile->gender == "M" && $profile->sexual_orientation == "HETERO") {
+			$profile->searchfor = "MUJERES";
+		} elseif ($profile->gender == "F" && $profile->sexual_orientation == "HETERO") {
+			$profile->searchfor = "HOMBRES";
+		} elseif ($profile->gender == "M" && $profile->sexual_orientation == "HOMO") {
+			$profile->searchfor = "HOMBRES";
+		} elseif ($profile->gender == "F" && $profile->sexual_orientation == "HOMO") {
+			$profile->searchfor = "MUJERES";
+		} else {
+			$profile->searchfor = "";
+		}
 
 		// get array of images
 		$images = [];
-		if($profile->picture) {
+		if ($profile->picture) {
 			$images[] = $profile->picture;
 		}
 
@@ -709,19 +744,19 @@ class Service
 
 		// prepare chats for the view
 		$chat = [];
-		foreach($tickets as $ticket) {
+		foreach ($tickets as $ticket) {
 			$message = new stdClass();
 			$message->class = $ticket->from == $email ? "me" : "you";
 			$message->from = $ticket->username;
 			$message->text = preg_replace('/[\x00-\x1F\x7F]/u', '', $ticket->body);
-			$message->date = date_format((new DateTime($ticket->creation_date)),'d/m/Y h:i a');
+			$message->date = date_format((new DateTime($ticket->creation_date)), 'd/m/Y h:i a');
 			$message->status = $ticket->status;
 			$chat[] = $message;
 		}
 
 		// send data to the view
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('soporte.ejs',['messages' => $chat, 'myusername' => $username, "title" => "Soporte"]);
+		$response->setTemplate('soporte.ejs', ['messages' => $chat, 'myusername' => $username, "title" => "Soporte"]);
 	}
 
 	/**
@@ -750,11 +785,27 @@ class Service
 		}
 
 		// get the number of flowers and hearts, and the message
-		$flowers = 0; $hearts = 0; $message = "";
-		if($code == "FLOWER") {$flowers = 1; $message = "una flor";}
-		if($code == "HEART") {$hearts = 1; $message = "un corazón";}
-		if($code == "PACK_ONE") {$flowers = 7; $hearts = 2; $message = "siete flores y dos corazones";}
-		if($code == "PACK_TWO") {$flowers = 15; $hearts = 4; $message = "quince flores y cuatro corazones";}
+		$flowers = 0;
+		$hearts = 0;
+		$message = "";
+		if ($code == "FLOWER") {
+			$flowers = 1;
+			$message = "una flor";
+		}
+		if ($code == "HEART") {
+			$hearts = 1;
+			$message = "un corazón";
+		}
+		if ($code == "PACK_ONE") {
+			$flowers = 7;
+			$hearts = 2;
+			$message = "siete flores y dos corazones";
+		}
+		if ($code == "PACK_TWO") {
+			$flowers = 15;
+			$hearts = 4;
+			$message = "quince flores y cuatro corazones";
+		}
 
 		// save the articles in the database
 		Connection::query("
@@ -764,7 +815,7 @@ class Service
 
 		// possitive response
 		$response->setLayout('empty.ejs');
-		return $response->setTemplate('message.ejs', [  
+		return $response->setTemplate('message.ejs', [
 			"header"=>"Caje realizado",
 			"icon"=>"sentiment_very_satisfied",
 			"text" => "Su canje se ha realizado satisfactoriamente, por lo cual ahora tiene $message a su disposición para ayudarle a buscar su pareja ideal.",
@@ -797,17 +848,24 @@ class Service
 			LIMIT 1");
 
 		// return false if no match
-		if(empty($match)) return false;
-		else $match = $match[0];
+		if (empty($match)) {
+			return false;
+		} else {
+			$match = $match[0];
+		}
 
 		// return the best match as a Person object
 		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
 		$person->heart = $match->heart;
 
 		// get the match color class based on gender
-		if($person->gender == "M") $person->color = "male";
-		elseif($person->gender == "F") $person->color = "female";
-		else $person->color = "neutral";
+		if ($person->gender == "M") {
+			$person->color = "male";
+		} elseif ($person->gender == "F") {
+			$person->color = "female";
+		} else {
+			$person->color = "neutral";
+		}
 
 		// return the match
 		return $person;
@@ -824,7 +882,9 @@ class Service
 	{
 		// do not cache if already exist data
 		$isCache = Connection::query("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}");
-		if($isCache[0]->cnt > 0) return false;
+		if ($isCache[0]->cnt > 0) {
+			return false;
+		}
 
 		// filter based on sexual orientation
 		switch ($user->sexual_orientation) {
@@ -839,9 +899,12 @@ class Service
 			SELECT id_to as id FROM _piropazo_relationships WHERE id_from = {$user->id} 
 			UNION 
 			SELECT id_from as id FROM _piropazo_relationships WHERE id_to = {$user->id}");
-		if(empty($voted)) $clauseVoted = "''";
-		else {
-			foreach ($voted as $v) $clauseVoted[] = "'".$v->id."'";
+		if (empty($voted)) {
+			$clauseVoted = "''";
+		} else {
+			foreach ($voted as $v) {
+				$clauseVoted[] = "'".$v->id."'";
+			}
 			$clauseVoted = implode(",", $clauseVoted);
 		}
 
@@ -878,11 +941,15 @@ class Service
 			LIMIT 50");
 
 		// do not create cache if no suggestions were found
-		if(empty($cacheUsers)) return false;
+		if (empty($cacheUsers)) {
+			return false;
+		}
 
 		// create the cache of suggestions
 		$inserts = [];
-		foreach ($cacheUsers as $c) $inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
+		foreach ($cacheUsers as $c) {
+			$inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
+		}
 		Connection::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ".implode(",", $inserts));
 
 		return true;
@@ -921,8 +988,10 @@ class Service
 	private function filterObjectProperties($properties, $object)
 	{
 		$objProperties = get_object_vars($object);
-		foreach($objProperties as $prop=>$value) {
-			if( ! in_array($prop, $properties)) unset($object->$prop);
+		foreach ($objProperties as $prop=>$value) {
+			if (! in_array($prop, $properties)) {
+				unset($object->$prop);
+			}
 		}
 		return $object;
 	}
@@ -943,38 +1012,67 @@ class Service
 			FROM person 
 			WHERE id='$idOne' 
 			OR id='$idTwo'");
-		if(empty($p[0]) || empty($p[1])) return 0;
+		if (empty($p[0]) || empty($p[1])) {
+			return 0;
+		}
 
 		// calculate basic values
 		$percentage = 0;
-		if($p[0]->eyes == $p[1]->eyes) $percentage += 5;
-		if($p[0]->skin == $p[1]->skin) $percentage += 5;
-		if($p[0]->body_type == $p[1]->body_type) $percentage += 5;
-		if($p[0]->hair == $p[1]->hair) $percentage += 5;
-		if($p[0]->highest_school_level == $p[1]->highest_school_level) $percentage += 10;
-		if($p[0]->lang == $p[1]->lang) $percentage += 10;
-		if($p[0]->religion == $p[1]->religion) $percentage += 10;
-		if($p[0]->country == $p[1]->country) $percentage += 5;
-		if($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) $percentage += 10;
+		if ($p[0]->eyes == $p[1]->eyes) {
+			$percentage += 5;
+		}
+		if ($p[0]->skin == $p[1]->skin) {
+			$percentage += 5;
+		}
+		if ($p[0]->body_type == $p[1]->body_type) {
+			$percentage += 5;
+		}
+		if ($p[0]->hair == $p[1]->hair) {
+			$percentage += 5;
+		}
+		if ($p[0]->highest_school_level == $p[1]->highest_school_level) {
+			$percentage += 10;
+		}
+		if ($p[0]->lang == $p[1]->lang) {
+			$percentage += 10;
+		}
+		if ($p[0]->religion == $p[1]->religion) {
+			$percentage += 10;
+		}
+		if ($p[0]->country == $p[1]->country) {
+			$percentage += 5;
+		}
+		if ($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) {
+			$percentage += 10;
+		}
 
 		// calculate interests
 		$arrOne = explode(",", strtolower($p[0]->interests));
 		$arrTwo = explode(",", strtolower($p[1]->interests));
 		$intersect = array_intersect($arrOne, $arrTwo);
-		if($intersect) $percentage += 20;
+		if ($intersect) {
+			$percentage += 20;
+		}
 
 		// calculate age
 		$ageOne = date("Y") - $p[0]->year_of_birth;
 		$ageTwo = date("Y") - $p[1]->year_of_birth;
 		$diff = abs($ageOne - $ageTwo);
-		if($diff == 0) $percentage += 15;
-		if($diff >= 1 && $diff <= 5) $percentage += 10;
-		if($diff >= 6 && $diff <= 10) $percentage += 5;
+		if ($diff == 0) {
+			$percentage += 15;
+		}
+		if ($diff >= 1 && $diff <= 5) {
+			$percentage += 10;
+		}
+		if ($diff >= 6 && $diff <= 10) {
+			$percentage += 5;
+		}
 
 		return $percentage;
 	}
 
-	private function getTags(&$match){
+	private function getTags(&$match)
+	{
 		$profileTags = [];
 		$professionTags = [];
 
@@ -997,19 +1095,24 @@ class Service
 
 		$match->country = $countries[$match->country];
 
-		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer"; 
+		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer";
 		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
-		if($match->religion && $match->religion != "OTRA") $profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
+		if ($match->religion && $match->religion != "OTRA") {
+			$profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
+		}
 		$profileTags[] = $match->age. " años";
 
-		if($match->highest_school_level && $match->highest_school_level != "OTRO") $professionTags[] = ucfirst(strtolower($match->highest_school_level));
+		if ($match->highest_school_level && $match->highest_school_level != "OTRO") {
+			$professionTags[] = ucfirst(strtolower($match->highest_school_level));
+		}
 		$professionTags[] = $match->occupation;
 
 		$match->profile_tags = implode(', ', $profileTags);
 		$match->profession_tags = implode(', ', $professionTags);
 	}
 
-	private function isProfileIncomplete($person){
+	private function isProfileIncomplete($person)
+	{
 		// ensure your profile is completed
 		return (
 			empty($person->picture) ||
