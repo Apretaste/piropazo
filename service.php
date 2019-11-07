@@ -640,7 +640,7 @@ class Service
 
 		// store the note in the database
 		$message = Connection::escape($message, 499, 'utf8mb4');
-		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
+		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
 
 		// send notification for the app
 		Utils::addNotification(
