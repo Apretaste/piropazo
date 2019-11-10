@@ -368,7 +368,8 @@ function sendFile(base64File) {
 	apretaste.send({
 		"command": "PERFIL FOTO",
 		"data": {
-			'picture': base64File
+			'picture': base64File,
+			'updatePicture': true
 		},
 		"redirect": false,
 		"callback": {
@@ -376,11 +377,11 @@ function sendFile(base64File) {
 			"data": base64File
 		}
 	});
-} // submit the profile informacion 
+} // submit the profile informacion
 
 
 function submitProfileData() {
-	if (!isMyOwnProfile) return; // get the array of fields and  
+	if (!isMyOwnProfile) return; // get the array of fields and
 
 	var fields = ['picture', 'first_name', 'username', 'about_me', 'gender', 'sexual_orientation', 'year_of_birth', 'body_type', 'eyes', 'hair', 'skin', 'marital_status', 'highest_school_level', 'occupation', 'country', 'province', 'usstate', 'city', 'religion']; // create the JSON of data
 
@@ -797,7 +798,7 @@ function buy() {
 
 	// execute the transfer
 	apretaste.send({
-		command: "PIROPAZO PAY", 
+		command: "PIROPAZO PAY",
 		data: {'code': code},
 		redirect: true
 	});
