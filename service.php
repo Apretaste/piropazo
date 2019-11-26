@@ -377,7 +377,9 @@ class Service
 		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 
 		// return error response if the user has no crowns
-		if (empty($crowns)) return;
+		if (empty($crowns)) {
+			return;
+		}
 
 		// set the crown and substract a crown
 		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
@@ -405,7 +407,9 @@ class Service
 		$user = Utils::getPerson($request->input->data->userId);
 
 		// check if the username is valid
-		if (!$user) return $response->setTemplate("notFound.ejs");
+		if (!$user) {
+			return $response->setTemplate("notFound.ejs");
+		}
 
 		// get the conversation
 		$messages = Social::chatConversation($request->person->id, $user->id);
@@ -675,6 +679,12 @@ class Service
 		$profile = Social::prepareUserProfile(Utils::getPerson($id));
 
 		if (!$isMyOwnProfile) {
+			// run powers for amulet DETECTIVE
+			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
+				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
+				Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
+			}
+
 			// run powers for amulet SHADOWMODE
 			if (Amulets::isActive(Amulets::SHADOWMODE, $id)) {
 				return $response->setTemplate("message.ejs", [
@@ -682,12 +692,6 @@ class Service
 					"icon" => "visibility_off",
 					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
 				]);
-			}
-
-			// run powers for amulet DETECTIVE
-			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
-				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
 			}
 		}
 
@@ -803,7 +807,8 @@ class Service
 		}
 
 		// get the number of flowers and hearts, and the message
-		$flowers = 0; $hearts = 0;
+		$flowers = 0;
+		$hearts = 0;
 		$message = "";
 		if ($code == "FLOWER") {
 			$flowers = 1;
@@ -825,7 +830,7 @@ class Service
 		}
 
 		// run powers for amulet FLORISTA
-		if(Amulets::isActive(Amulets::FLORISTA, $buyer)) {
+		if (Amulets::isActive(Amulets::FLORISTA, $buyer)) {
 			// duplicate flowers
 			$flowers *= 2;
 
@@ -875,17 +880,24 @@ class Service
 			LIMIT 1");
 
 		// return false if no match
-		if (empty($match)) return false;
-		else $match = $match[0];
+		if (empty($match)) {
+			return false;
+		} else {
+			$match = $match[0];
+		}
 
 		// return the best match as a Person object
 		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
 		$person->heart = $match->heart;
 
 		// get the match color class based on gender
-		if ($person->gender == "M") $person->color = "male";
-		elseif ($person->gender == "F") $person->color = "female";
-		else $person->color = "neutral";
+		if ($person->gender == "M") {
+			$person->color = "male";
+		} elseif ($person->gender == "F") {
+			$person->color = "female";
+		} else {
+			$person->color = "neutral";
+		}
 
 		// return the match
 		return $person;
@@ -1034,33 +1046,61 @@ class Service
 			OR id='$idTwo'");
 
 		// do not continue if any user can't be found
-		if (empty($p[0]) || empty($p[1])) return 0;
+		if (empty($p[0]) || empty($p[1])) {
+			return 0;
+		}
 
 		// calculate basic values
 		$percentage = 0;
-		if ($p[0]->eyes == $p[1]->eyes) $percentage += 5;
-		if ($p[0]->skin == $p[1]->skin) $percentage += 5;
-		if ($p[0]->body_type == $p[1]->body_type) $percentage += 5;
-		if ($p[0]->hair == $p[1]->hair) $percentage += 5;
-		if ($p[0]->highest_school_level == $p[1]->highest_school_level) $percentage += 10;
-		if ($p[0]->lang == $p[1]->lang) $percentage += 10;
-		if ($p[0]->religion == $p[1]->religion) $percentage += 10;
-		if ($p[0]->country == $p[1]->country) $percentage += 5;
-		if ($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) $percentage += 10;
+		if ($p[0]->eyes == $p[1]->eyes) {
+			$percentage += 5;
+		}
+		if ($p[0]->skin == $p[1]->skin) {
+			$percentage += 5;
+		}
+		if ($p[0]->body_type == $p[1]->body_type) {
+			$percentage += 5;
+		}
+		if ($p[0]->hair == $p[1]->hair) {
+			$percentage += 5;
+		}
+		if ($p[0]->highest_school_level == $p[1]->highest_school_level) {
+			$percentage += 10;
+		}
+		if ($p[0]->lang == $p[1]->lang) {
+			$percentage += 10;
+		}
+		if ($p[0]->religion == $p[1]->religion) {
+			$percentage += 10;
+		}
+		if ($p[0]->country == $p[1]->country) {
+			$percentage += 5;
+		}
+		if ($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) {
+			$percentage += 10;
+		}
 
 		// calculate interests
 		$arrOne = explode(",", strtolower($p[0]->interests));
 		$arrTwo = explode(",", strtolower($p[1]->interests));
 		$intersect = array_intersect($arrOne, $arrTwo);
-		if ($intersect) $percentage += 20;
+		if ($intersect) {
+			$percentage += 20;
+		}
 
 		// calculate age
 		$ageOne = date("Y") - $p[0]->year_of_birth;
 		$ageTwo = date("Y") - $p[1]->year_of_birth;
 		$diff = abs($ageOne - $ageTwo);
-		if ($diff == 0) $percentage += 15;
-		if ($diff >= 1 && $diff <= 5) $percentage += 10;
-		if ($diff >= 6 && $diff <= 10) $percentage += 5;
+		if ($diff == 0) {
+			$percentage += 15;
+		}
+		if ($diff >= 1 && $diff <= 5) {
+			$percentage += 10;
+		}
+		if ($diff >= 6 && $diff <= 10) {
+			$percentage += 5;
+		}
 		return $percentage;
 	}
 
@@ -1121,7 +1161,7 @@ class Service
 	{
 		// run powers for amulet ROMEO
 		// NOTE: added here for convenience, since this function is called all over the place
-		if(Amulets::isActive(Amulets::ROMEO, $person->id)) {
+		if (Amulets::isActive(Amulets::ROMEO, $person->id)) {
 			Connection::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$person->id}");
 		}
 
