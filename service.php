@@ -674,6 +674,23 @@ class Service
 		$isMyOwnProfile = $id == $request->person->id;
 		$profile = Social::prepareUserProfile(Utils::getPerson($id));
 
+		if (!$isMyOwnProfile) {
+			// run powers for amulet SHADOWMODE
+			if (Amulets::isActive(Amulets::SHADOWMODE, $id)) {
+				return $response->setTemplate("message.ejs", [
+					"header" => "Shadow-Mode",
+					"icon" => "visibility_off",
+					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
+				]);
+			}
+
+			// run powers for amulet DETECTIVE
+			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
+				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
+				Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
+			}
+		}
+
 		$user = Connection::query("
 			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left
 			FROM _piropazo_people
