@@ -171,13 +171,9 @@ function resizeImg() {
 function respondToDate(personId, answer) {
 	if ($('#desc').attr('status') == "opened") return;
 	apretaste.send({
-		command: "PIROPAZO " + answer,
+		command: "PIROPAZO " + answer + "NEXT",
 		data: {
 			id: personId
-		},
-		redirect: false,
-		callback: {
-			name: "callbackBringNewDate"
 		}
 	});
 } // show the denounce drop down menu
@@ -283,15 +279,12 @@ function sendFlower() {
 
 
 	apretaste.send({
-		'command': 'PIROPAZO FLOR',
+		'command': 'PIROPAZO FLORNEXT',
 		'data': {
 			'id': activeId,
 			'msg': message
 		},
-		redirect: typeof match == "undefined",
-		callback: {
-			name: "callbackBringNewDate"
-		}
+		redirect: typeof match == "undefined"
 	});
 }
 
