@@ -122,6 +122,8 @@ class Service
 			if ($record[0]->status == "dislike") {
 				Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 			}
+
+			$this->_citas($request, $response);
 			return;
 		}
 
@@ -138,6 +140,8 @@ class Service
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
+
+		$this->_citas($request, $response);
 	}
 
 	/**

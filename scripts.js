@@ -175,10 +175,10 @@ function respondToDate(personId, answer) {
 		data: {
 			id: personId
 		},
-		redirect: false,
+		redirect: true/*,
 		callback: {
 			name: "callbackBringNewDate"
-		}
+		}*/
 	});
 } // show the denounce drop down menu
 
@@ -477,12 +477,12 @@ function updatePicture(file) {
 
 	showToast('Su foto ha sido cambiada correctamente');
 }
-
+/*
 function callbackBringNewDate() {
 	apretaste.send({
 		command: "PIROPAZO"
 	});
-}
+}*/
 
 function callbackDenounceFinish() {
 	$('#denounce-menu').hide();
