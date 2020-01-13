@@ -59,20 +59,21 @@ $(document).ready(function () {
 // FUCTIONS FOR THE SERVICE
 //
 
-var activeId; // get list of years fort the age
+var activeId;
 
+// get list of years fort the age
 function getYears() {
 	var year = new Date().getFullYear();
 	var years = [];
 
-	for (var i = year - 15; i >= year - 90; i--) {
+	for (var i = year - 18; i >= year - 90; i--) {
 		years.push(i);
 	}
 
 	return years;
-} // get list of countries to display
+}
 
-
+// get list of countries to display
 function getCountries() {
 	return [{
 		code: 'cu',
@@ -114,8 +115,6 @@ function getCountries() {
 }
 
 // open the menu for small devices
-
-
 function openMenu() {
 	$('.sidenav').sidenav();
 	$('.sidenav').sidenav('open');
@@ -165,9 +164,9 @@ function resizeImg() {
 
 		$('#img-pre').height(img.height() * 0.8); // set the height of the colored div after the photo
 	}
-} // say yes/no to a date
+}
 
-
+// say yes/no to a date
 function respondToDate(personId, answer) {
 	if ($('#desc').attr('status') == "opened") return;
 	apretaste.send({
@@ -180,15 +179,15 @@ function respondToDate(personId, answer) {
 			name: "callbackBringNewDate"
 		}
 	});
-} // show the denounce drop down menu
+}
 
-
+// show the denounce drop down menu
 function showDenounceMenu() {
 	$('#denounce-link').hide();
 	$('#denounce-menu').show();
-} // denounce a user
+}
 
-
+// denounce a user
 function denounceUser(violation, violator) {
 	apretaste.send({
 		command: 'PIROPAZO REPORTAR',
@@ -201,9 +200,9 @@ function denounceUser(violation, violator) {
 			name: "callbackDenounceFinish"
 		}
 	});
-} // terminates a date on the parejas section
+}
 
-
+// terminates a date on the parejas section
 function sayNoAndBlock(personId) {
 	apretaste.send({
 		command: 'PIROPAZO NO',
@@ -216,9 +215,9 @@ function sayNoAndBlock(personId) {
 			data: personId
 		}
 	});
-} // do match
+}
 
-
+// do match
 function doMatch(personId) {
 	apretaste.send({
 		command: 'PIROPAZO SI',
@@ -231,9 +230,9 @@ function doMatch(personId) {
 			data: personId
 		}
 	});
-} // toggles the user description visible/invisible on the "dates" page
+}
 
-
+// toggles the user description visible/invisible on the "dates" page
 function toggleDescVisible() {
 	var status = $('#desc').attr('status');
 
@@ -246,9 +245,9 @@ function toggleDescVisible() {
 			direction: "up"
 		}).attr('status', 'closed'); //, () => resizeImg()
 	}
-} // open the modal to send a flower
+}
 
-
+// open the modal to send a flower
 function openFlowerModal(personId, name) {
 	// do not open if the user do not have flowers
 	if (myflowers < 1) {
@@ -264,9 +263,9 @@ function openFlowerModal(personId, name) {
 	var popup = document.getElementById('modalFlower');
 	var modal = M.Modal.init(popup);
 	modal.open();
-} // send a flower
+}
 
-
+// send a flower
 function sendFlower() {
 	// get data
 	var message = $('#flowerMsg').val();
@@ -376,11 +375,11 @@ function sendFile(base64File) {
 			"data": base64File
 		}
 	});
-} // submit the profile informacion 
+} // submit the profile informacion
 
 
 function submitProfileData() {
-	if (!isMyOwnProfile) return; // get the array of fields and  
+	if (!isMyOwnProfile) return; // get the array of fields and
 
 	var fields = ['picture', 'first_name', 'username', 'about_me', 'gender', 'sexual_orientation', 'year_of_birth', 'body_type', 'eyes', 'hair', 'skin', 'marital_status', 'highest_school_level', 'occupation', 'country', 'province', 'usstate', 'city', 'religion']; // create the JSON of data
 
@@ -797,7 +796,7 @@ function buy() {
 
 	// execute the transfer
 	apretaste.send({
-		command: "PIROPAZO PAY", 
+		command: "PIROPAZO PAY",
 		data: {'code': code},
 		redirect: true
 	});
