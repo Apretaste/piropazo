@@ -170,13 +170,9 @@ function resizeImg() {
 function respondToDate(personId, answer) {
 	if ($('#desc').attr('status') == "opened") return;
 	apretaste.send({
-		command: "PIROPAZO " + answer,
+		command: "PIROPAZO " + answer + "NEXT",
 		data: {
 			id: personId
-		},
-		redirect: false,
-		callback: {
-			name: "callbackBringNewDate"
 		}
 	});
 }
@@ -282,15 +278,12 @@ function sendFlower() {
 
 
 	apretaste.send({
-		'command': 'PIROPAZO FLOR',
+		'command': 'PIROPAZO FLORNEXT',
 		'data': {
 			'id': activeId,
 			'msg': message
 		},
-		redirect: typeof match == "undefined",
-		callback: {
-			name: "callbackBringNewDate"
-		}
+		redirect: typeof match == "undefined"
 	});
 }
 
@@ -367,7 +360,8 @@ function sendFile(base64File) {
 	apretaste.send({
 		"command": "PERFIL FOTO",
 		"data": {
-			'picture': base64File
+			'picture': base64File,
+			'updatePicture': true
 		},
 		"redirect": false,
 		"callback": {
@@ -401,18 +395,11 @@ function submitProfileData() {
 	apretaste.send({
 		"command": "PERFIL UPDATE",
 		"data": data,
-		"redirect": false
+		"redirect": false,
+		"callback": {
+			name: "callbackSaveProfile"
+		}
 	}); // show confirmation text
-
-	M.toast({
-		html: 'Su informacion se ha salvado correctamente'
-	});
-
-	if (extra_fields == "hide") {
-		apretaste.send({
-			"command": "PIROPAZO"
-		});
-	}
 } // hide state or province based on country
 
 var province = {
@@ -474,6 +461,11 @@ function updatePicture(file) {
 	resizeImg(); // show confirmation text
 
 	showToast('Su foto ha sido cambiada correctamente');
+}
+
+function callbackSaveProfile() {
+	showToast("Su informacion se ha salvado correctamente")
+	if (extra_fields == "hide") callbackBringNewDate()
 }
 
 function callbackBringNewDate() {
@@ -657,7 +649,7 @@ function sendMessage(toService) {
 			}
 		});
 	} else {
-		if (toService == "PIROPAZO") showToast("Mensaje vacio");else showToast("Por favor describanos mejor su solicitud");
+		if (toService == "PIROPAZO") showToast("Mensaje vacio"); else showToast("Por favor describanos mejor su solicitud");
 	}
 }
 
