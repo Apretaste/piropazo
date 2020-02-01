@@ -1,6 +1,18 @@
 <?php
 
-use Apretaste\Model\Person;
+use Apretaste\Amulets;
+use Apretaste\Challenges;
+use Apretaste\Chats;
+use Apretaste\Level;
+use Apretaste\Money;
+use Apretaste\Notifications;
+use Apretaste\Person;
+use Apretaste\Request;
+use Apretaste\Response;
+use Framework\Alert;
+use Framework\Database;
+use Framework\Images;
+use Framework\Utils;
 
 /**
  * Apretaste Piropazo Service
@@ -10,7 +22,7 @@ class Service
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws FeedException
+	 * @throws Alert
 	 */
 
 	public function _sinext(Request $request, Response $response)
@@ -22,9 +34,9 @@ class Service
 	/**
 	 * Say Yes to a match
 	 *
-	 * @param Request
-	 * @param Response
-	 * @throws Exception
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _si(Request $request, Response $response)
@@ -37,44 +49,44 @@ class Service
 		}
 
 		// check if there is any previous record between you and that person
-		$record = Connection::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
+		$record = Database::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 		// if they liked you, like too; if they dislike you, block
 		if ($record) {
 			// if they liked you, create a match
 			if ($record[0]->status == "like") {
 				// get the target @username
-				$username = Connection::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
+				$username = Database::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
 
 				// update to create a match
-				Connection::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+				Database::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 
 				// add the experience
 				Level::setExperience('PIROPAZO_MATCH', $idFrom);
 				Level::setExperience('PIROPAZO_MATCH', $idTo);
 
 				// create notifications for both you and your date
-				Utils::addNotification($idFrom, "Felicidades, ambos tu y @$username se han gustado", '{"command":"PIROPAZO PAREJAS"}', 'people');
-				Utils::addNotification($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", '{"command":"PIROPAZO PAREJAS"}', "people");
+				Notifications::alert($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
+				Notifications::alert($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", "people", '{"command":"PIROPAZO PAREJAS"}');
 			}
 
 			// if they dislike you, block that match
 			if ($record[0]->status == "dislike") {
-				Connection::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+				Database::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 			}
 			return;
 		}
 
 		// insert the new relationship
 		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
-		Connection::query("
+		Database::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
 			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
 			COMMIT");
 
 		// remove match from the cache so it won't show again
-		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
@@ -85,6 +97,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _main(Request $request, Response $response)
@@ -96,8 +109,10 @@ class Service
 	/**
 	 * Get dates for your profile
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response|void
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _citas(Request $request, Response $response)
@@ -123,10 +138,11 @@ class Service
 				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
 				"button" => ["href" => "PIROPAZO PERFIL", "caption" => "Editar perfil"]];
 			$response->setLayout('empty.ejs');
-			return $response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content);
+			return;
 		}
 
-		$this->getTags($match);
+		Person::setProfileTags($match);
 
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
@@ -138,10 +154,10 @@ class Service
 		$this->markLastTimeUsed($request->person->id);
 
 		// get the number of flowers for the logged user
-		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
+		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// get match images into an array and the content
-		$images = ($match->picture) ? [$match->picture] : [];
+		$images = count($match->gallery) > 0 ? [IMG_PATH . 'profile/' . $match->gallery[count($match->gallery) - 1]] : [];
 		$content = [
 			"match" => $match,
 			"menuicon" => "favorite",
@@ -158,6 +174,7 @@ class Service
 	 *
 	 * @param Object $person
 	 * @return Boolean
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function isProfileIncomplete($person)
@@ -165,15 +182,15 @@ class Service
 		// run powers for amulet ROMEO
 		// NOTE: added here for convenience, since this function is called all over the place
 		if (Amulets::isActive(Amulets::ROMEO, $person->id)) {
-			Connection::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$person->id}");
+			Database::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$person->id}");
 		}
 
 		// ensure your profile is completed
 		return (
-			empty($person->picture) ||
-			empty($person->first_name) ||
+			empty(count($person->gallery) > 0) ||
+			empty($person->firstName) ||
 			empty($person->gender) ||
-			empty($person->sexual_orientation) ||
+			empty($person->sexualOrientation) ||
 			$person->age < 10 || $person->age > 110 ||
 			empty($person->country)
 		);
@@ -184,7 +201,8 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
-	 * @throws Exception
+	 * @return Response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _perfil(Request $request, Response $response)
@@ -199,13 +217,13 @@ class Service
 		// get the user's profile
 		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
 		$isMyOwnProfile = $id == $request->person->id;
-		$profile = Social::prepareUserProfile(Utils::getPerson($id));
+		$profile = Person::find($id);
 
 		if (!$isMyOwnProfile) {
 			// run powers for amulet DETECTIVE
 			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
 				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
+				Notifications::alert($profile->id, $msg, 'pageview', '{command:"PERFIL", data:{username:"@{$request->person->username}"}}');
 			}
 
 			// run powers for amulet SHADOWMODE
@@ -218,7 +236,7 @@ class Service
 			}
 		}
 
-		$user = Connection::query("
+		$user = Database::query("
 			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left
 			FROM _piropazo_people
 			WHERE id_person = {$request->person->id}");
@@ -228,15 +246,15 @@ class Service
 		$profile->heart_time_left = 60 * 60 * 24 * 3 - $user[0]->heart_time_left;
 
 		// get what gender do you search for
-		if ($profile->sexual_orientation == "BI") {
+		if ($profile->sexualOrientation == "BI") {
 			$profile->searchfor = "AMBOS";
-		} elseif ($profile->gender == "M" && $profile->sexual_orientation == "HETERO") {
+		} elseif ($profile->gender == "M" && $profile->sexualOrientation == "HETERO") {
 			$profile->searchfor = "MUJERES";
-		} elseif ($profile->gender == "F" && $profile->sexual_orientation == "HETERO") {
+		} elseif ($profile->gender == "F" && $profile->sexualOrientation == "HETERO") {
 			$profile->searchfor = "HOMBRES";
-		} elseif ($profile->gender == "M" && $profile->sexual_orientation == "HOMO") {
+		} elseif ($profile->gender == "M" && $profile->sexualOrientation == "HOMO") {
 			$profile->searchfor = "HOMBRES";
-		} elseif ($profile->gender == "F" && $profile->sexual_orientation == "HOMO") {
+		} elseif ($profile->gender == "F" && $profile->sexualOrientation == "HOMO") {
 			$profile->searchfor = "MUJERES";
 		} else {
 			$profile->searchfor = "";
@@ -244,8 +262,8 @@ class Service
 
 		// get array of images
 		$images = [];
-		if ($profile->picture) {
-			$images[] = $profile->picture;
+		if (count($profile->gallery) > 0) {
+			$images[] = IMG_PATH . 'profile/' . $profile->gallery[count($profile->gallery) - 1];
 		}
 
 		// list of values
@@ -257,7 +275,8 @@ class Service
 			"menuicon" => "person"
 		];
 
-		$images[] = Utils::getPathToService($response->serviceName) . "/images/icon.png";
+
+		$images[] = SERVICE_PATH . $response->service . "/images/icon.png";
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
@@ -268,11 +287,12 @@ class Service
 	 * Make active if the person uses Piropazo for the first time, or if it was inactive
 	 *
 	 * @param Int $id
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function activatePiropazoUser($id)
 	{
-		Connection::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
+		Database::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
 	}
 
 	/**
@@ -280,7 +300,7 @@ class Service
 	 *
 	 * @param Person $user
 	 * @return object | Person
-	 * @throws Exception
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function getMatchFromCache($user)
@@ -289,7 +309,7 @@ class Service
 		$this->createMatchesCache($user);
 
 		// get one suggestion from cache
-		$match = Connection::query("
+		$match = Database::query("
 			SELECT 
 				A.id, A.suggestion AS user, 
 				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
@@ -308,7 +328,7 @@ class Service
 		}
 
 		// return the best match as a Person object
-		$person = Social::prepareUserProfile(Utils::getPerson($match->user));
+		$person = Person::find($match->user);
 		$person->heart = $match->heart;
 
 		// get the match color class based on gender
@@ -334,13 +354,13 @@ class Service
 	private function createMatchesCache($user)
 	{
 		// do not cache if already exist data
-		$isCache = Connection::query("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}");
+		$isCache = Database::query("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}");
 		if ($isCache[0]->cnt > 0) {
 			return false;
 		}
 
 		// filter based on sexual orientation
-		switch ($user->sexual_orientation) {
+		switch ($user->sexualOrientation) {
 			case 'HETERO':
 				$clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
 				break;
@@ -354,7 +374,7 @@ class Service
 
 		// get the list of people already voted
 		$clauseVoted = [];
-		$voted = Connection::query("
+		$voted = Database::query("
 			SELECT id_to as id FROM _piropazo_relationships WHERE id_from = {$user->id} 
 			UNION 
 			SELECT id_from as id FROM _piropazo_relationships WHERE id_to = {$user->id}");
@@ -385,7 +405,7 @@ class Service
 			AND NOT A.id = '$user->id'";
 
 		// create final query with the match score
-		$cacheUsers = Connection::query("
+		$cacheUsers = Database::query("
 			SELECT id,
 				(IFNULL(country, 'NO') = '$user->country') * 10 +
 				(IFNULL(province, 'NO') = '$user->province') * 50 +
@@ -409,61 +429,15 @@ class Service
 		foreach ($cacheUsers as $c) {
 			$inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
 		}
-		Connection::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES " . implode(",", $inserts));
+		Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES " . implode(",", $inserts));
 
 		return true;
 	}
 
 	/**
-	 * Get the tags for a match
+	 * Remove all properties in an object except the ones passes in the array
 	 *
-	 * @param Object $match
-	 * @author salvipascual
-	 */
-	private function getTags(&$match)
-	{
-		$profileTags = [];
-		$professionTags = [];
-
-		$countries = [
-			'cu' => 'Cuba',
-			'us' => 'Estados Unidos',
-			'es' => 'Espana',
-			'it' => 'Italia',
-			'mx' => 'Mexico',
-			'br' => 'Brasil',
-			'ec' => 'Ecuador',
-			'ca' => 'Canada',
-			'vz' => 'Venezuela',
-			'al' => 'Alemania',
-			'co' => 'Colombia',
-			'OTRO' => 'Otro'
-		];
-
-		$genderLetter = $match->gender == 'M' ? 'o' : 'a';
-
-		$match->country = $countries[$match->country];
-
-		$profileTags[] = $match->gender == 'M' ? "Hombre" : "Mujer";
-		$profileTags[] = substr(strtolower($match->skin), 0, -1) . $genderLetter;
-		if ($match->religion && $match->religion != "OTRA") {
-			$profileTags[] = substr(strtolower($match->religion), 0, -1) . $genderLetter;
-		}
-		$profileTags[] = $match->age . " años";
-
-		if ($match->highest_school_level && $match->highest_school_level != "OTRO") {
-			$professionTags[] = ucfirst(strtolower($match->highest_school_level));
-		}
-		$professionTags[] = $match->occupation;
-
-		$match->profile_tags = implode(', ', $profileTags);
-		$match->profession_tags = implode(', ', $professionTags);
-	}
-
-	/**
-	 * Removs all properties in an object except the ones passes in the array
-	 *
-	 * @param Array $properties , array of poperties to keep
+	 * @param array $properties , array of properties to keep
 	 * @param Object $object , object to clean
 	 * @return Object, clean object
 	 * @author salvipascual
@@ -483,18 +457,19 @@ class Service
 	 * Mark the last time the system was used by a user
 	 *
 	 * @param Int $id
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function markLastTimeUsed($id)
 	{
-		Connection::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
+		Database::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
 	}
 
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws FeedException
-	 * @throws Exception
+	 * @throws FeedAlert
+	 * @throws Alert
 	 */
 
 	public function _nonext(Request $request, Response $response)
@@ -508,7 +483,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
-	 * @throws Exception
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _no(Request $request, Response $response)
@@ -521,14 +496,14 @@ class Service
 		}
 
 		// mark the transaction as blocked
-		Connection::query("
+		Database::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
 			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
 			COMMIT");
 
 		// remove match from the cache so it won't show again
-		Connection::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
@@ -551,7 +526,7 @@ class Service
 		}
 
 		// save the report
-		Connection::query("
+		Database::query("
 			INSERT INTO _piropazo_reports (id_reporter, id_violator, type) 
 			VALUES ({$request->person->id}, $violatorId, '$violationCode')");
 
@@ -563,8 +538,9 @@ class Service
 	/**
 	 * Get the list of matches for your user
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _parejas(Request $request, Response $response)
@@ -572,14 +548,15 @@ class Service
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = "hide";
-			return $this->_perfil($request, $response);
+			$this->_perfil($request, $response);
+			return;
 		}
 
 		// activate new users and people who left
 		$this->activatePiropazoUser($request->person->id);
 
 		// get list of people whom you liked or liked you
-		$matches = Connection::query("
+		$matches = Database::query("
 			SELECT B.*, 'LIKE' AS type, A.id_to AS id, '' AS matched_on,datediff(A.expires_matched_blocked, CURDATE()) AS time_left
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
@@ -618,14 +595,15 @@ class Service
 				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.",
 				"button" => ["href" => "PIROPAZO CITAS", "caption" => "Buscar Pareja"]];
 			$response->setLayout('empty.ejs');
-			return $response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content);
+			return;
 		}
 
 		// organize list of matches
 		$liked = $waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = Social::prepareUserProfile($match);
+			$match = Person::prepareProfile($match);
 
 			// get the link to the image
 			if ($match->picture) {
@@ -653,7 +631,7 @@ class Service
 		$this->markLastTimeUsed($request->person->id);
 
 		// get the number of flowers for the logged user
-		$myFlowers = Connection::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
+		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		// create response array
 		$content = [
@@ -672,8 +650,7 @@ class Service
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws FeedException
-	 * @throws Exception
+	 * @throws Alert
 	 */
 
 	public function _flornext(Request $request, Response $response)
@@ -685,10 +662,9 @@ class Service
 	/**
 	 * Sends a flower to another user
 	 *
-	 * @param Request
-	 * @param Response
-	 * @return Response
-	 * @throws Exception
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _flor(Request $request, Response $response)
@@ -696,11 +672,12 @@ class Service
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
 			$request->extra_fields = "hide";
-			return $this->_perfil($request, $response);
+			$this->_perfil($request, $response);
+			return;
 		}
 
 		// check if you have enought flowers to send
-		$flowers = Connection::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
+		$flowers = Database::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
 		if (empty($flowers)) {
 			$content = [
 				"header" => "No tiene suficientes flores",
@@ -708,24 +685,25 @@ class Service
 				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
 				"button" => ["href" => "PIROPAZO TIENDA", "caption" => "Tienda"]];
 			$response->setLayout('empty.ejs');
-			return $response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content);
+			return;
 		}
 
 		// get the message sent with the flower
-		$message = trim(Connection::escape($request->input->data->msg, 200));
+		$message = trim(Database::escape($request->input->data->msg, 200));
 		$message = !empty($message) ? "{$request->person->first_name} le envia una flor: $message" : "{$request->person->first_name} le envia una flor";
 
 		// get the recipient's username
-		$name = Connection::query("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")[0]->first_name;
+		$name = Database::query("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")[0]->first_name;
 
 		// send the flower and increase response time in 7 days
-		Connection::query("
+		Database::query("
 			INSERT INTO _piropazo_flowers (id_sender,id_receiver,message) VALUES ('{$request->person->id}','{$request->input->data->id}','$message');
 			UPDATE _piropazo_people SET flowers=flowers-1 WHERE id_person='{$request->person->id}';
 			UPDATE _piropazo_relationships SET expires_matched_blocked=ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from='{$request->person->id}' AND id_to='{$request->input->data->id}';");
 
 		// create a notification for the user
-		Utils::addNotification($request->input->data->id, "$message", '{"command":"PIROPAZO PAREJAS"}' . 'local_florist');
+		Notifications::alert($request->input->data->id, "$message", 'local_florist', '{"command":"PIROPAZO PAREJAS"}');
 
 		// let the sender know the flower was delivered
 		$content = [
@@ -743,7 +721,7 @@ class Service
 	 * @param Request
 	 * @param Response
 	 * @return Response|void
-	 * @throws Exception
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _corazon(Request $request, Response $response)
@@ -755,7 +733,7 @@ class Service
 		}
 
 		// check if you have enought crowns
-		$crowns = Connection::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
+		$crowns = Database::query("SELECT crowns FROM _piropazo_people WHERE id_person='{$request->person->id}' AND crowns > 0");
 
 		// return error response if the user has no crowns
 		if (empty($crowns)) {
@@ -763,10 +741,10 @@ class Service
 		}
 
 		// set the crown and substract a crown
-		Connection::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
+		Database::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Utils::addNotification($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'piropazo', 'favorite');
+		Notifications::alert($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'favorite', '{"command":"piropazo"}');
 	}
 
 	/**
@@ -785,7 +763,7 @@ class Service
 		}
 
 		// get the username of the note
-		$user = Utils::getPerson($request->input->data->userId);
+		$user = Person::find($request->input->data->userId);
 
 		// check if the username is valid
 		if (!$user) {
@@ -837,13 +815,13 @@ class Service
 		}
 
 		// get the user items
-		$user = Connection::query("
+		$user = Database::query("
 			SELECT flowers, crowns
 			FROM _piropazo_people
 			WHERE id_person = {$request->person->id}")[0];
 
 		// get the user credit
-		$credit = Connection::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
+		$credit = Database::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
 
 		// prepare content for the view
 		$content = [
@@ -874,7 +852,7 @@ class Service
 		}
 
 		// get all unread notifications
-		$notifications = Connection::query("
+		$notifications = Database::query("
 			SELECT id,icon,`text`,link,inserted
 			FROM notification
 			WHERE `to` = {$request->person->id} 
@@ -919,7 +897,7 @@ class Service
 	public function _salir(Request $request, Response $response)
 	{
 		// remove from piropazo
-		Connection::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
+		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
 
 		// respond to user
 		$content = [
@@ -936,6 +914,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @throws Alert
 	 * @author ricardo
 	 */
 	public function _chat(Request $request, Response $response)
@@ -947,9 +926,9 @@ class Service
 		}
 
 		// get the list of people chating with you
-		$chats = Social::chatsOpen($request->person->id);
+		$chats = Chats::open($request->person->id);
 
-		$matches = Connection::query("SELECT id_from AS id
+		$matches = Database::query("SELECT id_from AS id
 		FROM _piropazo_relationships
 		WHERE status = 'match'
 		AND id_to = '{$request->person->id}'
@@ -998,8 +977,9 @@ class Service
 
 	/**
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _escribir(Request $request, Response $response)
@@ -1007,41 +987,41 @@ class Service
 		if (!isset($request->input->data->id)) {
 			return;
 		}
-		$userTo = Utils::getPerson($request->input->data->id);
+		$userTo = Person::find($request->input->data->id);
 		if (!$userTo) {
 			return;
 		}
 		$message = $request->input->data->message;
 
-		$blocks = Social::isBlocked($request->person->id, $userTo->id);
+		$blocks = Chats::isBlocked($request->person->id, $userTo->id);
 		if ($blocks->blocked > 0 || $blocks->blockedByMe > 0) {
-			Utils::addNotification(
+			Notifications::alert(
 				$request->person->id,
 				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
-				"{}",
-				'error'
+				"error"
 			);
 			return;
 		}
 
 		// store the note in the database
-		$message = Connection::escape($message, 499, 'utf8mb4');
-		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
+		$message = Database::escape($message, 499, 'utf8mb4');
+		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
 
 		// send notification for the app
-		Utils::addNotification(
+		Notifications::alert(
 			$userTo->id,
 			"@{$request->person->username} le ha enviado un mensaje",
-			"{'command':'PIROPAZO CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
-			'message'
+			'message',
+			"{'command':'PIROPAZO CONVERSACION', 'data':{'userId':'{$request->person->id}'}}"
 		);
 	}
 
 	/**
 	 * Show the list of support messages
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @throws Exception
 	 */
 	public function _soporte(Request $request, Response $response)
@@ -1051,7 +1031,7 @@ class Service
 		$username = $request->person->username;
 
 		// get the list of messages
-		$tickets = Connection::query("
+		$tickets = Database::query("
 			SELECT A.*, B.username 
 			FROM support_tickets A 
 			JOIN person B
@@ -1080,9 +1060,10 @@ class Service
 	/**
 	 * Pay for an item and add the items to the database
 	 *
-	 * @param Request
-	 * @param Response
-	 * @throws Exception
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response
+	 * @throws Alert
 	 */
 	public function _pay(Request $request, Response $response)
 	{
@@ -1092,8 +1073,8 @@ class Service
 
 		// process the payment
 		try {
-			MoneyNew::buy($buyer, $code);
-		} catch (Exception $e) {
+			Money::purchase($buyer, $code);
+		} catch (Alert $e) {
 			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', [
 				"header" => "Error inesperado",
@@ -1132,11 +1113,11 @@ class Service
 
 			// alert the user
 			$msg = "Los poderes del amuleto del Druida han duplicado las flores que canjeaste. ¡Aprovéchalas!";
-			Utils::addNotification($request->person->id, $msg, '{command:"PIROPAZO PERFIL"}}', 'local_florist');
+			Notifications::alert($request->person->id, $msg, 'local_florist', '{command:"PIROPAZO PERFIL"}');
 		}
 
 		// save the articles in the database
-		Connection::query("
+		Database::query("
 			UPDATE _piropazo_people
 			SET flowers=flowers+$flowers, crowns=crowns+$hearts
 			WHERE id_person=$buyer");
@@ -1156,12 +1137,13 @@ class Service
 	 * @param Int $idOne
 	 * @param Int $idTwo
 	 * @return Number
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function getPercentageMatch($idOne, $idTwo)
 	{
 		// get both profiles
-		$p = Connection::query("
+		$p = Database::query("
 			SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, year_of_birth 
 			FROM person 
 			WHERE id='$idOne' 

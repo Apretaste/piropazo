@@ -1,8 +1,9 @@
 {
-	"name": "piropazo",
-	"version": 15,
-	"description": "Le ayuda en la ardua búsqueda de su media naranja. Encuentra personas afines con usted tomando como referencia los datos de su perfil.",
-	"category": "social",
-	"creator": "salvi@apretaste.org",
-	"listed": true
+  "name": "piropazo",
+  "caption": "Piropazo",
+  "description": "Le ayuda en la ardua búsqueda de su media naranja. Encuentra personas afines con usted tomando como referencia los datos de su perfil.",
+  "category": "social",
+  "creator": "salvi@apretaste.org",
+  "listed": true,
+  "guest": false
 }

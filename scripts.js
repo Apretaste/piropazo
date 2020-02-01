@@ -76,37 +76,37 @@ function getYears() {
 // get list of countries to display
 function getCountries() {
 	return [{
-		code: 'cu',
+		code: 'CU',
 		name: 'Cuba'
 	}, {
-		code: 'us',
+		code: 'US',
 		name: 'Estados Unidos'
 	}, {
-		code: 'es',
+		code: 'ES',
 		name: 'Espana'
 	}, {
-		code: 'it',
+		code: 'IT',
 		name: 'Italia'
 	}, {
-		code: 'mx',
+		code: 'MX',
 		name: 'Mexico'
 	}, {
-		code: 'br',
+		code: 'BR',
 		name: 'Brasil'
 	}, {
-		code: 'ec',
+		code: 'EC',
 		name: 'Ecuador'
 	}, {
-		code: 'ca',
+		code: 'CA',
 		name: 'Canada'
 	}, {
-		code: 'vz',
+		code: 'VZ',
 		name: 'Venezuela'
 	}, {
-		code: 'al',
+		code: 'AL',
 		name: 'Alemania'
 	}, {
-		code: 'co',
+		code: 'CO',
 		name: 'Colombia'
 	}, {
 		code: 'OTRO',
