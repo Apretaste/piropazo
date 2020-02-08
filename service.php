@@ -401,7 +401,7 @@ class Service
 			AND A.marital_status = 'SOLTERO' 
 			AND NOT ISNULL(A.picture)
 			AND $clauseSex 
-			AND (A.year_of_birth IS NULL OR IFNULL(YEAR()-year_of_birth,0) >= 17)
+			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(CURRENT_DATE)-year_of_birth,0) >= 17)
 			AND NOT A.id = '$user->id'";
 
 		// create final query with the match score
