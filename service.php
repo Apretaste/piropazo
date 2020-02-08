@@ -146,8 +146,12 @@ class Service
 
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
+		// get match images into an array and the content
+		$match->picture = count($match->gallery) > 0 ? $match->gallery[count($match->gallery) - 1] : false;
+		$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
+
 		// erase unwanted properties in the object
-		$properties = ["id", "username", "first_name", "heart", "gender", "about_me", "profile_tags", "profession_tags", "picture", "country", "location", "age", "online"];
+		$properties = ["id", "username", "firstName", "heart", "gender", "aboutMe", "profile_tags", "profession_tags", "location_tags", "picture", "country", "location", "age", "isOnline"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -156,8 +160,6 @@ class Service
 		// get the number of flowers for the logged user
 		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
-		// get match images into an array and the content
-		$images = count($match->gallery) > 0 ? [IMG_PATH . 'profile/' . $match->gallery[count($match->gallery) - 1]] : [];
 		$content = [
 			"match" => $match,
 			"menuicon" => "favorite",
@@ -603,16 +605,17 @@ class Service
 		$liked = $waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = Person::prepareProfile($match);
+			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get the link to the image
-			if ($match->picture) {
-				$images[] = $match->picture;
-			}
+			// get match images into an array and the content
+			$match->picture = count($match->gallery) > 0 ? $match->gallery[count($match->gallery) - 1] : false;
+			$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
+
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
 
 			// erase unwanted properties in the object
-			$properties = ["id", "username", "first_name", "gender", "age", "type", "location", "picture", "matched_on", "time_left", "online"];
+			$properties = ["id", "username", "firstName", "gender", "age", "type", "location", "picture", "matched_on", "time_left", "isOnline"];
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
@@ -752,6 +755,8 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
+	 * @throws Alert
+	 * @throws Exception
 	 * @author salvipascual
 	 */
 	public function _conversacion(Request $request, Response $response)
@@ -771,16 +776,16 @@ class Service
 		}
 
 		// get the conversation
-		$messages = Social::chatConversation($request->person->id, $user->id);
+		$messages = Chats::conversation($request->person->id, $user->id);
 
 		$chats = [];
 		foreach ($messages as $message) {
 			$chat = new stdClass();
-			$chat->id = $message->note_id;
+			$chat->id = $message->id;
 			$chat->username = $message->username;
 			$chat->text = $message->text;
-			$chat->sent = date_format((new DateTime($message->sent)), 'd/m/Y h:i a');
-			$chat->read = date('d/m/Y h:i a', strtotime($message->read));
+			$chat->sent = $message->sent;
+			$chat->read = $message->read;
 			$chat->readed = $message->readed;
 			$chats[] = $chat;
 		}
@@ -790,9 +795,9 @@ class Service
 			"username" => $user->username,
 			"myusername" => $request->person->username,
 			"id" => $user->id,
-			"online" => $user->online,
-			"last" => date('d/m/Y h:i a', strtotime($user->last_access)),
-			"title" => $user->first_name
+			"online" => $user->isOnline,
+			"last" => date('d/m/Y h:i a', strtotime($user->lastAccess)),
+			"title" => $user->firstName
 		];
 
 		$response->setlayout('piropazo.ejs');
@@ -802,8 +807,10 @@ class Service
 	/**
 	 * Open the store
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _tienda(Request $request, Response $response)
@@ -839,8 +846,10 @@ class Service
 	/**
 	 * Show a list of notifications
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _notificaciones(Request $request, Response $response)
@@ -890,8 +899,9 @@ class Service
 	/**
 	 * Exit the Piropazo network
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _salir(Request $request, Response $response)
@@ -912,8 +922,9 @@ class Service
 	/**
 	 * Chats lists with matches filter
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response
 	 * @throws Alert
 	 * @author ricardo
 	 */
@@ -959,7 +970,7 @@ class Service
 		foreach ($chats as $chat) {
 			if (key_exists($chat->id, $matchesId)) {
 				$chat->last_sent = explode(' ', $chat->last_sent)[0];
-				$images[] = $chat->picture;
+				if($chat->picture) $images[] = $chat->picture;
 				$onlyMatchesChats[] = $chat;
 			}
 		}

@@ -13,8 +13,8 @@
 
 			<!-- INFO -->
 			<div class="position-bottom left" id="info">
-				<h1><%=match.first_name%></h1><h2><%=match.age%></h2>
-				<%if(match.online=="1"){%>
+				<h1><%=match.firstName%></h1><h2><%=match.age%></h2>
+				<%if(match.isOnline=="1"){%>
 					<i class="material-icons green-text text-lighten-1" style="font-size:15px;">brightness_1</i>
 				<%}%>
 				<h3><%= match.location %></h3>
@@ -26,7 +26,7 @@
 
 <div style="display: none;" id="desc" class="row" status="closed">
 	<div class="col s12">
-		<h3 class="black-text center-align" style="margin: 8px 0 0 0;"><%=match.first_name%></h3>
+		<h3 class="black-text center-align" style="margin: 8px 0 0 0;"><%=match.firstName%></h3>
 		<p><%=match.about_me%></p>
 
 		<table id="desc-table">
@@ -40,7 +40,7 @@
 			</tr>
 			<tr>
 				<td><i class="material-icons grey-text text-darken-2">place</i></td>
-				<td><%= match.location + ', ' + match.country %></td>
+				<td><%= match.location_tags %></td>
 			</tr>
 		</table>
 	</div>
@@ -55,7 +55,7 @@
 				</a>
 			</div>
 			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large piropazo-color" onclick="openFlowerModal('<%= match.id %>', '<%= match.first_name %>')">
+				<a class="waves-effect waves-light btn-floating btn-large piropazo-color" onclick="openFlowerModal('<%= match.id %>', '<%= match.firstName %>')">
 					<i class="material-icons large">local_florist</i>
 				</a>
 			</div>

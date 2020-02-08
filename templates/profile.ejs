@@ -112,12 +112,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- BODY TYPE -->
     <% var body_type = ["DELGADO", "MEDIO", "EXTRA", "ATLETICO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.body_type == "" ? "hide" : "" %>>">
+    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.body == "" ? "hide" : "" %>>">
         <i class="material-icons prefix grey-text text-darken-2">face</i>
         <select <%= isDisabled %> id="body_type" class="validate">
             <option value="" selected></option>
             <% body_type.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.body_type){ %>selected
+                <option value="<%= val %>" <% if(val == profile.body){ %>selected
                         <% } %>
                 ><%= val.firstUpper() %></option>
             <% }); %>
@@ -172,12 +172,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- MARITAL STATUS -->
     <% var marital_status = ["SOLTERO", "SALIENDO", "COMPROMETIDO", "CASADO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.marital_status == "" ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.maritalStatus == "" ? "hide" : "" %>">
         <i class="material-icons prefix grey-text text-darken-2">favorite</i>
         <select <%= isDisabled %> id="marital_status" class="validate">
             <option value=""></option>
             <% marital_status.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.marital_status){ %>selected
+                <option value="<%= val %>" <% if(val == profile.maritalStatus){ %>selected
                         <% } %>
                 ><%= val.firstUpper() %></option>
             <% }); %>
@@ -187,12 +187,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- HIGHEST SCHOOL LEVEL-->
     <% var highest_school_level = ["PRIMARIO", "SECUNDARIO", "TECNICO", "UNIVERSITARIO", "POSTGRADUADO", "DOCTORADO", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.highest_school_level == "" ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.education == "" && !isMyOwnProfile ? "hide" : "" %>">
         <i class="material-icons prefix grey-text text-darken-2">school</i>
         <select <%= isDisabled %> id="highest_school_level" class="validate">
             <option value=""></option>
             <% highest_school_level.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.highest_school_level){ %>selected
+                <option value="<%= val %>" <% if(val == profile.education){ %>selected
                         <% } %>
                 ><%= val.firstUpper() %></option>
             <% }); %>
