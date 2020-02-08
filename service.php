@@ -410,7 +410,7 @@ class Service
 				(IFNULL(country, 'NO') = '$user->country') * 10 +
 				(IFNULL(province, 'NO') = '$user->province') * 50 +
 				(IFNULL(usstate, 'NO') = '$user->stateCode') * 50 +
-				(ABS(IFNULL(YEAR()-year_of_birth,0) - $user->age) <= 5) * 20 +
+				(ABS(IFNULL(YEAR(CURRENT_DATE)-year_of_birth,0) - $user->age) <= 5) * 20 +
 				crown * 25 +
 				(IFNULL(religion, 'NO') = '$user->religion') * 20
 				AS percent_match
