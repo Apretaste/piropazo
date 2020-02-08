@@ -147,7 +147,7 @@ class Service
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
 		// erase unwanted properties in the object
-		$properties = ["id", "username", "first_name", "heart", "gender", "about_me", "profile_tags", "profession_tags", "picture", "country", "location", "age", "online"];
+		$properties = ["id", "username", "first_name", "heart", "gender", "about_me", "profile_tags", "profession_tags", "picture", "country", "location", "age", "online", "gallery"];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
