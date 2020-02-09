@@ -346,13 +346,14 @@ class Service
         return $person;
     }
 
-    /**
-     * Create matches cache to speed up searches
-     *
-     * @param Person $user , you
-     * @return Boolean
-     * @author salvipascual
-     */
+	/**
+	 * Create matches cache to speed up searches
+	 *
+	 * @param Person $user , you
+	 * @return Boolean
+	 * @throws Alert
+	 * @author salvipascual
+	 */
     private function createMatchesCache($user)
     {
         // do not cache if already exist data
@@ -403,16 +404,16 @@ class Service
 			AND A.marital_status = 'SOLTERO' 
 			AND NOT ISNULL(A.picture)
 			AND $clauseSex 
-			AND (A.year_of_birth IS NULL OR IFNULL(YEAR()-year_of_birth,0) >= 17)
+			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= 17)
 			AND NOT A.id = '$user->id'";
 
         // create final query with the match score
         $cacheUsers = Database::query("
 			SELECT id,
-				(IFNULL(country, 'NO') = '$user->country') * 10 +
-				(IFNULL(province, 'NO') = '$user->province') * 50 +
-				(IFNULL(usstate, 'NO') = '$user->usstate') * 50 +
-				(ABS(IFNULL(YEAR()-year_of_birth,0) - $user->age) <= 5) * 20 +
+				(IFNULL(country, 'NO') = '$user->countryCode') * 10 +
+				(IFNULL(province, 'NO') = '$user->provinceCode') * 50 +
+				(IFNULL(usstate, 'NO') = '$user->stateCode') * 50 +
+				(ABS(IFNULL(YEAR(NOW())-year_of_birth,0) - $user->age) <= 5) * 20 +
 				crown * 25 +
 				(IFNULL(religion, 'NO') = '$user->religion') * 20
 				AS percent_match
