@@ -695,7 +695,7 @@ class Service
 
         // get the message sent with the flower
         $message = trim(Database::escape($request->input->data->msg, 200));
-        $message = !empty($message) ? "{$request->person->first_name} le envia una flor: $message" : "{$request->person->first_name} le envia una flor";
+        $message = !empty($message) ? "{$request->person->firstName} le envia una flor: $message" : "{$request->person->firstName} le envia una flor";
 
         // get the recipient's username
         $name = Database::query("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")[0]->first_name;
