@@ -353,6 +353,12 @@ function uploadPicture() {
 }
 
 function sendFile(base64File) {
+	if (base64File.length > 2584000) {
+		showToast("Imagen demasiado pesada");
+		$('input:file').val(null);
+		return;
+	}
+
 	apretaste.send({
 		"command": "PERFIL FOTO",
 		"data": {
@@ -460,8 +466,12 @@ function updatePicture(file) {
 }
 
 function callbackSaveProfile() {
-	showToast("Su informacion se ha salvado correctamente")
-	if (extra_fields == "hide") callbackBringNewDate()
+	if (profile.picture == null && $('#profile-rounded-img').css('background-image').indexOf('user.jpg') !== -1) {
+		showToast("Recuerde subir una foto")
+	} else {
+		showToast("Su informacion se ha salvado correctamente")
+		if (extra_fields == "hide") callbackBringNewDate()
+	}
 }
 
 function callbackBringNewDate() {

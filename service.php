@@ -147,7 +147,6 @@ class Service
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
 		// get match images into an array and the content
-		$match->picture = count($match->gallery) > 0 ? $match->gallery[count($match->gallery) - 1] : false;
 		$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
 
 		// erase unwanted properties in the object
@@ -189,7 +188,7 @@ class Service
 
 		// ensure your profile is completed
 		return (
-			empty(count($person->gallery) > 0) ||
+			empty($person->picture) ||
 			empty($person->firstName) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
@@ -264,8 +263,8 @@ class Service
 
 		// get array of images
 		$images = [];
-		if (count($profile->gallery) > 0) {
-			$images[] = IMG_PATH . 'profile/' . $profile->gallery[count($profile->gallery) - 1];
+		if ($profile->picture) {
+			$images[] = IMG_PATH . 'profile/' . $profile->picture;
 		}
 
 		// list of values
@@ -610,7 +609,6 @@ class Service
 
 			// get the link to the image
 			// get match images into an array and the content
-			$match->picture = count($match->gallery) > 0 ? $match->gallery[count($match->gallery) - 1] : false;
 			$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
 
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));

@@ -19,7 +19,7 @@ if(!isMyOwnProfile){ %>
 <div id="img-pre" class="piropazo-color"></div>
 
 <!-- PICTURE -->
-<% if (profile.gallery.length > 0) var src = "{{APP_IMAGE_PATH}}" + profile.gallery[profile.gallery.length - 1];
+<% if (profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
 else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 <div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
     <!-- EDIT PIC AND HEART BUTTON -->
