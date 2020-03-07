@@ -263,7 +263,7 @@ class Service
 
 		// get array of images
 		$images = [];
-		if ($profile->picture) {
+		if ($profile->picture ?? false) {
 			$images[] = IMG_PATH . 'profile/' . $profile->picture;
 		}
 
