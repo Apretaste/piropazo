@@ -147,7 +147,7 @@ class Service
 		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
 
 		// get match images into an array and the content
-		$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
+		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 		// erase unwanted properties in the object
 		$properties = ["id", "username", "firstName", "heart", "gender", "aboutMe", "profile_tags", "profession_tags", "location_tags", "picture", "country", "location", "age", "isOnline"];
@@ -264,7 +264,7 @@ class Service
 		// get array of images
 		$images = [];
 		if ($profile->picture ?? false) {
-			$images[] = IMG_PATH . 'profile/' . $profile->picture;
+			$images[] = SHARED_PUBLIC_PATH . 'profile/' . $profile->picture;
 		}
 
 		// list of values
@@ -609,7 +609,7 @@ class Service
 
 			// get the link to the image
 			// get match images into an array and the content
-			$images = $match->picture ? [IMG_PATH . 'profile/' . $match->picture] : [];
+			$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
 
