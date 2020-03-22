@@ -5,7 +5,7 @@
 		{link:'PAREJAS', icon:'people', caption:'Parejas'},
 		{link:'PERFIL', icon:'person', caption:'Perfil'},
 		{link:'CHAT', icon:'message', caption:'Chat'},
-		{link:'NOTIFICACIONES', icon:'notifications', caption:'Alertas'},
+		//{link:'NOTIFICACIONES', icon:'notifications', caption:'Alertas'},
 		{link:'TIENDA', icon:'shopping_cart', caption:'Tienda'}];
 %>
 
@@ -14,9 +14,6 @@
 	<div class="navbar hide-on-unique">
 		<nav>
 			<div class="nav-wrapper">
-				<a class="brand-logo left hide-on-small-only" style="margin-left: 1rem;">
-					<%= typeof title != 'undefined' ? title : 'Piropazo' %>
-				</a>
 				<!-- ICONS ON THE MENU -->
 				<ul class="right">
 					<% menu.forEach(function(e) { %>

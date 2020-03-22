@@ -966,7 +966,7 @@ class Service
 		}
 
 		// if no matches, let the user know
-		if (empty($chats)) {
+		if (empty($onlyMatchesChats)) {
 			$content = [
 				"header" => "No tiene conversaciones",
 				"icon" => "sentiment_very_dissatisfied",

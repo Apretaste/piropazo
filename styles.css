@@ -387,3 +387,10 @@ html {
 nav ul a {
 	padding: 0 12px !important;
 }
+
+nav ul{
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	width: fit-content;
+}
