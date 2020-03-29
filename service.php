@@ -12,17 +12,19 @@ use Apretaste\Response;
 use Framework\Alert;
 use Framework\Database;
 use Framework\Images;
-use Framework\Utils;
 
 /**
  * Apretaste Piropazo Service
  */
 class Service
 {
+
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
+	 *
+	 * @throws \FeedException
+	 * @throws \Framework\Alert
 	 */
 
 	public function _sinext(Request $request, Response $response)
@@ -54,7 +56,7 @@ class Service
 		// if they liked you, like too; if they dislike you, block
 		if ($record) {
 			// if they liked you, create a match
-			if ($record[0]->status == "like") {
+			if ($record[0]->status === 'like') {
 				// get the target @username
 				$username = Database::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
 
@@ -67,18 +69,23 @@ class Service
 
 				// create notifications for both you and your date
 				Notifications::alert($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
-				Notifications::alert($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", "people", '{"command":"PIROPAZO PAREJAS"}');
+				Notifications::alert(
+					$idTo,
+					"Felicidades, ambos tu y @{$request->person->username} se han gustado",
+					'people',
+					'{"command":"PIROPAZO PAREJAS"}'
+				);
 			}
 
 			// if they dislike you, block that match
-			if ($record[0]->status == "dislike") {
+			if ($record[0]->status === 'dislike') {
 				Database::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 			}
 			return;
 		}
 
 		// insert the new relationship
-		$threeDaysForward = date("Y-m-d H:i:s", strtotime("+3 days"));
+		$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
 		Database::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
@@ -119,7 +126,7 @@ class Service
 	{
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			$this->_perfil($request, $response);
 			return;
 		}
@@ -133,10 +140,10 @@ class Service
 		// if no matches, let the user know
 		if (!$match) {
 			$content = [
-				"header" => "No hay citas",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.",
-				"button" => ["href" => "PIROPAZO PERFIL", "caption" => "Editar perfil"]];
+				'header' => 'No hay citas',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
+				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil']];
 			$response->setLayout('empty.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
@@ -144,13 +151,28 @@ class Service
 
 		Person::setProfileTags($match);
 
-		$match->country = $match->country == "cu" ? "Cuba" : "Otro";
+		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
 
 		// get match images into an array and the content
 		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 		// erase unwanted properties in the object
-		$properties = ["id", "username", "firstName", "heart", "gender", "aboutMe", "profile_tags", "profession_tags", "location_tags", "picture", "country", "location", "age", "isOnline"];
+		$properties = [
+		  'id',
+		  'username',
+		  'firstName',
+		  'heart',
+		  'gender',
+		  'aboutMe',
+		  'profile_tags',
+		  'profession_tags',
+		  'location_tags',
+		  'picture',
+		  'country',
+		  'location',
+		  'age',
+		  'isOnline'
+		];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -160,9 +182,9 @@ class Service
 		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
 		$content = [
-			"match" => $match,
-			"menuicon" => "favorite",
-			"myflowers" => $myFlowers[0]->flowers
+			'match' => $match,
+			'menuicon' => 'favorite',
+			'myflowers' => $myFlowers[0]->flowers
 		];
 
 		// build the response
@@ -210,14 +232,14 @@ class Service
 	{
 		$this->activatePiropazoUser($request->person->id);
 
-		$extra_fields = isset($request->extra_fields) ? $request->extra_fields : "";
+		$extra_fields = $request->extra_fields ?? '';
 		if ($this->isProfileIncomplete($request->person)) {
-			$extra_fields = "hide";
+			$extra_fields = 'hide';
 		}
 
 		// get the user's profile
-		$id = isset($request->input->data->id) ? $request->input->data->id : $request->person->id;
-		$isMyOwnProfile = $id == $request->person->id;
+		$id = $request->input->data->id ?? $request->person->id;
+		$isMyOwnProfile = $id === $request->person->id;
 		$profile = Person::find($id);
 
 		if (!$isMyOwnProfile) {
@@ -229,10 +251,10 @@ class Service
 
 			// run powers for amulet SHADOWMODE
 			if (Amulets::isActive(Amulets::SHADOWMODE, $id)) {
-				return $response->setTemplate("message.ejs", [
-					"header" => "Shadow-Mode",
-					"icon" => "visibility_off",
-					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
+				return $response->setTemplate('message.ejs', [
+					'header' => 'Shadow-Mode',
+					'icon' => 'visibility_off',
+					'text' => 'La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso.'
 				]);
 			}
 		}
@@ -247,18 +269,18 @@ class Service
 		$profile->heart_time_left = 60 * 60 * 24 * 3 - $user[0]->heart_time_left;
 
 		// get what gender do you search for
-		if ($profile->sexualOrientation == "BI") {
-			$profile->searchfor = "AMBOS";
-		} elseif ($profile->gender == "M" && $profile->sexualOrientation == "HETERO") {
-			$profile->searchfor = "MUJERES";
-		} elseif ($profile->gender == "F" && $profile->sexualOrientation == "HETERO") {
-			$profile->searchfor = "HOMBRES";
-		} elseif ($profile->gender == "M" && $profile->sexualOrientation == "HOMO") {
-			$profile->searchfor = "HOMBRES";
-		} elseif ($profile->gender == "F" && $profile->sexualOrientation == "HOMO") {
-			$profile->searchfor = "MUJERES";
+		if ($profile->sexualOrientation === 'BI') {
+			$profile->searchfor = 'AMBOS';
+		} elseif ($profile->gender === 'M' && $profile->sexualOrientation === 'HETERO') {
+			$profile->searchfor = 'MUJERES';
+		} elseif ($profile->gender === 'F' && $profile->sexualOrientation === 'HETERO') {
+			$profile->searchfor = 'HOMBRES';
+		} elseif ($profile->gender === 'M' && $profile->sexualOrientation === 'HOMO') {
+			$profile->searchfor = 'HOMBRES';
+		} elseif ($profile->gender === 'F' && $profile->sexualOrientation === 'HOMO') {
+			$profile->searchfor = 'MUJERES';
 		} else {
-			$profile->searchfor = "";
+			$profile->searchfor = '';
 		}
 
 		// get array of images
@@ -269,15 +291,15 @@ class Service
 
 		// list of values
 		$content = [
-			"extra_fields" => $extra_fields,
-			"profile" => $profile,
-			"isMyOwnProfile" => $isMyOwnProfile,
-			"title" => "Perfil",
-			"menuicon" => "person"
+			'extra_fields' => $extra_fields,
+			'profile' => $profile,
+			'isMyOwnProfile' => $isMyOwnProfile,
+			'title' => 'Perfil',
+			'menuicon' => 'person'
 		];
 
 
-		$images[] = SERVICE_PATH . $response->service . "/images/icon.png";
+		$images[] = SERVICE_PATH . $response->service.'/images/icon.png';
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
@@ -333,12 +355,12 @@ class Service
 		$person->heart = $match->heart;
 
 		// get the match color class based on gender
-		if ($person->gender == "M") {
-			$person->color = "male";
-		} elseif ($person->gender == "F") {
-			$person->color = "female";
+		if ($person->gender === 'M') {
+			$person->color = 'male';
+		} elseif ($person->gender === 'F') {
+			$person->color = 'female';
 		} else {
-			$person->color = "neutral";
+			$person->color = 'neutral';
 		}
 
 		// return the match
@@ -386,7 +408,7 @@ class Service
 			foreach ($voted as $v) {
 				$clauseVoted[] = "'" . $v->id . "'";
 			}
-			$clauseVoted = implode(",", $clauseVoted);
+			$clauseVoted = implode(',', $clauseVoted);
 		}
 
 		// select all users to filter by
@@ -431,7 +453,7 @@ class Service
 		foreach ($cacheUsers as $c) {
 			$inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
 		}
-		Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES " . implode(",", $inserts));
+		Database::query('INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES '.implode(',', $inserts));
 
 		return true;
 	}
@@ -470,8 +492,9 @@ class Service
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws FeedAlert
-	 * @throws Alert
+	 *
+	 * @throws \FeedException
+	 * @throws \Framework\Alert
 	 */
 
 	public function _nonext(Request $request, Response $response)
@@ -514,8 +537,11 @@ class Service
 	/**
 	 * Flag a user's profile
 	 *
-	 * @param Request
-	 * @param Response
+	 * @param \Apretaste\Request $request
+	 * @param \Apretaste\Response $response
+	 *
+	 * @return \Apretaste\Response
+	 * @throws \Framework\Alert
 	 * @author salvipascual
 	 */
 	public function _reportar(Request $request, Response $response)
@@ -549,7 +575,7 @@ class Service
 	{
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			$this->_perfil($request, $response);
 			return;
 		}
@@ -592,10 +618,10 @@ class Service
 		// if no matches, let the user know
 		if (empty($matches)) {
 			$content = [
-				"header" => "No tiene parejas",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.",
-				"button" => ["href" => "PIROPAZO CITAS", "caption" => "Buscar Pareja"]];
+				'header' => 'No tiene parejas',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.',
+				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja']];
 			$response->setLayout('empty.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
@@ -605,7 +631,7 @@ class Service
 		$liked = $waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
+			$match = (object) array_merge((array) $match, (array) Person::prepareProfile($match));
 
 			// get the link to the image
 			// get match images into an array and the content
@@ -614,17 +640,29 @@ class Service
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
 
 			// erase unwanted properties in the object
-			$properties = ["id", "username", "firstName", "gender", "age", "type", "location", "picture", "matched_on", "time_left", "isOnline"];
+			$properties = [
+			  'id',
+			  'username',
+			  'firstName',
+			  'gender',
+			  'age',
+			  'type',
+			  'location',
+			  'picture',
+			  'matched_on',
+			  'time_left',
+			  'isOnline'
+			];
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
-			if ($match->type == "LIKE") {
+			if ($match->type === 'LIKE') {
 				$liked[] = $match;
 			}
-			if ($match->type == "WAITING") {
+			if ($match->type === 'WAITING') {
 				$waiting[] = $match;
 			}
-			if ($match->type == "MATCH") {
+			if ($match->type === 'MATCH') {
 				$matched[] = $match;
 			}
 		}
@@ -637,12 +675,13 @@ class Service
 
 		// create response array
 		$content = [
-			"myflowers" => $myFlowers[0]->flowers,
-			"liked" => $liked,
-			"waiting" => $waiting,
-			"matched" => $matched,
-			"title" => "Parejas",
-			"menuicon" => "people"];
+			'myflowers' => $myFlowers[0]->flowers,
+			'liked' => $liked,
+			'waiting' => $waiting,
+			'matched' => $matched,
+			'title' => 'Parejas',
+			'menuicon' => 'people'
+		];
 
 		// Building the response
 		$response->setLayout('piropazo.ejs');
@@ -652,9 +691,10 @@ class Service
 	/**
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
+	 *
+	 * @throws \FeedException
+	 * @throws \Framework\Alert
 	 */
-
 	public function _flornext(Request $request, Response $response)
 	{
 		$this->_flor($request, $response);
@@ -673,7 +713,7 @@ class Service
 	{
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			$this->_perfil($request, $response);
 			return;
 		}
@@ -682,10 +722,10 @@ class Service
 		$flowers = Database::query("SELECT id_person FROM _piropazo_people WHERE id_person='{$request->person->id}' AND flowers>0");
 		if (empty($flowers)) {
 			$content = [
-				"header" => "No tiene suficientes flores",
-				"icon" => "local_florist",
-				"text" => "Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.",
-				"button" => ["href" => "PIROPAZO TIENDA", "caption" => "Tienda"]];
+				'header' => 'No tiene suficientes flores',
+				'icon' => 'local_florist',
+				'text' => 'Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.',
+				'button' => ['href' => 'PIROPAZO TIENDA', 'caption' => 'Tienda']];
 			$response->setLayout('empty.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
@@ -709,10 +749,10 @@ class Service
 
 		// let the sender know the flower was delivered
 		$content = [
-			"header" => "Su flor fue enviada",
-			"icon" => "local_florist",
-			"text" => "$name recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
-			"button" => ["href" => "PIROPAZO PAREJAS", "caption" => "Mis parejas"]];
+			'header' => 'Su flor fue enviada',
+			'icon' => 'local_florist',
+			'text' => "$name recibirá una notificación y seguro le contestará lo antes posible. También le hemos dado una semana extra para que responda.",
+			'button' => ['href' => 'PIROPAZO PAREJAS', 'caption' => 'Mis parejas']];
 		$response->setLayout('empty.ejs');
 		$response->setTemplate('message.ejs', $content);
 	}
@@ -730,7 +770,7 @@ class Service
 	{
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			return $this->_perfil($request, $response);
 		}
 
@@ -746,7 +786,12 @@ class Service
 		Database::query("UPDATE _piropazo_people SET crowns=crowns-1, crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 
 		// post a notification for the user
-		Notifications::alert($request->person->id, "Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias", 'favorite', '{"command":"piropazo"}');
+		Notifications::alert(
+			$request->person->id,
+			'Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias',
+			'favorite',
+			'{"command":"piropazo"}'
+		);
 	}
 
 	/**
@@ -762,7 +807,7 @@ class Service
 	{
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			return $this->_perfil($request, $response);
 		}
 
@@ -771,7 +816,7 @@ class Service
 
 		// check if the username is valid
 		if (!$user) {
-			return $response->setTemplate("notFound.ejs");
+			return $response->setTemplate('notFound.ejs');
 		}
 
 		// get the conversation
@@ -790,17 +835,17 @@ class Service
 		}
 
 		$content = [
-			"messages" => $chats,
-			"username" => $user->username,
-			"myusername" => $request->person->username,
-			"id" => $user->id,
-			"online" => $user->isOnline,
-			"last" => date('d/m/Y h:i a', strtotime($user->lastAccess)),
-			"title" => $user->firstName
+			'messages' => $chats,
+			'username' => $user->username,
+			'myusername' => $request->person->username,
+			'id' => $user->id,
+			'online' => $user->isOnline,
+			'last' => date('d/m/Y h:i a', strtotime($user->lastAccess)),
+			'title' => $user->firstName
 		];
 
 		$response->setlayout('piropazo.ejs');
-		$response->setTemplate("conversation.ejs", $content);
+		$response->setTemplate('conversation.ejs', $content);
 	}
 
 	/**
@@ -816,7 +861,7 @@ class Service
 	{
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			return $this->_perfil($request, $response);
 		}
 
@@ -831,10 +876,10 @@ class Service
 
 		// prepare content for the view
 		$content = [
-			"credit" => $credit,
-			"flowers" => $user->flowers,
-			"crowns" => $user->crowns,
-			"menuicon" => "shopping_cart"
+			'credit' => $credit,
+			'flowers' => $user->flowers,
+			'crowns' => $user->crowns,
+			'menuicon' => 'shopping_cart'
 		];
 
 		// build the response
@@ -855,7 +900,7 @@ class Service
 	{
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			return $this->_perfil($request, $response);
 		}
 
@@ -871,10 +916,10 @@ class Service
 		// if no notifications, let the user know
 		if (empty($notifications)) {
 			$content = [
-				"header" => "Nada por leer",
-				"icon" => "notifications_off",
-				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
-				"button" => ["href" => "PIROPAZO CITAS", "caption" => "Buscar Pareja"]];
+				'header' => 'Nada por leer',
+				'icon' => 'notifications_off',
+				'text' => 'Por ahora usted no tiene ninguna notificación por leer.',
+				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja']];
 			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
@@ -885,9 +930,9 @@ class Service
 
 		// prepare content for the view
 		$content = [
-			"notifications" => $notifications,
-			"title" => "Notificaciones",
-			"menuicon" => "notifications"
+			'notifications' => $notifications,
+			'title' => 'Notificaciones',
+			'menuicon' => 'notifications'
 		];
 
 		// build the response
@@ -910,10 +955,10 @@ class Service
 
 		// respond to user
 		$content = [
-			"header" => "Ha salido de Piropazo",
-			"icon" => "directions_walk",
-			"text" => "No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.",
-			"button" => ["href" => "SERVICIOS", "caption" => "Otros Servicios"]];
+			'header' => 'Ha salido de Piropazo',
+			'icon' => 'directions_walk',
+			'text' => 'No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.',
+			'button' => ['href' => 'SERVICIOS', 'caption' => 'Otros Servicios']];
 		$response->setLayout('empty.ejs');
 		$response->setTemplate('message.ejs', $content);
 	}
@@ -931,7 +976,7 @@ class Service
 	{
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
-			$request->extra_fields = "hide";
+			$request->extra_fields = 'hide';
 			return $this->_perfil($request, $response);
 		}
 
@@ -968,23 +1013,23 @@ class Service
 		// if no matches, let the user know
 		if (empty($onlyMatchesChats)) {
 			$content = [
-				"header" => "No tiene conversaciones",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Aún no ha hablado con nadie. Cuando dos personas se gustan, pueden empezar una conversación.",
-				"button" => ["href" => "PIROPAZO", "caption" => "Buscar pareja"]];
+				'header' => 'No tiene conversaciones',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Aún no ha hablado con nadie. Cuando dos personas se gustan, pueden empezar una conversación.',
+				'button' => ['href' => 'PIROPAZO', 'caption' => 'Buscar pareja']];
 			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', $content);
 		}
 
 		$content = [
-			"chats" => $onlyMatchesChats,
-			"myuserid" => $request->person->id,
-			"title" => "Chat",
-			"menuicon" => "message"
+			'chats' => $onlyMatchesChats,
+			'myuserid' => $request->person->id,
+			'title' => 'Chat',
+			'menuicon' => 'message'
 		];
 
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate("chats.ejs", $content, $images);
+		$response->setTemplate('chats.ejs', $content, $images);
 	}
 
 	/**
@@ -1010,7 +1055,7 @@ class Service
 			Notifications::alert(
 				$request->person->id,
 				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
-				"error"
+				'error'
 			);
 			return;
 		}
@@ -1056,7 +1101,7 @@ class Service
 		$chat = [];
 		foreach ($tickets as $ticket) {
 			$message = new stdClass();
-			$message->class = $ticket->from == $email ? "me" : "you";
+			$message->class = $ticket->from == $email ? 'me' : 'you';
 			$message->from = $ticket->username;
 			$message->text = preg_replace('/[\x00-\x1F\x7F]/u', '', $ticket->body);
 			$message->date = date_format((new DateTime($ticket->creation_date)), 'd/m/Y h:i a');
@@ -1066,7 +1111,7 @@ class Service
 
 		// send data to the view
 		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('soporte.ejs', ['messages' => $chat, 'myusername' => $username, "title" => "Soporte"]);
+		$response->setTemplate('soporte.ejs', ['messages' => $chat, 'myusername' => $username, 'title' => 'Soporte']);
 	}
 
 	/**
@@ -1089,33 +1134,33 @@ class Service
 		} catch (Alert $e) {
 			$response->setLayout('empty.ejs');
 			return $response->setTemplate('message.ejs', [
-				"header" => "Error inesperado",
-				"icon" => "sentiment_very_dissatisfied",
-				"text" => "Hemos encontrado un error procesando su canje. Por favor regrese a la tienda e intente nuevamente.",
-				"button" => ["href" => "PIROPAZO TIENDA", "caption" => "Reintentar"]]);
+				'header' => 'Error inesperado',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Hemos encontrado un error procesando su canje. Por favor regrese a la tienda e intente nuevamente.',
+				'button' => ['href' => 'PIROPAZO TIENDA', 'caption' => 'Reintentar']]);
 		}
 
 		// get the number of flowers and hearts, and the message
 		$flowers = 0;
 		$hearts = 0;
-		$message = "";
-		if ($code == "FLOWER") {
+		$message = '';
+		if ($code === 'FLOWER') {
 			$flowers = 1;
-			$message = "una flor";
+			$message = 'una flor';
 		}
-		if ($code == "HEART") {
+		if ($code === 'HEART') {
 			$hearts = 1;
-			$message = "un corazón";
+			$message = 'un corazón';
 		}
-		if ($code == "PACK_ONE") {
+		if ($code === 'PACK_ONE') {
 			$flowers = 7;
 			$hearts = 2;
-			$message = "siete flores y dos corazones";
+			$message = 'siete flores y dos corazones';
 		}
-		if ($code == "PACK_TWO") {
+		if ($code === 'PACK_TWO') {
 			$flowers = 15;
 			$hearts = 4;
-			$message = "quince flores y cuatro corazones";
+			$message = 'quince flores y cuatro corazones';
 		}
 
 		// run powers for amulet FLORISTA
@@ -1124,7 +1169,7 @@ class Service
 			$flowers *= 2;
 
 			// alert the user
-			$msg = "Los poderes del amuleto del Druida han duplicado las flores que canjeaste. ¡Aprovéchalas!";
+			$msg = 'Los poderes del amuleto del Druida han duplicado las flores que canjeaste. ¡Aprovéchalas!';
 			Notifications::alert($request->person->id, $msg, 'local_florist', '{command:"PIROPAZO PERFIL"}');
 		}
 
@@ -1137,10 +1182,10 @@ class Service
 		// possitive response
 		$response->setLayout('empty.ejs');
 		return $response->setTemplate('message.ejs', [
-			"header" => "Caje realizado",
-			"icon" => "sentiment_very_satisfied",
-			"text" => "Su canje se ha realizado satisfactoriamente, por lo cual ahora tiene $message a su disposición para ayudarle a buscar su pareja ideal.",
-			"button" => ["href" => "PIROPAZO CITAS", "caption" => "Buscar pareja"]]);
+			'header' => 'Caje realizado',
+			'icon' => 'sentiment_very_satisfied',
+			'text' => "Su canje se ha realizado satisfactoriamente, por lo cual ahora tiene $message a su disposición para ayudarle a buscar su pareja ideal.",
+			'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar pareja']]);
 	}
 
 	/**
@@ -1197,16 +1242,16 @@ class Service
 		}
 
 		// calculate interests
-		$arrOne = explode(",", strtolower($p[0]->interests));
-		$arrTwo = explode(",", strtolower($p[1]->interests));
+		$arrOne = explode(',', strtolower($p[0]->interests));
+		$arrTwo = explode(',', strtolower($p[1]->interests));
 		$intersect = array_intersect($arrOne, $arrTwo);
 		if ($intersect) {
 			$percentage += 20;
 		}
 
 		// calculate age
-		$ageOne = date("Y") - $p[0]->year_of_birth;
-		$ageTwo = date("Y") - $p[1]->year_of_birth;
+		$ageOne = date('Y') - $p[0]->year_of_birth;
+		$ageTwo = date('Y') - $p[1]->year_of_birth;
 		$diff = abs($ageOne - $ageTwo);
 		if ($diff == 0) {
 			$percentage += 15;
