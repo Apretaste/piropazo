@@ -585,7 +585,8 @@ class Service
 
 		// get list of people whom you liked or liked you
 		$matches = Database::query("
-			SELECT B.*, 'LIKE' AS type, A.id_to AS id, '' AS matched_on,datediff(A.expires_matched_blocked, CURDATE()) AS time_left
+			SELECT B.*, 'LIKE' AS type, A.id_to AS id, '' AS matched_on,datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
+			       last_access < CURRENT_DATE as is_first_access_today
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
