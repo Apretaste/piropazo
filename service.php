@@ -158,20 +158,20 @@ class Service
 
 		// erase unwanted properties in the object
 		$properties = [
-		  'id',
-		  'username',
-		  'firstName',
-		  'heart',
-		  'gender',
-		  'aboutMe',
-		  'profile_tags',
-		  'profession_tags',
-		  'location_tags',
-		  'picture',
-		  'country',
-		  'location',
-		  'age',
-		  'isOnline'
+			'id',
+			'username',
+			'firstName',
+			'heart',
+			'gender',
+			'aboutMe',
+			'profile_tags',
+			'profession_tags',
+			'location_tags',
+			'picture',
+			'country',
+			'location',
+			'age',
+			'isOnline'
 		];
 		$match = $this->filterObjectProperties($properties, $match);
 
@@ -299,7 +299,7 @@ class Service
 		];
 
 
-		$images[] = SERVICE_PATH . $response->service.'/images/icon.png';
+		$images[] = SERVICE_PATH . $response->service . '/images/icon.png';
 
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
@@ -453,7 +453,7 @@ class Service
 		foreach ($cacheUsers as $c) {
 			$inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
 		}
-		Database::query('INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES '.implode(',', $inserts));
+		Database::query('INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ' . implode(',', $inserts));
 
 		return true;
 	}
@@ -635,7 +635,7 @@ class Service
 		$liked = $waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = (object) array_merge((array) $match, (array) Person::prepareProfile($match));
+			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get the link to the image
 			// get match images into an array and the content
@@ -645,17 +645,17 @@ class Service
 
 			// erase unwanted properties in the object
 			$properties = [
-			  'id',
-			  'username',
-			  'firstName',
-			  'gender',
-			  'age',
-			  'type',
-			  'location',
-			  'picture',
-			  'matched_on',
-			  'time_left',
-			  'isOnline'
+				'id',
+				'username',
+				'firstName',
+				'gender',
+				'age',
+				'type',
+				'location',
+				'picture',
+				'matched_on',
+				'time_left',
+				'isOnline'
 			];
 			$match = $this->filterObjectProperties($properties, $match);
 
@@ -1008,7 +1008,7 @@ class Service
 			if (key_exists($chat->id, $matchesId)) {
 				$chat->last_sent = explode(' ', $chat->last_sent)[0];
 				if ($chat->picture) {
-					$images[] = $chat->picture;
+					$images[] = SHARED_PUBLIC_PATH . 'profile/' . $chat->picture;
 				}
 				$onlyMatchesChats[] = $chat;
 			}
