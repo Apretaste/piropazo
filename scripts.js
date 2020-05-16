@@ -667,6 +667,10 @@ function deleteMatchModalOpen(id, name) {
 	M.Modal.getInstance($('#deleteModal')).open();
 }
 
+function deactivateModalOpen() {
+	M.Modal.getInstance($('#deactivateModal')).open();
+}
+
 function sendMessageCallback(message) {
 	if (typeof messages != "undefined") {
 		if (messages.length == 0) {
