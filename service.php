@@ -20,6 +20,107 @@ class Service
 {
 
 	/**
+	 * Function executed when the service is called
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	public function _main(Request $request, Response $response)
+	{
+		// by default, open citas
+		$this->_citas($request, $response);
+	}
+
+	/**
+	 * Get dates for your profile
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 * @return Response|void
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	public function _citas(Request $request, Response $response)
+	{
+		if (!$this->isActive($request->person->id)) {
+			$content = [
+				'header' => 'Tiempo sin verte',
+				'icon' => 'access_time',
+				'text' => 'Parece que es la primera vez que entras al servicio o has desactivado su uso antes, si deseas usar Piropazo debes ser visible para las demas personas.',
+				'button' => ['href' => 'PIROPAZO ACTIVATE', 'caption' => 'Usar Piropazo']];
+			$response->setLayout('empty.ejs');
+			$response->setTemplate('message.ejs', $content);
+			return;
+		}
+
+		if ($this->isProfileIncomplete($request->person)) {
+			// get the edit response
+			$request->extra_fields = 'hide';
+			$this->_perfil($request, $response);
+			return;
+		}
+
+		// get the best match for the user
+		$match = $this->getMatchFromCache($request->person);
+
+		// if no matches, let the user know
+		if (!$match) {
+			$content = [
+				'header' => 'No hay citas',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
+				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil']];
+			$response->setLayout('empty.ejs');
+			$response->setTemplate('message.ejs', $content);
+			return;
+		}
+
+		Person::setProfileTags($match);
+
+		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
+
+		// get match images into an array and the content
+		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
+
+		// erase unwanted properties in the object
+		$properties = [
+			'id',
+			'username',
+			'firstName',
+			'heart',
+			'gender',
+			'aboutMe',
+			'profile_tags',
+			'profession_tags',
+			'location_tags',
+			'picture',
+			'country',
+			'location',
+			'age',
+			'isOnline'
+		];
+		$match = $this->filterObjectProperties($properties, $match);
+
+		// mark the last time the system was used
+		$this->markLastTimeUsed($request->person->id);
+
+		// get the number of flowers for the logged user
+		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
+
+		$content = [
+			'match' => $match,
+			'menuicon' => 'favorite',
+			'myflowers' => $myFlowers[0]->flowers
+		];
+
+		// build the response
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('dates.ejs', $content, $images);
+	}
+
+	/**
 	 * @param Request $request
 	 * @param Response $response
 	 *
@@ -84,112 +185,21 @@ class Service
 			return;
 		}
 
-		// insert the new relationship
-		$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
-		Database::query("
+		if ($this->isActive($idTo)) {
+			// insert the new relationship
+			$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
+			Database::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
 			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
 			COMMIT");
 
-		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+			// remove match from the cache so it won't show again
+			Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
-		// add challenge
-		Challenges::complete('piropazo-say-yes-no', $request->person->id);
-	}
-
-	/**
-	 * Function executed when the service is called
-	 *
-	 * @param Request
-	 * @param Response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _main(Request $request, Response $response)
-	{
-		// by default, open citas
-		$this->_citas($request, $response);
-	}
-
-	/**
-	 * Get dates for your profile
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @return Response|void
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _citas(Request $request, Response $response)
-	{
-		if ($this->isProfileIncomplete($request->person)) {
-			// get the edit response
-			$request->extra_fields = 'hide';
-			$this->_perfil($request, $response);
-			return;
+			// add challenge
+			Challenges::complete('piropazo-say-yes-no', $request->person->id);
 		}
-
-		// activate new users and people who left
-		$this->activatePiropazoUser($request->person->id);
-
-		// get the best match for the user
-		$match = $this->getMatchFromCache($request->person);
-
-		// if no matches, let the user know
-		if (!$match) {
-			$content = [
-				'header' => 'No hay citas',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
-				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil']];
-			$response->setLayout('empty.ejs');
-			$response->setTemplate('message.ejs', $content);
-			return;
-		}
-
-		Person::setProfileTags($match);
-
-		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
-
-		// get match images into an array and the content
-		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
-
-		// erase unwanted properties in the object
-		$properties = [
-			'id',
-			'username',
-			'firstName',
-			'heart',
-			'gender',
-			'aboutMe',
-			'profile_tags',
-			'profession_tags',
-			'location_tags',
-			'picture',
-			'country',
-			'location',
-			'age',
-			'isOnline'
-		];
-		$match = $this->filterObjectProperties($properties, $match);
-
-		// mark the last time the system was used
-		$this->markLastTimeUsed($request->person->id);
-
-		// get the number of flowers for the logged user
-		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
-
-		$content = [
-			'match' => $match,
-			'menuicon' => 'favorite',
-			'myflowers' => $myFlowers[0]->flowers
-		];
-
-		// build the response
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('dates.ejs', $content, $images);
 	}
 
 	/**
@@ -230,8 +240,6 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
-		$this->activatePiropazoUser($request->person->id);
-
 		$extra_fields = $request->extra_fields ?? '';
 		if ($this->isProfileIncomplete($request->person)) {
 			$extra_fields = 'hide';
@@ -307,7 +315,7 @@ class Service
 	}
 
 	/**
-	 * Make active if the person uses Piropazo for the first time, or if it was inactive
+	 * Make active if the person uses Piropazo for the first time
 	 *
 	 * @param Int $id
 	 * @throws Alert
@@ -316,6 +324,20 @@ class Service
 	private function activatePiropazoUser($id)
 	{
 		Database::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
+	}
+
+	/**
+	 * Check if the user exists in piropazo and is active
+	 *
+	 * @param Int $id
+	 * @throws Alert
+	 * @author ricardo
+	 */
+	private function isActive($id)
+	{
+		$res = Database::query("SELECT active FROM _piropazo_people WHERE id_person='$id'");
+		if ($res) return $res[0]->active;
+		else return false;
 	}
 
 	/**
@@ -516,22 +538,22 @@ class Service
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if (empty($idTo)) {
-			return;
-		}
+		if (empty($idTo)) return;
 
-		// mark the transaction as blocked
-		Database::query("
+		if ($this->isActive($idTo)) {
+			// mark the transaction as blocked
+			Database::query("
 			START TRANSACTION;
 			DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
 			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
 			COMMIT");
 
-		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+			// remove match from the cache so it won't show again
+			Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
-		// add challenge
-		Challenges::complete('piropazo-say-yes-no', $request->person->id);
+			// add challenge
+			Challenges::complete('piropazo-say-yes-no', $request->person->id);
+		}
 	}
 
 	/**
@@ -564,6 +586,32 @@ class Service
 	}
 
 	/**
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert|FeedException
+	 */
+
+	public function _activate(Request $request, Response $response)
+	{
+		// create or activate piropazo user
+		$this->activatePiropazoUser($request->person->id);
+		$this->_main($request, $response);
+	}
+
+	/**
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert|FeedException
+	 */
+
+	public function _deactivate(Request $request, Response $response)
+	{
+		// create or activate piropazo user
+		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person = '{$request->person->id}'");
+		$this->_main($request, $response);
+	}
+
+	/**
 	 * Get the list of matches for your user
 	 *
 	 * @param Request $request
@@ -579,9 +627,6 @@ class Service
 			$this->_perfil($request, $response);
 			return;
 		}
-
-		// activate new users and people who left
-		$this->activatePiropazoUser($request->person->id);
 
 		// get list of people whom you liked or liked you
 		$matches = Database::query("

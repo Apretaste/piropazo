@@ -265,6 +265,13 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
         </select>
         <label for="religion">Religión</label>
     </div>
+
+    <div class="col s12 center">
+        <% if(isMyOwnProfile){ %>
+            <a class="waves-effect waves-light btn red" onclick="deactivateModalOpen()">Salir de Piropazo</a>
+        <% } %>
+    </div>
+
 </div>
 
 <!-- SAVE BUTTON -->
@@ -274,6 +281,16 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
            onclick="submitProfileData()"><i class="material-icons">save</i></a>
     </div>
 <% } %>
+
+<div id="deactivateModal" class="modal">
+    <div class="modal-content">
+        <p>Si elige salir de Piropazo no te llegaran mas notificaciones ni podras entrar de nuevo hasta que decidas volver</p>
+    </div>
+    <div class="modal-footer">
+        <a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})" class="modal-close waves-effect waves-red btn-flat piropazo-color-text">Salir de Piropazo</a>
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+    </div>
+</div>
 
 <div id="heartModal" class="modal">
     <div class="modal-content">
