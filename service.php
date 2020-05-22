@@ -586,7 +586,8 @@ class Service
 		// get list of people whom you liked or liked you
 		$matches = Database::query("
 			SELECT B.*, 'LIKE' AS type, A.id_to AS id, '' AS matched_on,datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today
+			       last_access < CURRENT_DATE as is_first_access_today,
+			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
@@ -595,7 +596,8 @@ class Service
 			AND id_from = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'WAITING' AS type, A.id_from AS id, '' AS matched_on, datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today
+			       last_access < CURRENT_DATE as is_first_access_today,
+			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
@@ -604,7 +606,8 @@ class Service
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_from AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today
+			       last_access < CURRENT_DATE as is_first_access_today,
+			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
@@ -612,7 +615,8 @@ class Service
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_to AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today
+			       last_access < CURRENT_DATE as is_first_access_today,
+			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
