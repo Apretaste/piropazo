@@ -85,22 +85,7 @@ class Service
 		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 		// erase unwanted properties in the object
-		$properties = [
-			'id',
-			'username',
-			'firstName',
-			'heart',
-			'gender',
-			'aboutMe',
-			'profile_tags',
-			'profession_tags',
-			'location_tags',
-			'picture',
-			'country',
-			'location',
-			'age',
-			'isOnline'
-		];
+		$properties = ['id','username','firstName','heart','gender','aboutMe','profile_tags','profession_tags','location_tags','picture','country','location','age','isOnline'];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
