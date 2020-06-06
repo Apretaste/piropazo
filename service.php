@@ -632,7 +632,7 @@ class Service
 			LEFT JOIN person B
 			ON A.id_from = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
-			AND status = 'like'
+			AND A.status = 'like'
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_from AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
