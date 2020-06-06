@@ -622,7 +622,7 @@ class Service
 			LEFT JOIN person B
 			ON A.id_to = B.id
 			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
-			AND status = 'like'
+			AND A.status = 'like'
 			AND id_from = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'WAITING' AS type, A.id_from AS id, '' AS matched_on, datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
@@ -641,7 +641,7 @@ class Service
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
-			WHERE status = 'match'
+			WHERE A.status = 'match'
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_to AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
@@ -650,7 +650,7 @@ class Service
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
-			WHERE status = 'match'
+			WHERE A.status = 'match'
 			AND id_from = '{$request->person->id}'");
 
 		// if no matches, let the user know
