@@ -205,12 +205,11 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
     <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.occupation == "" ? "hide" : "" %>">
         <i class="material-icons prefix grey-text text-darken-2">business_center</i>
         <select <%= isDisabled %> id="occupation" class="validate">
-            <option value=""><%= profesion.indexOf(profile.occupation) == -1 ? profile.occupation : "" %></option>
-            <% profesion.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.occupation.toUpperCase()){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
+            <option value=""></option>
+            <% Object.keys(occupation).forEach(function(key){ %>
+                <% var selected = key==profile.occupation ? 'selected' : '' %>
+                <option <%= selected %> value="<%= key %>"><%= occupation[key] %></option>
+            <% }) %>
         </select>
         <label for="occupation">Ocupación</label>
     </div>
