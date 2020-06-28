@@ -239,7 +239,7 @@ class Service
 			// run powers for amulet DETECTIVE
 			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
 				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-                Notifications::alert($profile->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
+				Notifications::alert($profile->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
 			}
 
 			// run powers for amulet SHADOWMODE
@@ -321,8 +321,11 @@ class Service
 	private function isActive($id)
 	{
 		$res = Database::query("SELECT active FROM _piropazo_people WHERE id_person='$id'");
-		if ($res) return $res[0]->active;
-		else return false;
+		if ($res) {
+			return $res[0]->active;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -523,7 +526,9 @@ class Service
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if (empty($idTo)) return;
+		if (empty($idTo)) {
+			return;
+		}
 
 		if ($this->isActive($idTo)) {
 			// mark the transaction as blocked
@@ -669,7 +674,7 @@ class Service
 		$liked = $waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
+			$match = (object) array_merge((array) $match, (array) Person::prepareProfile($match));
 
 			// get the link to the image
 			// get match images into an array and the content
