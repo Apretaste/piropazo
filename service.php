@@ -10,8 +10,10 @@ use Apretaste\Person;
 use Apretaste\Request;
 use Apretaste\Response;
 use Framework\Alert;
+use Framework\Core;
 use Framework\Database;
 use Framework\Images;
+use Framework\Utils;
 
 /**
  * Apretaste Piropazo Service
@@ -71,8 +73,9 @@ class Service
 				'header' => 'No hay citas',
 				'icon' => 'sentiment_very_dissatisfied',
 				'text' => 'Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
-				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil']];
-			$response->setLayout('empty.ejs');
+				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil'],
+				'title' => 'Citas'];
+			$response->setLayout('piropazo.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
 		}
@@ -80,12 +83,14 @@ class Service
 		Person::setProfileTags($match);
 
 		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
+		$match->education = Core::$education[$match->education];
+		$match->religion = Core::$religions[$match->religion];
 
 		// get match images into an array and the content
 		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 		// erase unwanted properties in the object
-		$properties = ['id','username','firstName','heart','gender','aboutMe','profile_tags','profession_tags','location_tags','picture','country','location','age','isOnline'];
+		$properties = ['id', 'username', 'firstName', 'heart', 'gender', 'aboutMe', 'education', 'religion', 'picture', 'country', 'location', 'age', 'isOnline'];
 		$match = $this->filterObjectProperties($properties, $match);
 
 		// mark the last time the system was used
@@ -96,7 +101,6 @@ class Service
 
 		$content = [
 			'match' => $match,
-			'menuicon' => 'favorite',
 			'myflowers' => $myFlowers[0]->flowers
 		];
 
@@ -210,7 +214,8 @@ class Service
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
 			$person->age < 10 || $person->age > 110 ||
-			empty($person->country)
+			empty($person->province) || empty($person->education) ||
+			empty($person->religion)
 		);
 	}
 
@@ -225,10 +230,7 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
-		$extra_fields = $request->extra_fields ?? '';
-		if ($this->isProfileIncomplete($request->person)) {
-			$extra_fields = 'hide';
-		}
+		$profileIncomplete = $this->isProfileIncomplete($request->person);
 
 		// get the user's profile
 		$id = $request->input->data->id ?? $request->person->id;
@@ -284,11 +286,10 @@ class Service
 
 		// list of values
 		$content = [
-			'extra_fields' => $extra_fields,
+			'profileIncomplete' => $profileIncomplete,
 			'profile' => $profile,
 			'isMyOwnProfile' => $isMyOwnProfile,
 			'title' => 'Perfil',
-			'menuicon' => 'person'
 		];
 
 
@@ -620,16 +621,6 @@ class Service
 
 		// get list of people whom you liked or liked you
 		$matches = Database::query("
-			SELECT B.*, 'LIKE' AS type, A.id_to AS id, '' AS matched_on,datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today,
-			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
-			FROM _piropazo_relationships A
-			LEFT JOIN person B
-			ON A.id_to = B.id
-			WHERE expires_matched_blocked > CURRENT_TIMESTAMP
-			AND A.status = 'like'
-			AND id_from = '{$request->person->id}'
-			UNION
 			SELECT B.*, 'WAITING' AS type, A.id_from AS id, '' AS matched_on, datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
 			       last_access < CURRENT_DATE as is_first_access_today,
 			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
@@ -664,23 +655,27 @@ class Service
 				'header' => 'No tiene parejas',
 				'icon' => 'sentiment_very_dissatisfied',
 				'text' => 'Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.',
-				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja']];
-			$response->setLayout('empty.ejs');
+				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja'],
+				'title' => 'Parejas'];
+			$response->setLayout('piropazo.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
 		}
 
 		// organize list of matches
-		$liked = $waiting = $matched = $images = [];
+		$waiting = $matched = $images = [];
 		foreach ($matches as $match) {
 			// get the full profile
-			$match = (object) array_merge((array) $match, (array) Person::prepareProfile($match));
+			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get the link to the image
 			// get match images into an array and the content
 			$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
+
+			$match->education = Core::$education[$match->education];
+			$match->religion = Core::$religions[$match->religion];
 
 			// erase unwanted properties in the object
 			$properties = [
@@ -691,6 +686,8 @@ class Service
 				'age',
 				'type',
 				'location',
+				'religion',
+				'education',
 				'picture',
 				'matched_on',
 				'time_left',
@@ -699,9 +696,6 @@ class Service
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of each
-			if ($match->type === 'LIKE') {
-				$liked[] = $match;
-			}
 			if ($match->type === 'WAITING') {
 				$waiting[] = $match;
 			}
@@ -719,11 +713,9 @@ class Service
 		// create response array
 		$content = [
 			'myflowers' => $myFlowers[0]->flowers,
-			'liked' => $liked,
 			'waiting' => $waiting,
 			'matched' => $matched,
 			'title' => 'Parejas',
-			'menuicon' => 'people'
 		];
 
 		// Building the response
@@ -866,7 +858,12 @@ class Service
 		$messages = Chats::conversation($request->person->id, $user->id);
 
 		$chats = [];
+		$images = [];
+		$chatImgDir = SHARED_PUBLIC_PATH . '/content/chat';
+
 		foreach ($messages as $message) {
+			$me = $message->username == $request->person->username;
+
 			$chat = new stdClass();
 			$chat->id = $message->id;
 			$chat->username = $message->username;
@@ -874,21 +871,35 @@ class Service
 			$chat->sent = $message->sent;
 			$chat->read = $message->read;
 			$chat->readed = $message->readed;
+			$chat->name = $me ? $request->person->firstName : $user->firstName;
+			$chat->gender = $me ? $request->person->gender : $user->gender;
+
+			$chat->picture = $me ? $request->person->picture : $user->picture;
+			$images[] = SHARED_PUBLIC_PATH . 'profile/' . $chat->picture;
+
+			if ($message->image) {
+				$message->image .= '.jpg';
+				$images[] = "$chatImgDir/{$message->image}";
+
+				$chat->image = $message->image;
+			}
+
 			$chats[] = $chat;
 		}
 
 		$content = [
 			'messages' => $chats,
-			'username' => $user->username,
-			'myusername' => $request->person->username,
+			'myName' => $request->person->firstName,
+			'myPicture' => $request->person->picture,
+			'myGender' => $request->person->gender,
 			'id' => $user->id,
 			'online' => $user->isOnline,
 			'last' => date('d/m/Y h:i a', strtotime($user->lastAccess)),
-			'title' => $user->firstName
+			'title' => 'Parejas'
 		];
 
 		$response->setlayout('piropazo.ejs');
-		$response->setTemplate('conversation.ejs', $content);
+		$response->setTemplate('conversation.ejs', $content, $images);
 	}
 
 	/**
@@ -922,7 +933,7 @@ class Service
 			'credit' => $credit,
 			'flowers' => $user->flowers,
 			'crowns' => $user->crowns,
-			'menuicon' => 'shopping_cart'
+			'title' => 'Tienda'
 		];
 
 		// build the response
@@ -975,7 +986,6 @@ class Service
 		$content = [
 			'notifications' => $notifications,
 			'title' => 'Notificaciones',
-			'menuicon' => 'notifications'
 		];
 
 		// build the response
@@ -1068,7 +1078,6 @@ class Service
 			'chats' => $onlyMatchesChats,
 			'myuserid' => $request->person->id,
 			'title' => 'Chat',
-			'menuicon' => 'message'
 		];
 
 		$response->setLayout('piropazo.ejs');
@@ -1103,9 +1112,23 @@ class Service
 			return;
 		}
 
+		$image = $request->input->data->image ?? false;
+		$fileName = '';
+
+		// get the image name and path
+		if ($image) {
+			$chatImgDir = SHARED_PUBLIC_PATH . '/content/chat';
+			$fileName = Utils::randomHash();
+			$filePath = "$chatImgDir/$fileName.jpg";
+
+			// save the optimized image on the user folder
+			file_put_contents($filePath, base64_decode($image));
+			Images::optimize($filePath);
+		}
+
 		// store the note in the database
 		$message = Database::escape($message, 499, 'utf8mb4');
-		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
+		Database::query("INSERT INTO _note (from_user, to_user, `text`, image) VALUES ({$request->person->id},{$userTo->id},'$message', '$fileName')", true, 'utf8mb4');
 
 		// send notification for the app
 		Notifications::alert(

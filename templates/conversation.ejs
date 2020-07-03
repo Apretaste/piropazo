@@ -1,41 +1,63 @@
-<div class="row" id="chat-row">
-	<%if(messages.length>0){%>
-	<div class="chat">
-		<%messages.forEach(function(message){%>
-		<%if(message.username == username) message.class = "you"; else message.class = "me";%>
-		<div class="bubble <%=message.class%>" id="<%=message.id%>">
-			<msg><%=message.text%></msg>
-			<%/*if(message.readed == "1"){%><i class="material-icons tiny" onclick="alert('Leido el: <%=message.read%>')">check</i><%}*/%>
-			<br>
-			<small><%=message.sent%></small>
-		</div>
-		<%});%>
-	</div>
-	<%}else{%>
-	<p id="nochats" class="center grey-text text-lighten-1">Usted no tiene ningun mensaje con este usuario.</p>
-	<%}%>
+<% imgPath = "{{APP_IMAGE_PATH}}/" %>
 
-	<div class="valign-wrapper container" id="messageField">
-		<div class="col s10 m11" style="margin-bottom: 0;">
-			<textarea id="message" placeholder="Escribe un mensaje" class="materialize-textarea" oninput="messageLengthValidate(500)"></textarea>
-			<!--span class="helper-text">Restante: 500</span-->
-		</div>
-		<div class="col s2 m1 center-align"><i class="material-icons grey-text text-darken-2" onclick="sendMessage('PIROPAZO')">send</i></div>
-	</div>
+<div class="row" id="chat-row">
+    <div class="col s12">
+        <% if(messages.length > 0){ %>
+            <ul class="chat">
+                <% messages.forEach(function(message){ %>
+                    <% if (message.name == myName) message.class = "right"; else message.class = "left"; %>
+
+                    <li class="<%= message.class %>" id="<%= message.id %>">
+                        <div class="message-avatar circle"
+                             style="background-image: url('{{APP_IMAGE_PATH}}/<%= message.picture %>'); background-size: contain; width: 30px; height: 30px;"></div>
+                        <div class="head">
+                            <a href="#!" class="<%= message.gender %>"><%= message.name %></a>
+                            <span class="date"><%= message.sent %></span>
+                        </div>
+                        <span class="text">
+                            <% if(message.image){ %>
+                                <img class="responsive-img materialboxed"
+                                     src="{{APP_IMAGE_PATH}}/<%= message.image %>"/>
+                                <br>
+                            <% } %>
+                            <%= message.text %>
+                        </span>
+                    </li>
+                <% }); %>
+            </ul>
+        <% }else{ %>
+            <p id="nochats" class="center grey-text text-lighten-1">Usted no tiene ningun mensaje con este usuario.</p>
+        <% } %>
+    </div>
+
+    <!-- MESSAGE BOX -->
+    <div class="valign-wrapper container white" id="messageField">
+        <div class="col s9 m10" id="messageBox">
+            <textarea id="message" placeholder="Escribe un mensaje" class="materialize-textarea"></textarea>
+        </div>
+        <div class="col s3 m2 center-align">
+            <input type="file" id="picture" accept="image/*" class="hide">
+            <i class="material-icons" onclick="loadFileToBase64()">photo</i>
+            <i class="material-icons" onclick="sendMessage('PIROPAZO')">send</i>
+        </div>
+    </div>
 </div>
 
 <div class="modal bottom-sheet" id="optionsModal">
-	<ul class="collection" style="margin: 0;"> 
-		<li class="collection-item" onclick="deleteModalOpen()"><div>Borrar mensaje<a class="secondary-content"><i class="material-icons piropazo-color-text">delete</i></a></div></li>
-	</ul>
+    <ul class="collection" style="margin: 0;">
+        <li class="collection-item" onclick="deleteModalOpen()">
+            <div>Borrar mensaje<a class="secondary-content"><i class="material-icons piropazo-color-text">delete</i></a>
+            </div>
+        </li>
+    </ul>
 </div>
 
 <div id="deleteModal" class="modal">
-	<div class="modal-content">
-		<p>¿Esta seguro de eliminar el mensaje seleccionado?</p>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="deleteMessage()" class="modal-close waves-effect waves-red btn-flat red-text">Eliminar</a>
-	</div>
+    <div class="modal-content">
+        <p>¿Esta seguro de eliminar el mensaje seleccionado?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="deleteMessage()" class="modal-close waves-effect waves-red btn-flat red-text">Eliminar</a>
+    </div>
 </div>

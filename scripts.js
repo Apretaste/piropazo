@@ -1,20 +1,33 @@
 "use strict";
 
 
-var occupation = {'AMA_DE_CASA' :'Ama de casa', 'ESTUDIANTE':'Estudiante', 'EMPLEADO_PRIVADO':'Empleado Privado', 'EMPLEADO_ESTATAL':'Empleado Estatal', 'INDEPENDIENTE':'Trabajador Independiente', 'JUBILADO':'Jubilado', 'DESEMPLEADO':'Desempleado'};
+var occupation = {
+	'AMA_DE_CASA': 'Ama de casa',
+	'ESTUDIANTE': 'Estudiante',
+	'EMPLEADO_PRIVADO': 'Empleado Privado',
+	'EMPLEADO_ESTATAL': 'Empleado Estatal',
+	'INDEPENDIENTE': 'Trabajador Independiente',
+	'JUBILADO': 'Jubilado',
+	'DESEMPLEADO': 'Desempleado'
+};
+
+var imgPath = null;
 
 //
 // ON LOAD FUNCTIONS
 //
 $(document).ready(function () {
 	$('select').formSelect();
-	showStateOrProvince();
+	$('.tabs').tabs();
 	$('.modal').modal();
 	$('.materialboxed').materialbox({
 		'onCloseEnd': function onCloseEnd() {
 			return resizeImg();
 		}
 	});
+
+	showStateOrProvince();
+
 	$('.profile-img, .col.s4').click(function () {
 		if ($('#desc').attr('status') == "opened") {
 			$('#desc').slideToggle({
@@ -41,17 +54,12 @@ $(document).ready(function () {
 		$(descElement).insertBefore('.profile-img');
 	}
 
-	$(window).resize(function () {
-		return resizeImg();
-	});
-	var resizeInterval = setInterval(function () {
-		// check until the img has the correct size
-		resizeImg();
-		if ($('#profile-rounded-img').css('background-size') != 'auto') clearTimeout(resizeInterval);
-	}, 1);
 	$('#chat-row').parent().css('margin-bottom', '0');
 
-	showStateOrProvince()
+	showStateOrProvince();
+	resizeChat();
+	scrollToEndOfPage();
+	resizeImg();
 });
 
 //
@@ -137,7 +145,7 @@ function resizeImg() {
 			$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
 		}
 
-		$('.profile-img').height($('.profile-img').height() - $($('#actions')[0]).outerHeight(true) - 31);
+		$('.profile-img').height($('.profile-img').height() - $($('#actions')[0]).outerHeight(true) - 64); // 31 before
 	} else {
 		var img = $('#profile-rounded-img');
 		var size = $(window).height() / 4; // picture must be 1/4 of the screen
@@ -298,6 +306,17 @@ function messageLengthValidate(max) {
 	}
 }
 
+function heartRemaining() {
+	var totalLeft = profile.heart_time_left;
+	var hours = Math.floor(totalLeft / 3600);
+	totalLeft -= hours * 3600;
+	var minutes = Math.floor(totalLeft / 60);
+	totalLeft -= minutes * 60;
+	var seconds = totalLeft;
+
+	return hours + 'h: ' + minutes + 'min: ' + seconds + 'sec';
+}
+
 function heartModalOpen() {
 	if (profile.heart == 0) {
 		if (profile.hearts == 0) {
@@ -306,13 +325,8 @@ function heartModalOpen() {
 			});
 		} else M.Modal.getInstance($('#heartModal')).open();
 	} else {
-		var totalLeft = profile.heart_time_left;
-		var hours = Math.floor(totalLeft / 3600);
-		totalLeft -= hours * 3600;
-		var minutes = Math.floor(totalLeft / 60);
-		totalLeft -= minutes * 60;
-		var seconds = totalLeft;
-		$('#timeLeftModal h3').html(hours + 'h: ' + minutes + 'min: ' + seconds + 'sec');
+
+		$('#timeLeftModal h3').html(heartRemaining());
 		M.Modal.getInstance($('#timeLeftModal')).open();
 	}
 }
@@ -357,6 +371,8 @@ function uploadPicture() {
 	loadFileToBase64();
 }
 
+var messagePicture = null;
+
 function sendFile(base64File) {
 	if (base64File.length > 2584000) {
 		showToast("Imagen demasiado pesada");
@@ -364,29 +380,54 @@ function sendFile(base64File) {
 		return;
 	}
 
-	apretaste.send({
-		"command": "PERFIL FOTO",
-		"data": {
-			'picture': base64File,
-			'updatePicture': true
-		},
-		"redirect": false,
-		"callback": {
-			"name": "updatePicture",
-			"data": base64File
+	if (typeof messages == "undefined") {
+		// submit the profile informacion
+		apretaste.send({
+			"command": "PERFIL FOTO",
+			"data": {
+				'picture': base64File,
+				'updatePicture': true
+			},
+			"redirect": false,
+			"callback": {
+				"name": "updatePicture",
+				"data": base64File
+			}
+		});
+	} else {
+		messagePicture = base64File;
+		var messagePictureSrc = "data:image/jpg;base64," + base64File;
+
+		if ($('#messagePictureBox').length == 0) {
+			$('#messageBox').append('<div id="messagePictureBox">' +
+				'<img id="messagePicture" class="responsive-img"/>' +
+				'<i class="material-icons red-text" onclick="removePicture()">cancel</i>' +
+				'</div>');
 		}
-	});
-} // submit the profile informacion
+
+		$('#messagePicture').attr('src', messagePictureSrc);
+		resizeChat();
+	}
+}
+
+function removePicture() {
+	// clean the img if exists
+	messagePicture = null;
+	$('input:file').val(null);
+	$('#messagePictureBox').remove();
+	resizeChat();
+}
 
 
 function submitProfileData() {
 	if (!isMyOwnProfile) return; // get the array of fields and
 
-	var fields = ['picture', 'first_name', 'username', 'about_me', 'gender', 'sexual_orientation', 'year_of_birth', 'body_type', 'eyes', 'hair', 'skin', 'marital_status', 'highest_school_level', 'occupation', 'country', 'province', 'usstate', 'city', 'religion']; // create the JSON of data
+	var fields = ['picture', 'first_name', 'gender', 'sexual_orientation', 'year_of_birth', 'highest_school_level', 'province', 'religion']; // create the JSON of data
 
 	var data = new Object();
 	fields.forEach(function (field) {
 		var value = $('#' + field).val();
+		console.log('field ' + field + ', value ' + value)
 		if (value && value.trim() != '') data[field] = value;
 	}); // translate "que buscas" to sexual_orientation
 
@@ -398,6 +439,7 @@ function submitProfileData() {
 		if (data.gender == "F" && data.sexual_orientation == "MUJERES") data.sexual_orientation = "HOMO";
 	} // save information in the backend
 
+	console.log(data)
 
 	apretaste.send({
 		"command": "PERFIL UPDATE",
@@ -434,12 +476,12 @@ function showStateOrProvince() {
 	var usstate = $('.usstate-div');
 
 	switch (country) {
-		case 'cu':
+		case 'CU':
 			province.show();
 			usstate.hide();
 			break;
 
-		case 'us':
+		case 'US':
 			usstate.show();
 			province.hide();
 			break;
@@ -475,7 +517,7 @@ function callbackSaveProfile() {
 		showToast("Recuerde subir una foto")
 	} else {
 		showToast("Su informacion se ha salvado correctamente")
-		if (extra_fields == "hide") callbackBringNewDate()
+		if (typeof profileIncomplete != "undefined" && profileIncomplete) callbackBringNewDate()
 	}
 }
 
@@ -513,145 +555,42 @@ function callbackMoveToMatches(id) {
 	$('#' + id + ' .second-line').html('Se unieron el ' + today.toLocaleDateString('es-ES'));
 	$('#' + id + ' .secondary-content a:nth-child(1) > i').html('message');
 	$('#' + id + ' .secondary-content a:nth-child(1)').attr('onclick', "apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'" + id + "'}})");
-} ///////// CHAT SCRIPTS /////////
-
-
-var optionsModalActive = false;
-var moved = false;
-var activeChat;
-var activeMessage;
-var activeUsername;
-var timer;
-$(function () {
-	if (typeof messages != "undefined") {
-		resizeChat();
-		$(window).resize(function () {
-			return resizeChat();
-		});
-		if (messages.length > 0) $('.chat').scrollTop($('.bubble:last-of-type').offset().top);
-		$('#message').focus();
-		activeChat = id;
-		activeUsername = username;
-		setMessagesEventListener();
-	}
-
-	$('.modal').modal();
-	$('.openchat').on("touchstart", function (event) {
-		runTimer();
-		activeChat = event.currentTarget.id;
-		var activeName = event.currentTarget.getAttribute('name');
-	}).on("touchmove", function (event) {
-		clearTimeout(timer);
-		moved = true;
-	}).on("touchend", function (event) {
-		openChat();
-	});
-	$('.openchat').on("mousedown", function (event) {
-		runTimer();
-		activeChat = event.currentTarget.id;
-		var activeName = event.currentTarget.getAttribute('name');
-	}).on("mouseup", function (event) {
-		openChat();
-	});
-});
-
-function openChat() {
-	if (!optionsModalActive && !moved) {
-		var firstName = $('#' + activeChat + ' .name').html();
-		apretaste.send({
-			'command': 'PIROPAZO CONVERSACION',
-			'data': {
-				'userId': activeChat,
-				'firstName': firstName
-			}
-		});
-	}
-
-	;
-	optionsModalActive = false;
-	moved = false;
-	clearTimeout(timer);
 }
 
-function viewProfile() {
+
+///////// CHAT SCRIPTS /////////
+
+function openChat(id) {
+	apretaste.send({
+		'command': 'PIROPAZO CONVERSACION',
+		'data': {'userId': id}
+	});
+}
+
+function viewProfile(id) {
 	apretaste.send({
 		'command': 'PIROPAZO PERFIL',
-		'data': {
-			'id': activeChat
-		}
+		'data': {'id': id}
 	});
-}
-
-function writeModalOpen() {
-	optionsModalActive = false;
-	M.Modal.getInstance($('#optionsModal')).close();
-	M.Modal.getInstance($('#writeMessageModal')).open();
-}
-
-function deleteModalOpen() {
-	optionsModalActive = false;
-	M.Modal.getInstance($('#optionsModal')).close();
-	if (typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con ' + activeName.trim() + '?');
-	M.Modal.getInstance($('#deleteModal')).open();
-}
-
-function deleteChat() {
-	apretaste.send({
-		'command': 'CHAT BORRAR',
-		'data': {
-			'id': activeChat,
-			'type': 'chat'
-		},
-		'redirect': false,
-		'callback': {
-			'name': 'deleteChatCallback',
-			'data': activeChat
-		}
-	});
-}
-
-function deleteMessage() {
-	apretaste.send({
-		'command': 'CHAT BORRAR',
-		'data': {
-			'id': activeMessage,
-			'type': 'message'
-		},
-		'redirect': false,
-		'callback': {
-			'name': 'deleteMessageCallback',
-			'data': activeMessage
-		}
-	});
-}
-
-function deleteChatCallback(chatId) {
-	$('#' + chatId).remove();
-	showToast('Chat eliminado');
-}
-
-function deleteMessageCallback(messageId) {
-	$('#' + messageId).remove();
-	showToast('Mensaje eliminado');
-}
-
-function runTimer() {
-	timer = setTimeout(function () {
-		optionsModalActive = true;
-		M.Modal.getInstance($('#optionsModal')).open();
-	}, 800);
 }
 
 function sendMessage(toService) {
 	var message = $('#message').val().trim();
 	var minLength = toService == 'PIROPAZO' ? 1 : 30;
 
-	if (message.length >= minLength) {
+	// do now allow short or empty messages
+	if (message.length <= 3 && messagePicture == null) {
+		M.toast({html: "Mínimo 3 letras"});
+		return false;
+	}
+
+	if (message.length >= minLength || messagePicture != null) {
 		apretaste.send({
 			'command': toService + " ESCRIBIR",
 			'data': {
-				'id': activeChat,
-				'message': message
+				'id': id,
+				'message': message,
+				'image': messagePicture
 			},
 			'redirect': false,
 			'callback': {
@@ -675,46 +614,55 @@ function deactivateModalOpen() {
 }
 
 function sendMessageCallback(message) {
-	if (typeof messages != "undefined") {
-		if (messages.length == 0) {
-			// Jquery Bug, fixed in 1.9, insertBefore or After deletes the element and inserts nothing
-			// $('#messageField').insertBefore("<div class=\"chat\"></div>");
-			$('#nochats').remove();
-			$('#chat-row').append("<div class=\"chat\"></div>");
-		}
-
-		$('.chat').append("<div class=\"bubble me\" id=\"last\">" + message + "<br>" + "<small>" + new Date().toLocaleString('es-ES') + "</small>" + "</div>");
-	} else {
-		if (message.length > 70) message = message.substr(0, 70) + '...';
-		$('#' + activeChat + ' msg').html(message);
+	if (messages.length == 0) {
+		// Jquery Bug, fixed in 1.9, insertBefore or After deletes the element and inserts nothing
+		// $('#messageField').insertBefore("<div class=\"chat\"></div>");
+		$('#nochats').remove();
+		$('#chat-row .col').append("<ul class=\"chat\"></ul>");
 	}
 
+	var pictureContent = "";
+	if (messagePicture != null) {
+		pictureContent += '<img src="data:image/jpg;base64,' + messagePicture + '" class="responsive-img materialboxed"/><br>';
+	}
+
+	var newMessage =
+		"<li class=\"right\" id=\"last\">\n" +
+		"     <div class=\"message-avatar circle\"\n" +
+		"          style=\"background-image: url('" + imgPath + myPicture + "'); background-size: contain; width: 30px; height: 30px;\"></div>\n" +
+		"     <div class=\"head\">\n" +
+		"         <a href=\"#!\" class=\"" + myGender + "\">" + myName + "</a>\n" +
+		"         <span class=\"date\">" + new Date().toLocaleString('es-ES') + "</span>\n" +
+		"     </div>\n" +
+		"     <span class=\"text\">" + pictureContent + message + "</span>\n" +
+		"</li>"
+
+	$('.chat').append(newMessage);
+
 	$('#message').val('');
-	setMessagesEventListener();
+
+	// clean the img if exists
+	messagePicture = null;
+	$('input:file').val(null);
+	$('#messagePictureBox').remove();
+
+	$('.materialboxed').materialbox();
+
+	// scroll to the end of the page
+	scrollToEndOfPage();
+}
+
+function scrollToEndOfPage() {
+	console.log("to the end!");
+	$(".chat").animate({
+		scrollTop: $(document).height()
+	}, 1000);
 }
 
 function resizeChat() {
 	if ($('.row').length == 3) {
 		$('.chat').height($(window).height() - $($('.row')[0]).outerHeight(true) - $('#messageField').outerHeight(true) - 20);
 	} else $('.chat').height($(window).height() - $('#messageField').outerHeight(true) - 20);
-}
-
-function setMessagesEventListener() {
-	$('.bubble').on("touchstart", function (event) {
-		runTimer();
-		activeMessage = event.currentTarget.id;
-	}).on("touchmove", function (event) {
-		clearTimeout(timer);
-		moved = true;
-	}).on("touchend", function (event) {
-		clearTimeout(timer);
-	});
-	$('.bubble').on("mousedown", function (event) {
-		runTimer();
-		activeMessage = event.currentTarget.id;
-	}).on("mouseup", function (event) {
-		clearTimeout(timer);
-	});
 }
 
 function exchangeHeartCallback() {

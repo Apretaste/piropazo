@@ -16,42 +16,49 @@ if(!isMyOwnProfile){ %>
         }
     </style>
 <% } %>
-<div id="img-pre" class="piropazo-color"></div>
+
+<% if(profileIncomplete){ %>
+    <div class="row">
+        <div class="col s12">
+            <div class="message danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Para usar Piropazo, primero debe llenar todo su perfil y agregar una foto.</p>
+            </div>
+        </div>
+    </div>
+<% } %>
+
+<% if(profile.heart == "1" && isMyOwnProfile){ %>
+    <div class="row">
+        <div class="col s12">
+            <div class="message success">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Su corazón vence en <%= heartRemaining() %></p>
+            </div>
+        </div>
+    </div>
+<% } %>
 
 <!-- PICTURE -->
 <% if (profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
 else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-<div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
-    <!-- EDIT PIC AND HEART BUTTON -->
+
+<div class="picture-container col s12">
+    <img src="<%= src %>" alt="Picture" class="responsive-img">
+
     <% if(isMyOwnProfile){ %>
         <input <%= isDisabled %> id="picturefield" type="file" class="hide"/>
-        <a class="btn-floating white" id="picture-upload-btn" onclick="uploadPicture()"><i
-                    class="material-icons grey-text text-darken-4">camera_alt</i></a>
-        <a class="btn-floating white <%= extra_fields %>" id="heart-btn" onclick="heartModalOpen()">
-            <% var icon = profile.heart == 0 ? "favorite_outline" : "favorite";
-                var color = profile.heart == 0 ? "piropazo-color-text" : "" %>
-            <i class="material-icons piropazo-color-text"><%= icon %></i>
-            <span class="<%= color %>"><%= profile.hearts %></span>
+        <a class="btn-floating white" id="picture-upload-btn" onclick="uploadPicture()">
+            <i class="material-icons grey-text text-darken-4">edit</i>
         </a>
+    <% } %>
+
+    <% if(profile.heart == "1"){ %>
+        <i id="heart-icon" class="material-icons piropazo-color-text medium">favorite</i>
     <% } %>
 </div>
 
 <div class="row" id="edit-fields">
-
-    <!-- USERNAME -->
-    <div class="input-field col s8 m4 offset-s2 offset-m4 <%= extra_fields %>">
-        <input <%= isDisabled %> id="username" type="text" value="@<%= profile.username %>" class="validate"/>
-        <label for="username">Nombre de usuario</label>
-    </div>
-
-    <!-- DESCRIPTION -->
-    <div class="input-field col s12 <%= extra_fields %>">
-        <i class="material-icons prefix grey-text text-darken-2">account_circle</i>
-        <textarea <%= isDisabled %> id="about_me" maxlength="200" type="text"
-                                    class="materialize-textarea validate"><%= profile.aboutMe %></textarea>
-        <label for="about_me">Cuéntanos algo sobre ti</label>
-    </div>
-
     <!-- NAME -->
     <div class="input-field col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">person</i>
@@ -63,7 +70,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
     <div class="input-field col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">wc</i>
         <select <%= isDisabled %> id="gender" class="validate"
-                                  onchange="$('#sexual_orientation').parent().parent().removeClass('hide');">
+                                  onchange="$('#sexual_orientation').parent().parent().parent().removeClass('hide');">
             <option value="" <% if(profile.gender == ''){ %>selected
                     <% } %>
                     disabled></option>
@@ -110,69 +117,9 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
         <label for="year_of_birth">Año de nacimiento</label>
     </div>
 
-    <!-- BODY TYPE -->
-    <% var body_type = ["DELGADO", "MEDIO", "EXTRA", "ATLETICO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.body == "" ? "hide" : "" %>>">
-        <i class="material-icons prefix grey-text text-darken-2">face</i>
-        <select <%= isDisabled %> id="body_type" class="validate">
-            <option value="" selected></option>
-            <% body_type.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.body){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
-        </select>
-        <label for="body_type">Cuerpo</label>
-    </div>
-
-    <!-- EYES -->
-    <% var eyes = ["NEGRO", "CARMELITA", "VERDE", "AZUL", "AVELLANA", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= !isMyOwnProfile && profile.eyes == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">face</i>
-        <select <%= isDisabled %> id="eyes" class="validate">
-            <option value=""></option>
-            <% eyes.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.eyes){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
-        </select>
-        <label for="eyes">Ojos</label>
-    </div>
-
-    <!-- HAIR -->
-    <% var hair = ["TRIGUENO", "CASTANO", "RUBIO", "NEGRO", "ROJO", "BLANCO", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.hair == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">face</i>
-        <select <%= isDisabled %> id="hair" class="validate">
-            <option value=""></option>
-            <% hair.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.hair){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
-        </select>
-        <label for="hair">Cabello</label>
-    </div>
-
-    <!-- SKIN -->
-    <% var skin = ["BLANCO", "NEGRO", "MESTIZO", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.skin == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">face</i>
-        <select <%= isDisabled %> id="skin" class="validate">
-            <option value=""></option>
-            <% skin.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.skin){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
-        </select>
-        <label for="skin">Piel</label>
-    </div>
-
     <!-- MARITAL STATUS -->
     <% var marital_status = ["SOLTERO", "SALIENDO", "COMPROMETIDO", "CASADO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.maritalStatus == "" ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %> <%= profile.maritalStatus == "" ? "hide" : "" %>">
         <i class="material-icons prefix grey-text text-darken-2">favorite</i>
         <select <%= isDisabled %> id="marital_status" class="validate">
             <option value=""></option>
@@ -187,7 +134,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- HIGHEST SCHOOL LEVEL-->
     <% var highest_school_level = ["PRIMARIO", "SECUNDARIO", "TECNICO", "UNIVERSITARIO", "POSTGRADUADO", "DOCTORADO", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.education == "" && !isMyOwnProfile ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %> <%= profile.education == "" && !isMyOwnProfile ? "hide" : "" %>">
         <i class="material-icons prefix grey-text text-darken-2">school</i>
         <select <%= isDisabled %> id="highest_school_level" class="validate">
             <option value=""></option>
@@ -200,22 +147,8 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
         <label for="highest_school_level">Nivel Educativo</label>
     </div>
 
-    <!-- OCCUPATION -->
-    <% var profesion = ["TRABAJADOR ESTATAL", "CUENTAPROPISTA", "ESTUDIANTE", "AMA DE CASA", "DESEMPLEADO", "OTRO"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.occupation == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">business_center</i>
-        <select <%= isDisabled %> id="occupation" class="validate">
-            <option value=""></option>
-            <% Object.keys(occupation).forEach(function(key){ %>
-                <% var selected = key==profile.occupation ? 'selected' : '' %>
-                <option <%= selected %> value="<%= key %>"><%= occupation[key] %></option>
-            <% }) %>
-        </select>
-        <label for="occupation">Ocupación</label>
-    </div>
-
     <!-- COUNTRY -->
-    <div class="input-field col <%= colSize %>">
+    <div class="input-field col <%= colSize %> hide">
         <i class="material-icons prefix grey-text text-darken-2">place</i>
         <select <%= isDisabled %> id="country" class="validate" onchange="showStateOrProvince()">
             <option value=""></option>
@@ -229,12 +162,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
     </div>
 
     <!-- PROVINCE-->
-    <div class="input-field province-div col <%= colSize %> <%= extra_fields %> <%= profile.province == "" ? "hide" : "" %>">
+    <div class="input-field province-div col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">place</i>
         <select <%= isDisabled %> id="province" class="validate">
             <option value=""></option>
             <% Object.keys(province).forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.province){ %>selected
+                <option value="<%= val %>" <% if(val == profile.provinceCode){ %>selected
                         <% } %>
                 ><%= province[val] %></option>
             <% }); %>
@@ -242,17 +175,9 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
         <label for="province">Provincia</label>
     </div>
 
-    <!-- CITY -->
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.city == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">place</i>
-        <input <%= isDisabled %> id="city" type="text" value="<%= profile.city %>" class="validate"/>
-        <label for="city">¿En que ciudad o pueblo vives?</label>
-    </div>
-
-
     <!-- RELIGION -->
     <% var religion = ["CRISTIANISMO", "CATOLICISMO", "YORUBA", "PROTESTANTE", "SANTERO", "ABAKUA", "BUDISMO", "ISLAM", "ATEISMO", "AGNOSTICISMO", "SECULARISMO", "OTRA"] %>
-    <div class="input-field col <%= colSize %> <%= extra_fields %> <%= profile.religion == "" ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">flare</i>
         <select <%= isDisabled %> id="religion" class="validate">
             <option value=""></option>
@@ -267,7 +192,19 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <div class="col s12 center">
         <% if(isMyOwnProfile){ %>
-            <a class="waves-effect waves-light btn red" onclick="deactivateModalOpen()">Salir de Piropazo</a>
+            <a class="waves-effect waves-light btn" style="width: 100%" onclick="heartModalOpen()">
+                Usar un corazón (<%= profile.hearts %>)
+            </a>
+        <% } %>
+    </div>
+
+    <div class="col s12" style="height: 10px"></div>
+
+    <div class="col s12 center">
+        <% if(isMyOwnProfile){ %>
+            <a class="waves-effect waves-light btn red" style="width: 100%" onclick="deactivateModalOpen()">
+                Salir de Piropazo
+            </a>
         <% } %>
     </div>
 
@@ -283,10 +220,12 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
 <div id="deactivateModal" class="modal">
     <div class="modal-content">
-        <p>Si elige salir de Piropazo no te llegaran mas notificaciones ni podras entrar de nuevo hasta que decidas volver</p>
+        <p>Si elige salir de Piropazo no te llegaran mas notificaciones ni podras entrar de nuevo hasta que decidas
+            volver</p>
     </div>
     <div class="modal-footer">
-        <a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})" class="modal-close waves-effect waves-red btn-flat piropazo-color-text">Salir de Piropazo</a>
+        <a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})"
+           class="modal-close waves-effect waves-red btn-flat piropazo-color-text">Salir de Piropazo</a>
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
     </div>
 </div>
