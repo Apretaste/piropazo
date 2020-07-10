@@ -137,9 +137,18 @@ function resizeImg() {
 		floating_btns.css('transition', 'none');
 		floating_btns.height(size);
 		floating_btns.width(size);
-		$('.actions .btn-floating i').css('line-height', size + 'px');
-		$('.actions .btn-floating i').css('font-size', size / 20 + 'rem');
+
+		var fab_icons = $('.actions .btn-floating i');
+		fab_icons.css('line-height', size + 'px');
+		fab_icons.css('font-size', size / 20 + 'rem');
 		floating_btns.css('transition', '');
+
+		// Flower button
+		$(floating_btns[1]).height(size * 1.25);
+		$(floating_btns[1]).width(size * 1.25);
+		$(fab_icons[1]).css('line-height', size * 1.25 + 'px');
+		$(fab_icons[1]).css('font-size', size * 1.25 / 20 + 'rem');
+
 
 		if ($('.container > .row').length == 2) {
 			$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));

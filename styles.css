@@ -1,5 +1,9 @@
 /* PIROPAZO PERFIL */
 
+body {
+    overflow: visible !important;
+}
+
 *:disabled {
     color: black !important;
     border-bottom: none !important;
@@ -124,7 +128,6 @@
 }
 
 .actions {
-    margin-bottom: .75rem;
     position: absolute;
     bottom: -28px;
 }

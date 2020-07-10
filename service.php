@@ -363,6 +363,14 @@ class Service
 
 		// return the best match as a Person object
 		$person = Person::find($match->user);
+
+		// check if match has all the data
+		if ($this->isProfileIncomplete($person)) {
+			// remove match from the cache so it won't show again
+			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
+			return $this->getMatchFromCache($user);
+		}
+
 		$person->heart = $match->heart;
 
 		// get the match color class based on gender
@@ -654,7 +662,7 @@ class Service
 			$content = [
 				'header' => 'No tiene parejas',
 				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Por ahora nadie le ha pedido ser pareja suya ni usted le ha pedido a otros. Si esperaba ver a alguien aquí, es posible que el tiempo de espera halla vencido. No se desanime, hay muchos más peces en el océano.',
+				'text' => 'Aún no tiene parejas, ni nadie ha pedido ser pareja suya. Si esperaba ver a alguien aquí es posible que hayan dejado de usar el servicio. No se desanime, hay muchos más peces en el océano.',
 				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja'],
 				'title' => 'Parejas'];
 			$response->setLayout('piropazo.ejs');
