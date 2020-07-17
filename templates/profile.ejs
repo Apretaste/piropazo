@@ -66,43 +66,6 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
         <label for="first_name">Nombre</label>
     </div>
 
-    <!-- GENDER -->
-    <div class="input-field col <%= colSize %>">
-        <i class="material-icons prefix grey-text text-darken-2">wc</i>
-        <select <%= isDisabled %> id="gender" class="validate"
-                                  onchange="$('#sexual_orientation').parent().parent().parent().removeClass('hide');">
-            <option value="" <% if(profile.gender == ''){ %>selected
-                    <% } %>
-                    disabled></option>
-            <option value="M" <% if(profile.gender == 'M'){ %>selected
-                    <% } %>
-            >Hombre
-            </option>
-            <option value="F" <% if(profile.gender == 'F'){ %>selected
-                    <% } %>
-            >Mujer
-            </option>
-        </select>
-        <label for="gender">Sexo</label>
-    </div>
-
-    <!-- SEXUAL ORIENTATION -->
-    <% var orientation = ["MUJERES", "HOMBRES", "AMBOS"] %>
-    <div class="input-field col <%= colSize %> <%= profile.gender == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">favorite</i>
-        <select <%= isDisabled %> id="sexual_orientation" class="validate">
-            <option value="" <% if(profile.sexualOrientation == '' || profile.gender == ""){ %>selected
-                    <% } %>
-                    disabled></option>
-            <% orientation.forEach(function(val) { %>
-                <option value="<%= val %>" <% if(val == profile.searchfor && profile.gender != ""){ %>selected
-                        <% } %>
-                ><%= val.firstUpper() %></option>
-            <% }); %>
-        </select>
-        <label for="sexual_orientation">¿Qué buscas?</label>
-    </div>
-
     <!-- BIRTH YEAR -->
     <div class="input-field col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">cake</i>
@@ -119,7 +82,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- MARITAL STATUS -->
     <% var marital_status = ["SOLTERO", "SALIENDO", "COMPROMETIDO", "CASADO"] %>
-    <div class="input-field col <%= colSize %> <%= profile.maritalStatus == "" ? "hide" : "" %>">
+    <div class="input-field col <%= colSize %>">
         <i class="material-icons prefix grey-text text-darken-2">favorite</i>
         <select <%= isDisabled %> id="marital_status" class="validate">
             <option value=""></option>
@@ -188,6 +151,50 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
             <% }); %>
         </select>
         <label for="religion">Religión</label>
+    </div>
+
+    <!-- GENDER -->
+    <div class="input-field col <%= colSize %>">
+        <i class="material-icons prefix grey-text text-darken-2">wc</i>
+        <select <%= isDisabled %> id="gender" class="validate"
+                                  onchange="$('#sexual_orientation').parent().parent().parent().removeClass('hide');">
+            <option value="" <% if(profile.gender == ''){ %>selected
+                    <% } %>
+                    disabled></option>
+            <option value="M" <% if(profile.gender == 'M'){ %>selected
+                    <% } %>
+            >Hombre
+            </option>
+            <option value="F" <% if(profile.gender == 'F'){ %>selected
+                    <% } %>
+            >Mujer
+            </option>
+        </select>
+        <label for="gender">Sexo</label>
+    </div>
+
+    <!-- SEXUAL ORIENTATION -->
+    <% var orientation = ["MUJERES", "HOMBRES", "AMBOS"] %>
+    <div class="input-field col <%= colSize %> <%= profile.gender == "" ? "hide" : "" %>">
+        <i class="material-icons prefix grey-text text-darken-2">favorite</i>
+        <select <%= isDisabled %> id="sexual_orientation" class="validate">
+            <option value="" <% if(profile.sexualOrientation == '' || profile.gender == ""){ %>selected
+                    <% } %>
+                    disabled></option>
+            <% orientation.forEach(function(val) { %>
+                <option value="<%= val %>" <% if(val == profile.searchfor && profile.gender != ""){ %>selected
+                        <% } %>
+                ><%= val.firstUpper() %></option>
+            <% }); %>
+        </select>
+        <label for="sexual_orientation">¿Qué género buscas?</label>
+    </div>
+
+    <!-- AGE RANGE -->
+    <div class="input-field col s12" style="height: 40px">
+        <i class="material-icons prefix grey-text text-darken-2">favorite</i>
+        <div id="age-slider" style="margin: 0 16px 0 42px"></div>
+        <label for="age">Rango de edad</label>
     </div>
 
     <div class="col s12 center">

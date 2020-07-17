@@ -10,7 +10,7 @@
                             <% if (person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
                             else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
                             <img src="<%= src %>" alt="<%= person.firstName %>"
-                                 onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>', 'firstName':'<%= person.first_name %>'}})"
+                                 onclick="apretaste.send({'command':'PERFIL','data':{'username':'<%= person.id %>'}})"
                                  class="responsive-img"/>
                         </div>
                         <div class="card-content" style="padding: 12px">
@@ -51,9 +51,7 @@
                             <!-- PICTURE -->
                             <% if (person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
                             else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-                            <img src="<%= src %>" alt="<%= person.firstName %>"
-                                 onclick="apretaste.send({'command':'PIROPAZO PERFIL','data':{'id':'<%= person.id %>', 'firstName':'<%= person.first_name %>'}})"
-                                 class="responsive-img"/>
+                            <img src="<%= src %>" alt="<%= person.firstName %>" class="responsive-img"/>
                         </div>
                         <div class="card-content" style="padding: 12px">
                             <p>

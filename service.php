@@ -148,7 +148,11 @@ class Service
 			// if they liked you, create a match
 			if ($record[0]->status === 'like') {
 				// get the target @username
-				$username = Database::query("SELECT username FROM person WHERE id = $idFrom")[0]->username;
+				$username = Database::query("SELECT username FROM person WHERE id = $idTo")[0]->username;
+
+				// make friends
+				$request->person->requestFriend($idTo);
+				Person::find($idTo)->requestFriend($idFrom);
 
 				// update to create a match
 				Database::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
@@ -254,14 +258,17 @@ class Service
 			}
 		}
 
-		$user = Database::query("
-			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left
+		$user = Database::queryFirst("
+			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left, minAge, maxAge
 			FROM _piropazo_people
 			WHERE id_person = {$request->person->id}");
 
-		$profile->hearts = $user[0]->crowns;
-		$profile->heart = $user[0]->heart;
-		$profile->heart_time_left = 60 * 60 * 24 * 3 - $user[0]->heart_time_left;
+		$profile->hearts = $user->crowns;
+		$profile->heart = $user->heart;
+		$profile->heart_time_left = 60 * 60 * 24 * 3 - $user->heart_time_left;
+
+		$profile->minAge = intval($user->minAge);
+		$profile->maxAge = intval($user->maxAge);
 
 		// get what gender do you search for
 		if ($profile->sexualOrientation === 'BI') {
@@ -398,6 +405,7 @@ class Service
 	{
 		// do not cache if already exist data
 		$isCache = Database::query("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}");
+		$piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
 		if ($isCache[0]->cnt > 0) {
 			return false;
 		}
@@ -444,7 +452,8 @@ class Service
 			AND A.marital_status = 'SOLTERO' 
 			AND NOT ISNULL(A.picture)
 			AND $clauseSex 
-			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= 17)
+			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
+			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
 			AND NOT A.id = '$user->id'";
 
 		// create final query with the match score
@@ -1210,7 +1219,7 @@ class Service
 			return $response->setTemplate('message.ejs', [
 				'header' => 'Error inesperado',
 				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Hemos encontrado un error procesando su canje. Por favor regrese a la tienda e intente nuevamente.',
+				'text' => $e->message,
 				'button' => ['href' => 'PIROPAZO TIENDA', 'caption' => 'Reintentar']]);
 		}
 
