@@ -37,6 +37,8 @@ $(document).ready(function () {
 		}
 	});
 
+	resizeImg();
+
 	if (typeof profile != "undefined") {
 		setInterval(function () {
 			profile.heart_time_left--;
@@ -581,7 +583,7 @@ function callbackMoveToMatches(id) {
 	element.fadeIn('fast');
 	$('#' + id + ' .second-line').html('Se unieron el ' + today.toLocaleDateString('es-ES'));
 	$('#' + id + ' .secondary-content a:nth-child(1) > i').html('message');
-	$('#' + id + ' .secondary-content a:nth-child(1)').attr('onclick', "apretaste.send({'command':'PIROPAZO CONVERSACION', 'data':{'userId':'" + id + "'}})");
+	$('#' + id + ' .secondary-content a:nth-child(1)').attr('onclick', "apretaste.send({'command':'chat', 'data':{'userId':'" + id + "'}})");
 }
 
 
@@ -589,7 +591,7 @@ function callbackMoveToMatches(id) {
 
 function openChat(id) {
 	apretaste.send({
-		'command': 'PIROPAZO CONVERSACION',
+		'command': 'chat',
 		'data': {'userId': id}
 	});
 }

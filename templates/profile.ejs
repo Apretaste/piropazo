@@ -176,7 +176,7 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
     <!-- SEXUAL ORIENTATION -->
     <% var orientation = ["MUJERES", "HOMBRES", "AMBOS"] %>
     <div class="input-field col <%= colSize %> <%= profile.gender == "" ? "hide" : "" %>">
-        <i class="material-icons prefix grey-text text-darken-2">favorite</i>
+        <i class="material-icons prefix grey-text text-darken-2">device_hub</i>
         <select <%= isDisabled %> id="sexual_orientation" class="validate">
             <option value="" <% if(profile.sexualOrientation == '' || profile.gender == ""){ %>selected
                     <% } %>
@@ -192,9 +192,9 @@ else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
 
     <!-- AGE RANGE -->
     <div class="input-field col s12" style="height: 40px">
-        <i class="material-icons prefix grey-text text-darken-2">favorite</i>
+        <i class="material-icons prefix grey-text text-darken-2">space_bar</i>
         <div id="age-slider" style="margin: 0 16px 0 42px"></div>
-        <label for="age">Rango de edad</label>
+        <label for="age">¿Qué edad buscas?</label>
     </div>
 
     <div class="col s12 center">

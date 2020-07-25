@@ -1152,7 +1152,7 @@ class Service
 			$userTo->id,
 			"@{$request->person->username} le ha enviado un mensaje",
 			'message',
-			"{'command':'PIROPAZO CONVERSACION', 'data':{'userId':'{$request->person->id}'}}"
+			"{'command':'chat', 'data':{'userId':'{$request->person->id}'}}"
 		);
 	}
 
