@@ -15,7 +15,7 @@ var menu = [
                 <% var active = typeof title != "undefined" && title == e.caption ? 'active' : '' %>
                 <% var disabled = e.caption != 'Perfil' && typeof profileIncomplete != "undefined" && profileIncomplete %>
                 <li class="tab <%= disabled ? 'disabled' : '' %>">
-                    <a href="#" class="piropazo-color-text <%= active %>"
+                    <a href="#" class="green-text <%= active %>"
                     <% if(!disabled){ %>
                        onclick="apretaste.send({'command':'PIROPAZO <%= e.link %>'})"
                             <% } %>

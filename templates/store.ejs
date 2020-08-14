@@ -3,9 +3,19 @@
         <p>Canjee su crédito por flores y corazones que le ayudarán a encontrar su media naranja.</p>
 
         <div class="valign-wrapper" id="store-icons-row">
-            <i class="material-icons small piropazo-color-text">local_florist</i><%= flowers %>&nbsp;&nbsp;&nbsp;
-            <i class="material-icons small piropazo-color-text">favorite</i><%= crowns %>&nbsp;&nbsp;&nbsp;
-            <b class="piropazo-color-text" style="margin-top: -5px;">§</b><%= credit %>
+            <div class="tags">
+                <span class="chip">
+                    <i class="material-icons icon">local_florist</i><%= flowers %>
+                </span>
+
+                <span class="chip">
+                    <i class="material-icons icon">local_florist</i><%= flowers %>
+                </span>
+
+                <span class="chip">
+                    <i class="fas fa-coins icon"></i><%= credit %>
+                </span>
+            </div>
         </div>
 
         <ul class="collection" id="store-list">
@@ -13,7 +23,7 @@
                 <i class="material-icons circle white grey-text text-darken-2">local_florist</i>
                 <span class="title"><b>Una flor.</b></span>
                 <p>Regale una flor para atraer su atención y agregar una semana al tiempo de espera.</p>
-                <p><a class="pink-text" href="#!" onclick="openModal('FLOWER')">Canjear por §0.50</a></p>
+                <p><a class="green-text" href="#!" onclick="openModal('FLOWER')">Canjear por §0.50</a></p>
             </li>
 
             <li class="collection-item avatar">
@@ -21,26 +31,26 @@
                 <span class="title"><b>Un corazón.</b></span>
                 <p>Este aparecerá junto a su foto por tres días, haciendo que su perfil se muestre con mucha mayor
                     frecuencia.</p>
-                <p><a class="pink-text" href="#!" onclick="openModal('HEART')">Canjear por §2.00</a></p>
+                <p><a class="green-text" href="#!" onclick="openModal('HEART')">Canjear por §2.00</a></p>
             </li>
 
             <li class="collection-item avatar">
                 <i class="material-icons circle white grey-text text-darken-2">shopping_basket</i>
                 <span class="title"><b>7 flores y 2 corazones.</b></span>
                 <p>La oferta perfecta para que empieces a crear amores como todo un profesional.</p>
-                <p><a class="pink-text" href="#!" onclick="openModal('PACK_ONE')">Canjear por §5.00</a></p>
+                <p><a class="green-text" href="#!" onclick="openModal('PACK_ONE')">Canjear por §5.00</a></p>
             </li>
 
             <li class="collection-item avatar">
                 <i class="material-icons circle white grey-text text-darken-2">shopping_cart</i>
                 <span class="title"><b>15 flores y 4 corazones.</b></span>
                 <p>Saca el mayor beneficio posible de Piropazo y conviertete en todo un cyber-Romeo.</p>
-                <p><a class="pink-text" href="#!" onclick="openModal('PACK_TWO')">Canjear por §10.00</a></p>
+                <p><a class="green-text" href="#!" onclick="openModal('PACK_TWO')">Canjear por §10.00</a></p>
             </li>
         </ul>
     </div>
     <!--
-            <div class="col s12 center-align"><a  href="https://apretaste.org/topup" target="_blank" class="btn piropazo-color"><b>Compra Créditos</b></a></div>
+            <div class="col s12 center-align"><a  href="https://apretaste.org/topup" target="_blank" class="btn green"><b>Compra Créditos</b></a></div>
      -->
 </div>
 
@@ -51,6 +61,6 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-        <a onclick="buy()" class="modal-close waves-effect waves-pink btn-flat pink-text">Canjear</a>
+        <a onclick="buy()" class="modal-close waves-effect waves-green btn-flat green-text">Canjear</a>
     </div>
 </div>

@@ -150,29 +150,8 @@ body {
     margin-bottom: 80px;
 }
 
-.nav-wrapper, .piropazo-color {
-    background-color: #F40E42 !important;
-}
-
-.piropazo-color-text {
-    color: #F40E42 !important;
-}
-
-.tab.disabled > a {
-    color: rgba(244, 14, 66, 0.4) !important;
-}
-
 #more {
     bottom: 56px;
-}
-
-input.valid, textarea.valid, input:focus:not([readonly]), textarea:focus:not([readonly]), .select-wrapper input.select-dropdown:focus {
-    border-bottom: 1px solid #F40E42 !important;
-    box-shadow: 0 1px 0 0 #F40E42 !important;
-}
-
-input:focus:not([readonly]) ~ label, textarea:focus:not([readonly]) ~ label, .dropdown-content li > span {
-    color: #F40E42 !important;
 }
 
 /* Tienda */
@@ -187,18 +166,13 @@ input:focus:not([readonly]) ~ label, textarea:focus:not([readonly]) ~ label, .dr
 }
 
 #store-list p:nth-child(4) {
-    color: #F40E42 !important;
+    color: #62c145 !important;
 }
 
 #store-list .material-icons {
     top: 30%;
     font-size: 28px;
     left: 4px;
-}
-
-#store-icons-row {
-    /*justify-content: left;*/
-    font-size: 1.5rem;
 }
 
 /* Matches */
@@ -223,10 +197,8 @@ input:focus:not([readonly]) ~ label, textarea:focus:not([readonly]) ~ label, .dr
 
 #matches img {
     width: 100%;
-    max-height: 300px;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+    max-height: 180px;
+    object-fit: cover;
 }
 
 /* Notifications */
@@ -375,10 +347,6 @@ nav ul {
     left: 50%;
     transform: translateX(-50%);
     width: fit-content;
-}
-
-.tabs .indicator {
-    background-color: #F40E42 !important;
 }
 
 /* MESSAGES */
@@ -614,7 +582,7 @@ ul.chat li {
 }
 
 .noUi-connect {
-    background: #F40E42;
+    background: #62c145;
     -webkit-transition: background 450ms;
     transition: background 450ms;
 }
@@ -838,7 +806,7 @@ ul.chat li {
     height: 15px;
     border-radius: 50%;
     box-shadow: none;
-    background-color: #F40E42;
+    background-color: #62c145;
     border: none;
     left: -5px;
     top: -6px;
@@ -869,7 +837,7 @@ ul.chat li {
     width: 30px;
     top: -17px;
     left: -2px;
-    background-color: #F40E42;
+    background-color: #62c145;
     border-radius: 50%;
     transition: border-radius .25s cubic-bezier(0.215, 0.610, 0.355, 1.000),
     transform .25s cubic-bezier(0.215, 0.610, 0.355, 1.000);
@@ -909,7 +877,7 @@ ul.chat li {
     width: 30px;
     top: -17px;
     left: -2px;
-    background-color: #F40E42;
+    background-color: #62c145;
     border-radius: 50%;
     transition: border-radius .25s cubic-bezier(0.215, 0.610, 0.355, 1.000),
     transform .25s cubic-bezier(0.215, 0.610, 0.355, 1.000);
@@ -938,4 +906,32 @@ ul.chat li {
 .noUi-horizontal .noUi-active .noUi-tooltip span,
 .noUi-vertical .noUi-active .noUi-tooltip span {
     opacity: 1;
+}
+
+/* Barebones */
+/* TAGS */
+
+.chip .icon {
+    float: left;
+    font-size: 16px;
+    line-height: 32px;
+    padding-right: 5px;
+}
+
+.chip.tiny {
+    height: 20px;
+    padding: 0 10px;
+    line-height: 20px;
+    font-size: x-small;
+}
+
+.chip.tiny .icon {
+    line-height: 20px;
+}
+
+.chip.clear {
+    color: rgba(0, 0, 0, 0.87);
+    margin: 0px;
+    padding: 0px;
+    background-color: transparent;
 }

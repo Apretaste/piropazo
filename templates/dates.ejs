@@ -7,7 +7,7 @@
 
             <% if(match.heart == 1){ %>
                 <div class="main-heart">
-                    <i class="material-icons medium piropazo-color-text">favorite</i>
+                    <i class="material-icons medium green-text">favorite</i>
                 </div>
             <% } %>
 
@@ -43,14 +43,14 @@
                         </a>
                     </div>
                     <div class="col s4">
-                        <a class="waves-effect waves-light btn-floating btn-large piropazo-color"
+                        <a class="waves-effect waves-light btn-floating btn-large green"
                            onclick="openFlowerModal('<%= match.id %>', '<%= match.firstName %>')">
                             <i class="material-icons large">local_florist</i>
                         </a>
                     </div>
 
                     <div class="col s4">
-                        <a class="waves-effect waves-light btn-floating btn-large piropazo-color"
+                        <a class="waves-effect waves-light btn-floating btn-large green"
                            onclick="respondToDate('<%= match.id %>', 'SI')">
                             <i class="material-icons large">check</i>
                         </a>
@@ -86,7 +86,7 @@
 <!-- FLOWER POPUP -->
 <div id="modalFlower" class="modal">
     <div class="modal-content">
-        <h4 class="piropazo-color-text">Enviar flor</h4>
+        <h4 class="green-text">Enviar flor</h4>
         <p>Agregue un mensaje para enviar a <b class="name"></b> y llamar su atención</p>
         <div class="input-field">
             <textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
@@ -94,8 +94,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-piropazo-color btn-flat">Cerrar</a>
-        <a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat piropazo-color-text"
+        <a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat green-text"
            onclick="sendFlower()">Enviar</a>
     </div>
 </div>

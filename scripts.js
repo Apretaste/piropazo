@@ -388,7 +388,7 @@ function deleteNotification(id) {
 		if (count <= 0) {
 			var parent = $('#noti-list').parent();
 			$('ul.collection').remove();
-			parent.append("\n\t\t\t\t<div class=\"col s12 center\">\n\t\t\t\t<h1 class=\"black-text\">Nada por leer</h1>\n\t\t\t\t<i class=\"material-icons large\">notifications_off</i>\n\t\t\t\t<p>Por ahora usted no tiene ninguna notificaci\xF3n por leer.</p>\n\t\t\t\t<a class=\"waves-effect waves-light btn piropazo-color\" href=\"#!\" onclick=\"apretaste.send({'command':'PIROPAZO CITAS'})\">\n\t\t\t\t\tBuscar Pareja\n\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t\t");
+			parent.append("\n\t\t\t\t<div class=\"col s12 center\">\n\t\t\t\t<h1 class=\"black-text\">Nada por leer</h1>\n\t\t\t\t<i class=\"material-icons large\">notifications_off</i>\n\t\t\t\t<p>Por ahora usted no tiene ninguna notificaci\xF3n por leer.</p>\n\t\t\t\t<a class=\"waves-effect waves-light btn green\" href=\"#!\" onclick=\"apretaste.send({'command':'PIROPAZO CITAS'})\">\n\t\t\t\t\tBuscar Pareja\n\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t\t");
 		}
 	});
 } // open the popup to upload a new profile picture
@@ -700,7 +700,7 @@ function exchangeHeartCallback() {
 	profile.hearts--;
 	profile.heart = 1;
 	heartCount.html(profile.hearts);
-	heartCount.removeClass('piropazo-color-text');
+	heartCount.removeClass('green-text');
 	profile.heart_time_left = 60 * 60 * 24 * 3;
 	$('#heart-btn > i').html('favorite');
 } //
