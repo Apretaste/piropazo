@@ -172,7 +172,9 @@ function resizeImg() {
 			$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
 		}
 
-		$('.profile-img').height($('.profile-img').height() - $($('#actions')[0]).outerHeight(true) - 64); // 31 before
+		$('.actions').css('bottom', '-' + size / 2 + 'px');
+
+		$('.profile-img').height($('.profile-img').height() - size);
 	} else {
 		var img = $('#profile-rounded-img');
 		var size = $(window).height() / 4; // picture must be 1/4 of the screen
