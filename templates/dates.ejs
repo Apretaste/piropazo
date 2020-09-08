@@ -1,87 +1,101 @@
 <div class="row">
-	<div class="col s12">
-		<div id="profile">
-			<!-- PICTURE -->
-			<%var src = "{{APP_IMAGE_PATH}}" + match.picture;%>
-			<img class="responsive-img profile-img" src="<%= src %>" alt="<%= match.username %>"/>
+    <div class="col s12">
+        <div id="profile">
+            <!-- PICTURE -->
+            <% var src = "{{APP_IMAGE_PATH}}" + match.picture; %>
+            <img class="responsive-img profile-img" src="<%= src %>" alt="<%= match.username %>"/>
 
-			<%if(match.heart == 1){%>
-				<div class="main-heart">
-					<i class="material-icons medium piropazo-color-text">favorite</i>
-				</div>
-			<%}%>
+            <% if(match.heart == 1){ %>
+                <div class="main-heart">
+                    <i class="material-icons medium green-text">favorite</i>
+                </div>
+            <% } %>
 
-			<!-- INFO -->
-			<div class="position-bottom left" id="info">
-				<h1><%=match.firstName%></h1><h2><%=match.age%></h2>
-				<%if(match.isOnline=="1"){%>
-					<i class="material-icons green-text text-lighten-1" style="font-size:15px;">brightness_1</i>
-				<%}%>
-				<h3><%= match.location %></h3>
-			</div>
-			<i class="material-icons position-bottom right white-text" id="more" onclick="toggleDescVisible()">more_vert</i>
-		</div>
-	</div>
+            <!-- INFO -->
+            <div class="position-bottom left" id="info">
+                <h3><b><%= match.firstName %></b>, <%= match.age %></h3>
+                <table id="desc-table" class="white-text">
+                    <tr>
+                        <td><i class="material-icons">place</i></td>
+                        <td><%= match.location %></td>
+                    </tr>
+                    <tr>
+                        <td><i class="material-icons">school</i></td>
+                        <td><%= match.education %></td>
+                    </tr>
+                    <% if(match.religion != 'Otra'){ %>
+                        <tr>
+                            <td><i class="material-icons">flare</i></td>
+                            <td><%= match.religion %></td>
+                        </tr>
+                    <% } %>
+                </table>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="row" id="actions">
+                <div class="col s12 center-align actions valign-wrapper">
+                    <!-- BUTTONS -->
+                    <div class="col s4">
+                        <a class="waves-effect waves-light btn-floating btn-large grey darken-2"
+                           onclick="respondToDate('<%= match.id %>', 'NO')">
+                            <i class="material-icons large">clear</i>
+                        </a>
+                    </div>
+                    <div class="col s4">
+                        <a class="waves-effect waves-light btn-floating btn-large green"
+                           onclick="openFlowerModal('<%= match.id %>', '<%= match.firstName %>')">
+                            <i class="material-icons large">local_florist</i>
+                        </a>
+                    </div>
+
+                    <div class="col s4">
+                        <a class="waves-effect waves-light btn-floating btn-large green"
+                           onclick="respondToDate('<%= match.id %>', 'SI')">
+                            <i class="material-icons large">check</i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div style="display: none;" id="desc" class="row" status="closed">
-	<div class="col s12">
-		<h3 class="black-text center-align" style="margin: 8px 0 0 0;"><%=match.firstName%></h3>
-		<p><%=match.about_me%></p>
+    <div class="col s12">
+        <h3 class="black-text center-align" style="margin: 8px 0 0 0;"><%= match.firstName %></h3>
+        <p><%= match.about_me %></p>
 
-		<table id="desc-table">
-			<tr>
-				<td><i class="material-icons grey-text text-darken-2">person</i></td>
-				<td><%= match.profile_tags %></td>
-			</tr>
-			<tr>
-				<td><i class="material-icons grey-text text-darken-2">business_center</i></td>
-				<td><%= match.profession_tags %></td>
-			</tr>
-			<tr>
-				<td><i class="material-icons grey-text text-darken-2">place</i></td>
-				<td><%= match.location_tags %></td>
-			</tr>
-		</table>
-	</div>
-</div>
-
-<div class="row" id="actions">
-	<div class="col s12 center-align actions">
-		<!-- BUTTONS -->
-			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large grey darken-2" onclick="respondToDate('<%= match.id %>', 'NO')">
-					<i class="material-icons large">clear</i>
-				</a>
-			</div>
-			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large piropazo-color" onclick="openFlowerModal('<%= match.id %>', '<%= match.firstName %>')">
-					<i class="material-icons large">local_florist</i>
-				</a>
-			</div>
-
-			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large piropazo-color" onclick="respondToDate('<%= match.id %>', 'SI')">
-					<i class="material-icons large">check</i>
-				</a>
-			</div>
-	</div>
+        <table id="desc-table">
+            <tr>
+                <td><i class="material-icons grey-text text-darken-2">person</i></td>
+                <td><%= match.profile_tags %></td>
+            </tr>
+            <tr>
+                <td><i class="material-icons grey-text text-darken-2">business_center</i></td>
+                <td><%= match.profession_tags %></td>
+            </tr>
+            <tr>
+                <td><i class="material-icons grey-text text-darken-2">place</i></td>
+                <td><%= match.location_tags %></td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <!-- FLOWER POPUP -->
 <div id="modalFlower" class="modal">
-	<div class="modal-content">
-		<h4 class="piropazo-color-text">Enviar flor</h4>
-		<p>Usted tiene <span id="flowerCount"></span> flores. Agregue un mensaje para enviar a <b class="name"></b>, llamar su atención y agregar 7 días al tiempo de espera.</p>
-		<div class="row">
-			<div class="input-field col s12">
-				<textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
-				<label for="flowerMsg">Agrega un mensaje con tu flor</label>
-			</div>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-piropazo-color btn-flat">Cerrar</a>
-		<a href="#!" class="modal-close waves-effect waves-piropazo-color btn-flat piropazo-color-text" onclick="sendFlower()">Enviar</a>
-	</div>
+    <div class="modal-content">
+        <h4 class="green-text">Enviar flor</h4>
+        <p>Agregue un mensaje para enviar a <b class="name"></b> y llamar su atención</p>
+        <div class="input-field">
+            <textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
+            <label for="flowerMsg">Agrega un mensaje con tu flor</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat green-text"
+           onclick="sendFlower()">Enviar</a>
+    </div>
 </div>
