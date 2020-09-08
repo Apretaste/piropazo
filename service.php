@@ -20,7 +20,6 @@ use Framework\Utils;
  */
 class Service
 {
-
 	/**
 	 * Function executed when the service is called
 	 *
@@ -694,37 +693,24 @@ class Service
 			// get the full profile
 			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
-			// get the link to the image
 			// get match images into an array and the content
 			$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
 
+			// get match properties
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
-
-			$match->education = Core::$education[$match->education];
-			$match->religion = Core::$religions[$match->religion];
+			$match->education = isset(Core::$education[$match->education]) ? Core::$education[$match->education] : '';
+			$match->religion = isset(Core::$religions[$match->religion]) ? Core::$religions[$match->religion] : '';
 
 			// erase unwanted properties in the object
-			$properties = [
-				'id',
-				'username',
-				'firstName',
-				'gender',
-				'age',
-				'type',
-				'location',
-				'religion',
-				'education',
-				'picture',
-				'matched_on',
-				'time_left',
-				'isOnline'
-			];
+			$properties = ['id','username','firstName','gender','age','type','location','religion','education','picture','matched_on','time_left','isOnline'];
 			$match = $this->filterObjectProperties($properties, $match);
 
-			// count the number of each
+			// count the number of waiting
 			if ($match->type === 'WAITING') {
 				$waiting[] = $match;
 			}
+
+			// count the number of matches
 			if ($match->type === 'MATCH') {
 				$matched[] = $match;
 			}
