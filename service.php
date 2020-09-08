@@ -161,6 +161,15 @@ class Service
 				Level::setExperience('PIROPAZO_MATCH', $idFrom);
 				Level::setExperience('PIROPAZO_MATCH', $idTo);
 
+				// track challenges
+				$mutate = static function ($track) {
+					$track++;
+					return $track;
+				};
+
+				Challenges::track($idFrom, 'piropazo-matches-3', 0, $mutate);
+				Challenges::track($idTo, 'piropazo-matches-3', 0, $mutate);
+
 				// create notifications for both you and your date
 				Notifications::alert($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
 				Notifications::alert(
