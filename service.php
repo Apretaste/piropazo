@@ -477,7 +477,7 @@ class Service
 			FROM ($clauseSubquery) AS results 
 			HAVING percent_match > 0
 			ORDER BY percent_match DESC
-			LIMIT 50");
+			LIMIT 10");
 
 		// do not create cache if no suggestions were found
 		if (empty($cacheUsers)) {
@@ -672,7 +672,7 @@ class Service
 			LEFT JOIN person B
 			ON A.id_to = B.id
 			WHERE A.status = 'match'
-			AND id_from = '{$request->person->id}'");
+			AND id_from = '{$request->person->id}' LIMIT 20");
 
 		// if no matches, let the user know
 		if (empty($matches)) {
