@@ -21,6 +21,14 @@ body {
     object-fit: cover;
 }
 
+.date-img {
+    margin: auto;
+    display: block;
+    position: relative;
+    padding: .75rem 0;
+    width: 100%;
+}
+
 #profile {
     position: relative;
 }

@@ -29,7 +29,7 @@ $(document).ready(function () {
 
 	showStateOrProvince();
 
-	$('.profile-img, .col.s4').click(function () {
+	$('.date-img, .col.s4').click(function () {
 		if ($('#desc').attr('status') == "opened") {
 			$('#desc').slideToggle({
 				direction: "up"
@@ -63,13 +63,13 @@ $(document).ready(function () {
 	if (typeof match != "undefined") {
 		var infoElement = $('#info');
 		$('#info').remove();
-		$(infoElement).insertBefore('.profile-img');
+		$(infoElement).insertBefore('.date-img');
 		var moreElement = $('#more');
 		$('#more').remove();
-		$(moreElement).insertBefore('.profile-img');
+		$(moreElement).insertBefore('.date-img');
 		var descElement = $('#desc');
 		$('#desc').remove();
-		$(descElement).insertBefore('.profile-img');
+		$(descElement).insertBefore('.date-img');
 	}
 
 	$('#chat-row').parent().css('margin-bottom', '0');
@@ -147,7 +147,7 @@ function openMenu() {
 
 function resizeImg() {
 	if (typeof profile == "undefined" && typeof match == "undefined") return;
-	$('.profile-img').css('height', '');
+	$('.date-img').css('height', '');
 
 	if (typeof match != 'undefined') {
 		var floating_btns = $('.actions .btn-floating');
@@ -169,12 +169,12 @@ function resizeImg() {
 
 
 		if ($('.container > .row').length == 2) {
-			$('.profile-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
+			$('.date-img').height($(window).height() - $($('.row')[0]).outerHeight(true));
 		}
 
 		$('.actions').css('bottom', '-' + size / 2 + 'px');
 
-		$('.profile-img').height($('.profile-img').height() - size);
+		$('.date-img').height($('.date-img').height() - size);
 	} else {
 		var img = $('#profile-rounded-img');
 		var size = $(window).height() / 4; // picture must be 1/4 of the screen
