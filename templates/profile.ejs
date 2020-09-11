@@ -41,10 +41,10 @@ if(!isMyOwnProfile){ %>
 
 <!-- PICTURE -->
 <% if (profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
-else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
+else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
 
 <div class="picture-container col s12">
-    <img src="<%= src %>" alt="Picture" class="responsive-img">
+    <img src="<%= src %>" alt="Picture" class="responsive-img profile-img">
 
     <% if(isMyOwnProfile){ %>
         <input <%= isDisabled %> id="picturefield" type="file" class="hide"/>

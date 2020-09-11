@@ -16,11 +16,9 @@ body {
 }
 
 .profile-img {
-    margin: auto;
-    display: block;
-    position: relative;
-    padding: .75rem 0;
+    max-height: 40vh;
     width: 100%;
+    object-fit: cover;
 }
 
 #profile {

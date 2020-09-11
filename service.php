@@ -307,9 +307,6 @@ class Service
 			'title' => 'Perfil',
 		];
 
-
-		$images[] = SERVICE_PATH . $response->service . '/images/icon.png';
-
 		// prepare response for the view
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('profile.ejs', $content, $images);
