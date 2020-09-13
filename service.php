@@ -452,9 +452,10 @@ class Service
 			FROM person A 
 			JOIN _piropazo_people B
 			ON A.id = B.id_person 
-			LEFT JOIN _piropazo_relationships R ON R.id_from = A.id OR R.id_to = A.id
+			LEFT JOIN _piropazo_relationships R1 ON R1.id_from = B.id_person
+            LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
             WHERE
-            R.id_from is null AND R.id_to is null  
+            R1.id_from is null AND R2.id_to is null  
 			" . /*"-- AND B.id_person NOT IN ($clauseVoted) */ " 
 			AND A.active = 1 
 			AND B.active = 1
