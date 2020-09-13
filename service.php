@@ -429,7 +429,7 @@ class Service
 		}
 
 		// get the list of people already voted
-		$clauseVoted = [];
+		/*$clauseVoted = [];
 		$voted = Database::query("
 			SELECT id_to as id FROM _piropazo_relationships WHERE id_from = {$user->id} 
 			UNION 
@@ -442,6 +442,7 @@ class Service
 			}
 			$clauseVoted = implode(',', $clauseVoted);
 		}
+        */
 
 		// select all users to filter by
 		$clauseSubquery = "
@@ -451,7 +452,10 @@ class Service
 			FROM person A 
 			JOIN _piropazo_people B
 			ON A.id = B.id_person 
-			AND B.id_person NOT IN ($clauseVoted) 
+			LEFT JOIN _piropazo_relationships R ON R.id_from = A.id OR R.id_to = A.id
+            WHERE
+            R.id_from is null AND R.id_to is null  
+			" . /*"-- AND B.id_person NOT IN ($clauseVoted) */ " 
 			AND A.active = 1 
 			AND B.active = 1
 			AND A.marital_status = 'SOLTERO' 
