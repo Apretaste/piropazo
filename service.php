@@ -63,6 +63,9 @@ class Service
 			return;
 		}
 
+		// activate user
+        $this->activatePiropazoUser($request->person->id);
+
 		// get the best match for the user
 		$match = $this->getMatchFromCache($request->person);
 
@@ -573,7 +576,7 @@ class Service
 	public function _activate(Request $request, Response $response)
 	{
 		// create or activate piropazo user
-		$this->activatePiropazoUser($request->person->id);
+        $this->activatePiropazoUser($request->person->id);
 		$this->_main($request, $response);
 	}
 
