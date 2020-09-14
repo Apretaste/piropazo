@@ -427,8 +427,7 @@ class Service
             }
 
             // create final query with the match score
-            Database::query("
-                INSERT INTO _piropazo_cache (`user`, suggestion, `match`) 
+            $matches = Database::query("
                 SELECT {$user->id}, id,
                     IF(province = '$user->provinceCode', 50, 0) +   
                     IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
@@ -457,7 +456,11 @@ class Service
                 ORDER BY percent_match DESC
                 LIMIT 50");
 
-            return Database::getAffectedRows() > 0;
+            foreach ($matches as $match) {
+                Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->match});");
+            }
+            
+            return count($matches) > 0;
         }
 
 		return true;
