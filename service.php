@@ -345,57 +345,48 @@ class Service
 	 * Get the person who best matches with you
 	 *
 	 * @param Person $user
-	 * @return object | Person
+	 * @return mixed
 	 * @throws Alert
 	 * @author salvipascual
 	 */
 	private function getMatchFromCache($user)
-	{
-		// create cache if needed
-		$this->createMatchesCache($user);
+    {
+        // create cache if needed
+        $this->createMatchesCache($user);
 
-		// get one suggestion from cache
-		$match = Database::query("
-			SELECT 
-				A.id, A.suggestion AS user, 
-				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
-			FROM _piropazo_cache A
-			JOIN _piropazo_people B
-			ON A.suggestion = B.id_person
-			WHERE A.user = {$user->id}
-			ORDER BY heart DESC, A.match DESC, A.id
-			LIMIT 1");
+        $matches = Database::query("
+            SELECT 
+                A.id, A.suggestion AS user, 
+                IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
+            FROM _piropazo_cache A
+            JOIN _piropazo_people B
+            ON A.suggestion = B.id_person
+            WHERE A.user = {$user->id}
+            ORDER BY heart DESC, A.match DESC, A.id");
 
-		// return false if no match
-		if (empty($match)) {
-			return false;
-		} else {
-			$match = $match[0];
-		}
+        foreach ($matches as $match) {
+            $person = Person::find($match->user);
 
-		// return the best match as a Person object
-		$person = Person::find($match->user);
+            if (!$this->isProfileIncomplete($person)) {
+                $person->heart = $match->heart;
 
-		// check if match has all the data
-		if ($this->isProfileIncomplete($person)) {
-			// remove match from the cache so it won't show again
-			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
-			return $this->getMatchFromCache($user);
-		}
+                // get the match color class based on gender
+                if ($person->gender === 'M') {
+                    $person->color = 'male';
+                } elseif ($person->gender === 'F') {
+                    $person->color = 'female';
+                } else {
+                    $person->color = 'neutral';
+                }
 
-		$person->heart = $match->heart;
+                // return the match
+                return $person;
+            }
 
-		// get the match color class based on gender
-		if ($person->gender === 'M') {
-			$person->color = 'male';
-		} elseif ($person->gender === 'F') {
-			$person->color = 'female';
-		} else {
-			$person->color = 'neutral';
-		}
+            Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
+        }
 
-		// return the match
-		return $person;
+       return false;
 	}
 
 	/**
