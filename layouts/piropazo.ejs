@@ -8,6 +8,8 @@ var menu = [
 %>
 
 <!-- TABS -->
+<% if (typeof profileIncomplete == 'undefined') var profileIncomplete = false; %>
+<% if( ! profileIncomplete){ %>
 <div class="row">
     <div class="col s12">
         <ul class="tabs tabs-fixed-width">
@@ -27,6 +29,7 @@ var menu = [
         </ul>
     </div>
 </div>
+<% } %>
 
 <!-- CONTENT -->
 <div class="row">

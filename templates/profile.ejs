@@ -196,25 +196,25 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
         <div id="age-slider" style="margin: 0 16px 0 42px"></div>
         <label for="age">¿Qué edad buscas?</label>
     </div>
+    <% if( ! profileIncomplete){ %>
+        <div class="col s12 center">
+            <% if(isMyOwnProfile){ %>
+                <a class="waves-effect waves-light btn" style="width: 100%" onclick="heartModalOpen()">
+                    Usar un corazón (<%= profile.hearts %>)
+                </a>
+            <% } %>
+        </div>
 
-    <div class="col s12 center">
-        <% if(isMyOwnProfile){ %>
-            <a class="waves-effect waves-light btn" style="width: 100%" onclick="heartModalOpen()">
-                Usar un corazón (<%= profile.hearts %>)
-            </a>
-        <% } %>
-    </div>
+        <div class="col s12" style="height: 10px"></div>
 
-    <div class="col s12" style="height: 10px"></div>
-
-    <div class="col s12 center">
-        <% if(isMyOwnProfile){ %>
-            <a class="waves-effect waves-light red-text" style="width: 100%" onclick="deactivateModalOpen()">
-                Salir de Piropazo
-            </a>
-        <% } %>
-    </div>
-
+        <div class="col s12 center">
+            <% if(isMyOwnProfile){ %>
+                <a class="waves-effect waves-light red-text" style="width: 100%" onclick="deactivateModalOpen()">
+                    Salir de Piropazo
+                </a>
+            <% } %>
+        </div>
+    <% } %>
 </div>
 
 <!-- SAVE BUTTON -->
