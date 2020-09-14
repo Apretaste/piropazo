@@ -409,89 +409,56 @@ class Service
 	private function createMatchesCache($user)
 	{
 		// do not cache if already exist data
-		$isCache = Database::query("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}");
-		$piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
-		if ($isCache[0]->cnt > 0) {
-			return false;
-		}
+		if (Database::queryFirst("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}")->cnt < 1) {
 
-		// filter based on sexual orientation
-		switch ($user->sexualOrientation) {
-			case 'HETERO':
-				$clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
-				break;
-			case 'HOMO':
-				$clauseSex = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
-				break;
-			case 'BI':
-				$clauseSex = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
-				break;
-		}
+            $piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
 
-		// get the list of people already voted
-		/*$clauseVoted = [];
-		$voted = Database::query("
-			SELECT id_to as id FROM _piropazo_relationships WHERE id_from = {$user->id} 
-			UNION 
-			SELECT id_from as id FROM _piropazo_relationships WHERE id_to = {$user->id}");
-		if (empty($voted)) {
-			$clauseVoted = "''";
-		} else {
-			foreach ($voted as $v) {
-				$clauseVoted[] = "'" . $v->id . "'";
-			}
-			$clauseVoted = implode(',', $clauseVoted);
-		}
-        */
+            // filter based on sexual orientation
+            switch ($user->sexualOrientation) {
+                case 'HETERO':
+                    $clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
+                    break;
+                case 'HOMO':
+                    $clauseSex = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
+                    break;
+                case 'BI':
+                    $clauseSex = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
+                    break;
+            }
 
-		// select all users to filter by
-		$clauseSubquery = "
-			SELECT 
-				A.id, A.username, A.first_name, A.year_of_birth, A.gender, A.province, A.city, A.picture, A.country, A.usstate, A.religion,
-				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
-			FROM person A 
-			JOIN _piropazo_people B
-			ON A.id = B.id_person 
-			LEFT JOIN _piropazo_relationships R1 ON R1.id_from = B.id_person
-            LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
-            WHERE
-            R1.id_from is null AND R2.id_to is null  
-			" . /*"-- AND B.id_person NOT IN ($clauseVoted) */ " 
-			AND A.active = 1 
-			AND B.active = 1
-			AND A.marital_status = 'SOLTERO' 
-			AND NOT ISNULL(A.picture)
-			AND $clauseSex 
-			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
-			AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
-			AND NOT A.id = '$user->id'";
+            // create final query with the match score
+            Database::query("
+                INSERT INTO _piropazo_cache (`user`, suggestion, `match`) 
+                SELECT {$user->id}, id,
+                    IF(province = '$user->provinceCode', 50, 0) +   
+                    IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
+                    crown * 25 +
+                    IF(religion = '$user->religion', 20, 0)
+                    AS percent_match
+                FROM (
+                    SELECT 
+                        A.id, A.year_of_birth, A.gender, A.sexual_orientation, A.province, A.religion,
+                        IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
+                    FROM person A 
+                    JOIN _piropazo_people B ON A.id = B.id_person 
+                    LEFT JOIN _piropazo_relationships R1 ON R1.id_from = B.id_person
+                    LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
+                    WHERE
+                        R1.id_from is null AND R2.id_to is null  
+                        AND A.active = 1 
+                        AND B.active = 1
+                        AND A.marital_status = 'SOLTERO' 
+                        AND NOT ISNULL(A.picture)
+                        AND $clauseSex 
+                        AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
+                        AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
+                        AND NOT A.id = {$user->id}
+                ) AS results 
+                ORDER BY percent_match DESC
+                LIMIT 50");
 
-		// create final query with the match score
-		$cacheUsers = Database::query("
-			SELECT id,
-				(IFNULL(country, 'NO') = '$user->countryCode') * 10 +
-				(IFNULL(province, 'NO') = '$user->provinceCode') * 50 +
-				(IFNULL(usstate, 'NO') = '$user->stateCode') * 50 +
-				(ABS(IFNULL(YEAR(NOW())-year_of_birth,0) - $user->age) <= 5) * 20 +
-				crown * 25 +
-				(IFNULL(religion, 'NO') = '$user->religion') * 20
-				AS percent_match
-			FROM ($clauseSubquery) AS results 
-			HAVING percent_match > 0
-			ORDER BY percent_match DESC
-			LIMIT 10");
-
-		// do not create cache if no suggestions were found
-		if (empty($cacheUsers)) {
-			return false;
-		}
-
-		// create the cache of suggestions
-		$inserts = [];
-		foreach ($cacheUsers as $c) {
-			$inserts[] = "({$user->id}, {$c->id}, {$c->percent_match})";
-		}
-		Database::query('INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ' . implode(',', $inserts));
+            return Database::getAffectedRows() > 0;
+        }
 
 		return true;
 	}
