@@ -457,7 +457,7 @@ class Service
                 LIMIT 50");
 
             foreach ($matches as $match) {
-                Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->match});");
+                Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->percent_match});");
             }
             
             return count($matches) > 0;
