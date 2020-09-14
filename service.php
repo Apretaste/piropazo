@@ -63,9 +63,6 @@ class Service
 			return;
 		}
 
-		// activate user
-        $this->activatePiropazoUser($request->person->id);
-
 		// get the best match for the user
 		$match = $this->getMatchFromCache($request->person);
 
