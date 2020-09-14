@@ -225,9 +225,9 @@ class Service
 			empty($person->firstName) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
-			$person->age < 10 || $person->age > 110 ||
+			$person->age < 10 || $person->age > 110 /*||
 			empty($person->province) || empty($person->education) ||
-			empty($person->religion)
+			empty($person->religion)*/
 		);
 	}
 
@@ -367,7 +367,7 @@ class Service
         foreach ($matches as $match) {
             $person = Person::find($match->user);
 
-            if (!$this->isProfileIncomplete($person)) {
+            if ( ! $this->isProfileIncomplete($person)) {
                 $person->heart = $match->heart;
 
                 // get the match color class based on gender
