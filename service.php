@@ -82,8 +82,8 @@ class Service
 		Person::setProfileTags($match);
 
 		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
-		$match->education = Core::$education[$match->education];
-		$match->religion = Core::$religions[$match->religion];
+		$match->education = Core::$education[$match->education] ?? '';
+		$match->religion = Core::$religions[$match->religion] ?? '';
 
 		// get match images into an array and the content
 		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
