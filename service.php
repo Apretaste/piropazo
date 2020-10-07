@@ -423,11 +423,12 @@ class Service
                     IF(province = '$user->provinceCode', 50, 0) +   
                     IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
                     crown * 25 +
-                    IF(religion = '$user->religion', 20, 0)
+                    IF(religion = '$user->religion', 20, 0) +
+                    IF(results.active, 50, 0)    
                     AS percent_match
                 FROM (
                     SELECT 
-                        A.id, A.year_of_birth, A.gender, A.sexual_orientation, A.province, A.religion,
+                        A.id, A.year_of_birth, A.gender, A.sexual_orientation, A.province, A.religion, A.active,
                         IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
                     FROM person A 
                     JOIN _piropazo_people B ON A.id = B.id_person 
@@ -435,7 +436,6 @@ class Service
                     LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
                     WHERE
                         R1.id_from is null AND R2.id_to is null  
-                        AND A.active = 1 
                         AND B.active = 1
                         AND A.marital_status = 'SOLTERO' 
                         AND NOT ISNULL(A.picture)
