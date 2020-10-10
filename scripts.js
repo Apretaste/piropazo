@@ -451,7 +451,7 @@ function removePicture() {
 function submitProfileData() {
 	if (!isMyOwnProfile) return; // get the array of fields and
 
-	var fields = ['picture', 'first_name', 'gender', 'sexual_orientation', 'year_of_birth', 'highest_school_level', 'province', 'religion']; // create the JSON of data
+	var fields = ['picture', 'first_name', 'gender', 'sexual_orientation', 'year_of_birth', 'highest_school_level', 'province', 'religion', 'marital_status']; // create the JSON of data
 
 	var data = new Object();
 	fields.forEach(function (field) {
