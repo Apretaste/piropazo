@@ -223,7 +223,7 @@ class Service
 			empty($person->picture) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
-			$person->age < 10
+			intval($person->age) < 10
 		);
 	}
 
