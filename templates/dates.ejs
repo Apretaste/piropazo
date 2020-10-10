@@ -17,16 +17,22 @@
                     <% if (match.firstName ) { %>
                         <b><%= match.firstName %></b>,
                     <% } %>
-                    <%= match.age %> a&ntilde;os</h3><br/>
+                    <%= match.age %> a&ntilde;os</h3>
                 <% if (match.location) { %>
-                    <span class="clear left" style="color:white;"><i class="material-icons icon">place</i>&nbsp;<%= match.location %></span><br/>
+                    <h4>
+                        <span class="clear left" style="color:white;"><i class="material-icons icon">place</i>&nbsp;<%= match.location %></span>
+                    </h4>
                 <% } %>
                 <% if (match.education) { %>
-                    <span class="clear left" style="color:white;"><i class="material-icons icon">school</i>&nbsp;<%= match.education %></span><br/>
+                    <h4>
+                        <span class="clear left" style="color:white;"><i class="material-icons icon">school</i>&nbsp;<%= match.education %></span>
+                    </h4>
                 <% } %>
                 <% if(match.religion) { %>
                     <% if(match.religion != 'Otra'){ %>
-                        <span class="clear left" style="color:white;"><i class="material-icons icon">flare</i>&nbsp;<%= match.religion %></span><br/>
+                        <h4>
+                            <span class="clear left" style="color:white;"><i class="material-icons icon">flare</i>&nbsp;<%= match.religion %></span>
+                        </h4>
                     <% } %>
                 <% } %>
             </div>
