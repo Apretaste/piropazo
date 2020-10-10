@@ -15,14 +15,14 @@
             <div class="position-bottom left" id="info" style="text-shadow: 1px 1px black;">
                 <h3><b><%= match.firstName %></b>, <%= match.age %></h3>
                 <% if (match.location) { %>
-                    <span class="clear left" style="color:white;"><i class="material-icons icon">place</i><%= match.location %></span><br/>
+                    <span class="clear left" style="color:white;"><i class="material-icons icon">place</i>&nbsp;<%= match.location %></span><br/>
                 <% } %>
                 <% if (match.education) { %>
-                    <span class="clear left" style="color:white;"><i class="material-icons icon">school</i><%= match.education %></span><br/>
+                    <span class="clear left" style="color:white;"><i class="material-icons icon">school</i>&nbsp;<%= match.education %></span><br/>
                 <% } %>
                 <% if(match.religion) { %>
                     <% if(match.religion != 'Otra'){ %>
-                        <span class="clear left" style="color:white;"><i class="material-icons icon">flare</i><%= match.religion %></span><br/>
+                        <span class="clear left" style="color:white;"><i class="material-icons icon">flare</i>&nbsp;<%= match.religion %></span><br/>
                     <% } %>
                 <% } %>
             </div>
