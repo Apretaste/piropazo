@@ -460,15 +460,15 @@ function submitProfileData() {
 	}); // translate "que buscas" to sexual_orientation
 
 	if (data.sexual_orientation) {
-		if (data.sexual_orientation == "AMBOS") data.sexual_orientation = "BI";
-		if (data.gender == "M" && data.sexual_orientation == "MUJERES") data.sexual_orientation = "HETERO";
-		if (data.gender == "M" && data.sexual_orientation == "HOMBRES") data.sexual_orientation = "HOMO";
-		if (data.gender == "F" && data.sexual_orientation == "HOMBRES") data.sexual_orientation = "HETERO";
-		if (data.gender == "F" && data.sexual_orientation == "MUJERES") data.sexual_orientation = "HOMO";
+		if (data.sexual_orientation === "AMBOS") data.sexual_orientation = "BI";
+		if (data.gender === "M" && data.sexual_orientation === "MUJERES") data.sexual_orientation = "HETERO";
+		if (data.gender === "M" && data.sexual_orientation === "HOMBRES") data.sexual_orientation = "HOMO";
+		if (data.gender === "F" && data.sexual_orientation === "HOMBRES") data.sexual_orientation = "HETERO";
+		if (data.gender === "F" && data.sexual_orientation === "MUJERES") data.sexual_orientation = "HOMO";
 	} // save information in the backend
 
-	var minAge = parseInt(slider.noUiSlider.get()[0]);
-	var maxAge = parseInt(slider.noUiSlider.get()[1]);
+	var minAge = parseInt($('#ageFrom').val()); // parseInt(slider.noUiSlider.get()[0]);
+	var maxAge = parseInt($('#ageTo').val()); // parseInt(slider.noUiSlider.get()[1]);
 	if (profile.minAge != minAge) data.minAge = minAge;
 	if (profile.maxAge != maxAge) data.maxAge = maxAge;
 

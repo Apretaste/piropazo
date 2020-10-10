@@ -49,7 +49,7 @@ class Service
 			$content = [
 				'header' => 'Tiempo sin verte',
 				'icon' => 'access_time',
-				'text' => 'Parece que es la primera vez que entras al servicio o has desactivado su uso antes, si deseas usar Piropazo debes ser visible para las demas personas.',
+				'text' => 'Parece que es primera vez que usa Piropazo o que ha desactivado su uso anteriormente. Si desea buscar pareja en Piropazo, presione el botón a continuación para hacer su perfil público. Otros usuarios podrán ver su foto, nombre y datos del perfil, pero no podrán ver su @username',
 				'button' => ['href' => 'PIROPAZO ACTIVATE', 'caption' => 'Usar Piropazo']];
 			$response->setLayout('empty.ejs');
 			$response->setTemplate('message.ejs', $content);
@@ -350,11 +350,11 @@ class Service
 	 * @author salvipascual
 	 */
 	private function getMatchFromCache($user)
-    {
-        // create cache if needed
-        $this->createMatchesCache($user);
+	{
+		// create cache if needed
+		$this->createMatchesCache($user);
 
-        $matches = Database::query("
+		$matches = Database::query("
             SELECT 
                 A.id, A.suggestion AS user, 
                 IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
@@ -364,29 +364,29 @@ class Service
             WHERE A.user = {$user->id}
             ORDER BY heart DESC, A.match DESC, A.id");
 
-        foreach ($matches as $match) {
-            $person = Person::find($match->user);
+		foreach ($matches as $match) {
+			$person = Person::find($match->user);
 
-            if ( ! $this->isProfileIncomplete($person)) {
-                $person->heart = $match->heart;
+			if (!$this->isProfileIncomplete($person)) {
+				$person->heart = $match->heart;
 
-                // get the match color class based on gender
-                if ($person->gender === 'M') {
-                    $person->color = 'male';
-                } elseif ($person->gender === 'F') {
-                    $person->color = 'female';
-                } else {
-                    $person->color = 'neutral';
-                }
+				// get the match color class based on gender
+				if ($person->gender === 'M') {
+					$person->color = 'male';
+				} elseif ($person->gender === 'F') {
+					$person->color = 'female';
+				} else {
+					$person->color = 'neutral';
+				}
 
-                // return the match
-                return $person;
-            }
+				// return the match
+				return $person;
+			}
 
-            Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
-        }
+			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
+		}
 
-       return false;
+		return false;
 	}
 
 	/**
@@ -402,23 +402,23 @@ class Service
 		// do not cache if already exist data
 		if (Database::queryFirst("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}")->cnt < 1) {
 
-            $piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
+			$piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
 
-            // filter based on sexual orientation
-            switch ($user->sexualOrientation) {
-                case 'HETERO':
-                    $clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
-                    break;
-                case 'HOMO':
-                    $clauseSex = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
-                    break;
-                case 'BI':
-                    $clauseSex = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
-                    break;
-            }
+			// filter based on sexual orientation
+			switch ($user->sexualOrientation) {
+				case 'HETERO':
+					$clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
+					break;
+				case 'HOMO':
+					$clauseSex = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
+					break;
+				case 'BI':
+					$clauseSex = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
+					break;
+			}
 
-            // create final query with the match score
-            $matches = Database::query("
+			// create final query with the match score
+			$matches = Database::query("
                 SELECT {$user->id}, id,
                     IF(province = '$user->provinceCode', 50, 0) +   
                     IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
@@ -447,12 +447,12 @@ class Service
                 ORDER BY percent_match DESC
                 LIMIT 50");
 
-            foreach ($matches as $match) {
-                Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->percent_match});");
-            }
-            
-            return count($matches) > 0;
-        }
+			foreach ($matches as $match) {
+				Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->percent_match});");
+			}
+
+			return count($matches) > 0;
+		}
 
 		return true;
 	}
@@ -573,7 +573,7 @@ class Service
 	public function _activate(Request $request, Response $response)
 	{
 		// create or activate piropazo user
-        $this->activatePiropazoUser($request->person->id);
+		$this->activatePiropazoUser($request->person->id);
 		$this->_main($request, $response);
 	}
 
@@ -665,7 +665,7 @@ class Service
 			$match->religion = isset(Core::$religions[$match->religion]) ? Core::$religions[$match->religion] : '';
 
 			// erase unwanted properties in the object
-			$properties = ['id','username','firstName','gender','age','type','location','religion','education','picture','matched_on','time_left','isOnline'];
+			$properties = ['id', 'username', 'firstName', 'gender', 'age', 'type', 'location', 'religion', 'education', 'picture', 'matched_on', 'time_left', 'isOnline'];
 			$match = $this->filterObjectProperties($properties, $match);
 
 			// count the number of waiting
@@ -708,6 +708,7 @@ class Service
 	public function _flornext(Request $request, Response $response)
 	{
 		$this->_flor($request, $response);
+		$this->_si($request, $response);
 		$this->_main($request, $response);
 	}
 

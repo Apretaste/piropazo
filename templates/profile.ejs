@@ -72,9 +72,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
         <select <%= isDisabled %> id="year_of_birth" class="validate">
             <option value="" <%= profile.year_of_birth == "" ? "selected" : "" %> disabled></option>
             <% getYears().forEach(function(year) { %>
-                <option value="<%= year %>" <% if(profile.year_of_birth == year){ %>selected
-                        <% } %>
-                ><%= year %></option>
+                <option value="<%= year %>" <% if(profile.year_of_birth == year){ %>selected<% } %>><%= year %></option>
             <% }); %>
         </select>
         <label for="year_of_birth">Año de nacimiento</label>
@@ -193,7 +191,16 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
     <!-- AGE RANGE -->
     <div class="input-field col s12" style="height: 40px">
         <i class="fa fa-bullseye prefix grey-text text-darken-2"></i>
-        <div id="age-slider" style="margin: 0 16px 0 42px"></div>
+        <select id="ageFrom">
+            <% for(var i=18; i<=100;i++) { %>
+                <option value="<%= i %>"><%= i %></option>
+            <% } %>
+        </select>
+        <select id="ageTo">
+            <% for(var i=18; i<=100;i++) { %>
+                <option value="<%= i %>"><%= i %></option>
+            <% } %>
+        </select>
         <label for="age">¿Qué edad buscas?</label>
     </div>
     <% if( ! profileIncomplete){ %>
@@ -209,7 +216,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
 
         <div class="col s12 center">
             <% if(isMyOwnProfile){ %>
-                <a class="waves-effect waves-light red-text" style="width: 100%" onclick="deactivateModalOpen()">
+                <a class="waves-effect waves-light waves-red red-text" style="width: 100%" onclick="deactivateModalOpen()">
                     Salir de Piropazo
                 </a>
             <% } %>
@@ -227,8 +234,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
 
 <div id="deactivateModal" class="modal">
     <div class="modal-content">
-        <p>Si elige salir de Piropazo no te llegarán más notificaciones ni podras entrar de nuevo hasta que decidas
-            volver</p>
+        <p>Si elige salir de Piropazo, su perfil no se mostrará a otros usuarios ni recibirá más flores. Siempre puede continuar su uso volviendo a abrir el servicio y eligiendo entrar.</p>
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
