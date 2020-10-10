@@ -72,7 +72,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
         <select <%= isDisabled %> id="year_of_birth" class="validate">
             <option value="" <%= profile.year_of_birth == "" ? "selected" : "" %> disabled></option>
             <% getYears().forEach(function(year) { %>
-                <option value="<%= year %>" <% if(profile.year_of_birth == year){ %>selected<% } %>><%= year %></option>
+                <option value="<%= year %>" <% if(profile.yearOfBirth == year){ %>selected<% } %>><%= year %></option>
             <% }); %>
         </select>
         <label for="year_of_birth">Año de nacimiento</label>
