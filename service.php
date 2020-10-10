@@ -186,21 +186,20 @@ class Service
 			return;
 		}
 
-		if ($this->isActive($idTo)) {
-			// insert the new relationship
-			$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
-			Database::query("
-			START TRANSACTION;
-			DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
-			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
-			COMMIT");
+		// insert the new relationship
+		$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
+		Database::query("
+		START TRANSACTION;
+		DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
+		INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
+		COMMIT");
 
-			// remove match from the cache so it won't show again
-			Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		// remove match from the cache so it won't show again
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
-			// add challenge
-			Challenges::complete('piropazo-say-yes-no', $request->person->id);
-		}
+		// add challenge
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
+
 	}
 
 	/**
@@ -519,20 +518,18 @@ class Service
 			return;
 		}
 
-		if ($this->isActive($idTo)) {
-			// mark the transaction as blocked
-			Database::query("
-			START TRANSACTION;
-			DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
-			INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
-			COMMIT");
+		// mark the transaction as blocked
+		Database::query("
+		START TRANSACTION;
+		DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
+		INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
+		COMMIT");
 
-			// remove match from the cache so it won't show again
-			Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		// remove match from the cache so it won't show again
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
 
-			// add challenge
-			Challenges::complete('piropazo-say-yes-no', $request->person->id);
-		}
+		// add challenge
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**

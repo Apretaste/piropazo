@@ -3,7 +3,7 @@
         <div id="profile">
             <!-- PICTURE -->
             <% var src = "{{APP_IMAGE_PATH}}" + match.picture; %>
-            <img class="responsive-img date-img" src="<%= src %>" alt="<%= match.username %>"/>
+            <img class="responsive-img date-img" src="<%= src %>" alt="No picture!!"/>
 
             <% if(match.heart == 1){ %>
                 <div class="main-heart">
@@ -13,7 +13,8 @@
 
             <!-- INFO -->
             <div class="position-bottom left" id="info" style="text-shadow: 1px 1px black;">
-                <h3><b><%= match.firstName %></b>, <%= match.age %></h3>
+                <h3>
+                    <% if (match.firstName ) { %><b><%= match.firstName %></b> <% } %>, <%= match.age %></h3>
                 <% if (match.location) { %>
                     <span class="clear left" style="color:white;"><i class="material-icons icon">place</i>&nbsp;<%= match.location %></span><br/>
                 <% } %>
