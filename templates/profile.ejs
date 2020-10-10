@@ -189,9 +189,6 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
     </div>
 
     <!-- AGE RANGE -->
-    <div class="input-field col s12">
-        <label for="age">¿Qué edad buscas?</label>
-    </div>
     <div class="input-field col s6">
         <i class="fa fa-bullseye prefix grey-text text-darken-2"></i>
         <select id="ageFrom">
@@ -199,7 +196,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
                 <option value="<%= i %>" <% if (profile.minAge === i) {%> selected <% } %>><%= i %></option>
             <% } %>
         </select>
-        <label for="ageFrom">Desde</label>
+        <label for="ageFrom">¿Desde qué edad buscas?</label>
     </div>
     <div class="input-field col s6">
         <select id="ageTo">
