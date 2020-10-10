@@ -433,7 +433,6 @@ class Service
                     WHERE
                         R1.id_from is null AND R2.id_to is null  
                         AND B.active = 1
-                        AND A.marital_status = 'SOLTERO' 
                         AND NOT ISNULL(A.picture)
                         AND $clauseSex 
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
