@@ -221,7 +221,6 @@ class Service
 		// ensure your profile is completed
 		return (
 			empty($person->picture) ||
-			empty($person->firstName) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
 			$person->age < 10 || $person->age > 110 /*||
