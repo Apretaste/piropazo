@@ -223,9 +223,7 @@ class Service
 			empty($person->picture) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
-			$person->age < 10 || $person->age > 110 /*||
-			empty($person->province) || empty($person->education) ||
-			empty($person->religion)*/
+			$person->age < 10
 		);
 	}
 

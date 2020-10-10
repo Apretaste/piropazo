@@ -17,7 +17,9 @@
                     <% if (match.firstName ) { %>
                         <b><%= match.firstName %></b>,
                     <% } %>
-                    <%= match.age %> a&ntilde;os</h3>
+                    <% if (match.age) { %>
+                        <%= match.age %> a&ntilde;os</h3>
+                    <% } %>
                 <% if (match.location) { %>
                     <h4>
                         <span class="clear left" style="color:white;"><i class="material-icons icon">place</i>&nbsp;<%= match.location %></span>
