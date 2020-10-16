@@ -1097,7 +1097,7 @@ class Service
 
 		// store the note in the database
 		$message = Database::escape($message, 499, 'utf8mb4');
-		Database::query("INSERT INTO _note (from_user, to_user, `text`, image) VALUES ({$request->person->id},{$userTo->id},'$message', '$fileName')", true, 'utf8mb4');
+		Database::query("INSERT INTO _note (from_user, to_user, `text`, image) VALUES ({$request->person->id},{$userTo->id},'$message', '$fileName')");
 
 		// send notification for the app
 		Notifications::alert(
