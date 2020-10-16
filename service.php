@@ -1,19 +1,20 @@
 <?php
 
-use Apretaste\Amulets;
-use Apretaste\Challenges;
 use Apretaste\Chats;
 use Apretaste\Level;
 use Apretaste\Money;
-use Apretaste\Notifications;
 use Apretaste\Person;
+use Apretaste\Amulets;
 use Apretaste\Request;
 use Apretaste\Response;
-use Framework\Alert;
+use Apretaste\Challenges;
+use Apretaste\Notifications;
 use Framework\Core;
-use Framework\Database;
-use Framework\Images;
 use Framework\Utils;
+use Framework\Alert;
+use Framework\Images;
+use Framework\Database;
+use Framework\GoogleAnalytics;
 
 /**
  * Apretaste Piropazo Service
@@ -135,9 +136,7 @@ class Service
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if (empty($idTo)) {
-			return;
-		}
+		if (empty($idTo)) return;
 
 		// check if there is any previous record between you and that person
 		$record = Database::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
@@ -159,6 +158,9 @@ class Service
 				// add the experience
 				Level::setExperience('PIROPAZO_MATCH', $idFrom);
 				Level::setExperience('PIROPAZO_MATCH', $idTo);
+
+				// submit to Google Analytics 
+				GoogleAnalytics::event('piropazo_match', $idTo);
 
 				// track challenges
 				$mutate = static function ($track) {
@@ -196,6 +198,9 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		// submit to Google Analytics 
+		GoogleAnalytics::event('piropazo_yes', $idTo);
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
@@ -523,6 +528,9 @@ class Service
 
 		// remove match from the cache so it won't show again
 		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		// submit to Google Analytics 
+		GoogleAnalytics::event('piropazo_no', $idTo);
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
