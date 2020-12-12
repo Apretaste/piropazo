@@ -72,7 +72,7 @@ class Service
 			$content = [
 				'header' => 'No hay citas',
 				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Esto es vergonsozo, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
+				'text' => 'Esto es vergonzoso, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
 				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil'],
 				'title' => 'Citas'];
 			$response->setLayout('piropazo.ejs');
