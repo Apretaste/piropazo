@@ -218,8 +218,8 @@ class Service
 		return (
 			empty($person->picture) ||
 			empty($person->gender) ||
-			empty($person->sexualOrientation) ||
-			intval($person->age) < 18
+			empty($person->sexualOrientation) /*||
+			intval($person->age) < 18*/
 		);
 	}
 

@@ -192,7 +192,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
     <div class="input-field col s6">
         <i class="fa fa-bullseye prefix grey-text text-darken-2"></i>
         <select id="ageFrom">
-            <% for(var i=18; i<=100;i++) { %>
+            <% for(var i=16; i<=100;i++) { %>
                 <option value="<%= i %>" <% if (profile.minAge === i) {%> selected <% } %>><%= i %></option>
             <% } %>
         </select>
@@ -200,7 +200,7 @@ else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
     </div>
     <div class="input-field col s6">
         <select id="ageTo">
-            <% for(var i=18; i<=100;i++) { %>
+            <% for(var i=16; i<=100;i++) { %>
                 <option value="<%= i %>" <% if (profile.maxAge === i) {%> selected <% } %>><%= i %></option>
             <% } %>
         </select>
