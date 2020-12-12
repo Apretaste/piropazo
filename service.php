@@ -219,7 +219,7 @@ class Service
 			empty($person->picture) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) ||
-			intval($person->age) < 10
+			intval($person->age) < 18
 		);
 	}
 
@@ -420,7 +420,7 @@ class Service
                     AS percent_match
                 FROM (
                     SELECT 
-                        A.id, A.year_of_birth, A.gender, A.sexual_orientation, A.province, A.religion, A.active,
+                        A.id, A.year_of_birth, A.province, A.religion, A.active,
                         IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
                     FROM person A 
                     JOIN _piropazo_people B ON A.id = B.id_person 
