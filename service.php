@@ -425,9 +425,9 @@ class Service
                     FROM person A 
                     JOIN _piropazo_people B ON A.id = B.id_person 
                     LEFT JOIN _piropazo_relationships R1 ON R1.id_from = B.id_person
-                    LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
-                    WHERE
-                        R1.id_from is null AND R2.id_to is null  
+                    -- LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
+                    WHERE true
+                        AND R1.id_from is null -- AND R2.id_to is null  
                         AND B.active = 1
                         AND NOT ISNULL(A.picture)
                         AND $clauseSex 
