@@ -399,13 +399,18 @@ class Service
 			// filter based on sexual orientation
 			switch ($user->sexualOrientation) {
 				case 'HETERO':
-					$clauseSex = "A.gender <> '$user->gender' AND A.sexual_orientation <> 'HOMO' ";
+					$clauseSex = "A.gender <> '$user->gender' AND COALESCE(A.sexual_orientation,'HETERO') <> 'HOMO' ";
 					break;
 				case 'HOMO':
-					$clauseSex = "A.gender = '$user->gender' AND A.sexual_orientation <> 'HETERO' ";
+					$clauseSex = "A.gender = '$user->gender' AND COALESCE(A.sexual_orientation, 'HETERO') <> 'HETERO' ";
 					break;
 				case 'BI':
-					$clauseSex = "(A.sexual_orientation = 'BI' OR (A.sexual_orientation = 'HOMO' AND A.gender = '$user->gender') OR (A.sexual_orientation = 'HETERO' AND A.gender <> '$user->gender')) ";
+					$clauseSex = "(COALESCE(A.sexual_orientation, 'HETERO') = 'BI' 
+						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HOMO' 
+							AND A.gender = '$user->gender') 
+						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HETERO' 
+							AND A.gender <> '$user->gender')
+						) ";
 					break;
 			}
 
@@ -422,13 +427,11 @@ class Service
                     SELECT 
                         A.id, A.year_of_birth, A.province, A.religion, A.active,
                         IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
-                    FROM person A 
-                    JOIN _piropazo_people B ON A.id = B.id_person 
-                    LEFT JOIN _piropazo_relationships R1 ON R1.id_from = B.id_person
-                    -- LEFT JOIN _piropazo_relationships R2 ON R2.id_to = B.id_person
+                    FROM (_piropazo_people B LEFT JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person)
+                	 INNER JOIN person A ON A.id = B.id_person
                     WHERE true
-                        AND R1.id_from is null -- AND R2.id_to is null  
-                        AND B.active = 1
+                        AND R1.id_from is null  
+                        AND B.active = 1 AND A.active = 1
                         AND NOT ISNULL(A.picture)
                         AND $clauseSex 
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
