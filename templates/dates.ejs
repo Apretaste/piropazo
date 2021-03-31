@@ -2,8 +2,12 @@
     <div class="col s12">
         <div id="profile">
             <!-- PICTURE -->
-            <% var src = "{{APP_IMAGE_PATH}}" + match.picture; %>
-            <img class="responsive-img date-img" src="<%= src %>" alt="No picture!!"/>
+            <% if (match.picture) { %>
+                <% var src = "{{APP_IMAGE_PATH}}" + match.picture; %>
+                <img class="responsive-img date-img" src="<%= src %>" alt="Sin foto!!"/>
+            <%} else {%>
+                <div style="background: gray; z-index: -100;width:100%;height:100%;"></div>
+            <% } %>
 
             <% if(match.heart == 1){ %>
                 <div class="main-heart">
