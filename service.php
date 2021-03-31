@@ -417,6 +417,7 @@ class Service
 			// create final query with the match score
 			$matches = Database::query("
                 SELECT {$user->id}, id,
+                    IF(picture IS NULL, 0, 100) +
                     IF(province = '$user->provinceCode', 50, 0) +   
                     IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
                     crown * 25 +
@@ -425,14 +426,13 @@ class Service
                     AS percent_match
                 FROM (
                     SELECT 
-                        A.id, A.year_of_birth, A.province, A.religion, A.active,
+                        A.id, A.year_of_birth, A.province, A.religion, A.active, A.picture,
                         IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
                     FROM (_piropazo_people B LEFT JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person)
                 	 INNER JOIN person A ON A.id = B.id_person
                     WHERE true
                         AND R1.id_from is null  
                         AND B.active = 1 AND A.active = 1
-                        AND NOT ISNULL(A.picture)
                         AND $clauseSex 
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
