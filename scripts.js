@@ -310,11 +310,16 @@ function sendFlower() {
 			data: {
 				id: activeId
 			},
-			redirect: false
+			redirect: false,
+			callback: {
+				name: "sendFlowerCallback",
+				data: message
+			}
 		});
 	} // send the flower
+}
 
-
+function sendFlowerCallback(message) {
 	apretaste.send({
 		'command': 'PIROPAZO FLORNEXT',
 		'data': {
