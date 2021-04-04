@@ -325,8 +325,7 @@ function sendFlowerCallback(message) {
 		'data': {
 			'id': activeId,
 			'msg': message
-		},
-		redirect: typeof match == "undefined"
+		}
 	});
 }
 
