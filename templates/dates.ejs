@@ -55,12 +55,12 @@
                         </a>
                     </div>
                     <div class="col s4">
+                        <% if(myflowers > 0) { %>
+                            <div class="icon-alert"><%= myflowers %></div>
+                        <% } %>
                         <a class="waves-effect waves-light btn-floating btn-large <% myflowers > 0? 'green': 'gray' %>"
                            onclick="openFlowerModal('<%= match.id %>', '<%= match.firstName %>')">
                             <i class="material-icons large">local_florist</i>
-                            <% if(myflowers > 0) { %>
-                                <div class="icon-alert"><%= myflowers %></div>
-                            <% } %>
                         </a>
                     </div>
 

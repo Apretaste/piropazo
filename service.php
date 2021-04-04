@@ -215,8 +215,10 @@ class Service
 		}
 
 		// ensure your profile is completed
+		/** @var Person $person */
 		return (
-			// empty($person->picture) ||
+			empty($person->firstName) ||
+			empty($person->picture) ||
 			empty($person->gender) ||
 			empty($person->sexualOrientation) /*||
 			intval($person->age) < 18*/
