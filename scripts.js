@@ -321,7 +321,7 @@ function sendFlower() {
 
 function sendFlowerCallback(message) {
 	apretaste.send({
-		'command': 'PIROPAZO FLORNEXT',
+		'command': 'PIROPAZO FLOR',
 		'data': {
 			'id': activeId,
 			'msg': message
