@@ -434,13 +434,13 @@ class Service
                 	 INNER JOIN person A ON A.id = B.id_person
                     WHERE true
                         AND R1.id_from is null  
-                        AND B.active = 1 AND A.active = 1
+                        AND B.active = 1 -- AND A.active = 1
                         AND $clauseSex 
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
                         AND NOT A.id = {$user->id}
                 ) AS results 
-                ORDER BY percent_match DESC
+                ORDER BY results.active DESC, percent_match DESC
                 LIMIT 50");
 
 			foreach ($matches as $match) {
