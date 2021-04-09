@@ -548,7 +548,8 @@ function updatePicture(file) {
 }
 
 function callbackSaveProfile() {
-	if (profile.picture == null && $('#profile-rounded-img').css('background-image').indexOf('user.jpg') !== -1) {
+	var bg = $('#profile-rounded-img').css('background-image');
+	if (profile.picture == null && (typeof bg == "undefined" || bg.indexOf('user.jpg') !== -1)) {
 		showToast("Recuerde subir una foto")
 	} else {
 		showToast("Su informacion se ha salvado correctamente")
@@ -1479,6 +1480,7 @@ function buy() {
 
 	return {
 		create: function (t, e) {
+			if (t === null) throw new Error("noUiSlider.create requires a single element.");
 			if (!t.nodeName) throw new Error("noUiSlider.create requires a single element.");
 			void 0 === e.tooltips && (e.tooltips = !0);
 			var n = O(t, $(e), e);
