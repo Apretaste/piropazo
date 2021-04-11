@@ -67,6 +67,9 @@ class Service
 		// get the best match for the user
 		$match = $this->getMatchFromCache($request->person);
 
+		// add view
+		Database::query("UPDATE _piropazo_people SET views = views + 1 WHERE id_person = {$match->id};");
+
 		// if no matches, let the user know
 		if (!$match) {
 			$content = [
