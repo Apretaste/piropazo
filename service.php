@@ -91,7 +91,12 @@ class Service
 		$match->religion = Core::$religions[$match->religion] ?? '';
 
 		// get match images into an array and the content
-		$images = $match->picture ? [Bucket::download('profile', $match->picture)] : [];
+		$images = [];
+		if ($match->picture) {
+			try {
+				$images = [Bucket::download('profile', $match->picture)];
+			} catch(Exception $e){}
+		}
 
 		// erase unwanted properties in the object
 		$properties = ['id', 'username', 'firstName', 'heart', 'gender', 'aboutMe', 'education', 'religion', 'picture', 'country', 'location', 'age', 'isOnline'];
@@ -294,7 +299,9 @@ class Service
 		// get array of images
 		$images = [];
 		if ($profile->picture ?? false) {
-			$images[] = Bucket::download('profile', $profile->picture);
+			try {
+				$images[] = Bucket::download('perfil', $profile->picture);
+			} catch(Exception $e) { }
 		}
 
 		// list of values
@@ -658,7 +665,12 @@ class Service
 			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get match images into an array and the content
-			$images = $match->picture ? [Bucket::download('profile', $match->picture)] : [];
+			$images = [];
+			if ($match->picture) {
+				try {
+					$images = [Bucket::download('perfil', $match->picture)];
+				} catch (Exception $e) {}
+			}
 
 			// get match properties
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
