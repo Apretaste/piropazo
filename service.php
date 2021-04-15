@@ -93,7 +93,7 @@ class Service
 		// get match images into an array and the content
 		$images = [];
 		if ($match->picture) {
-			if (stripos($match->picture,'.') !== false) {
+			if (stripos($match->picture,'.') === false) {
 				$match->picture .= '.jpg';
 			}
 			try {
@@ -302,7 +302,7 @@ class Service
 		// get array of images
 		$images = [];
 		if ($profile->picture ?? false) {
-			if (stripos($profile->picture,'.') !== false) {
+			if (stripos($profile->picture,'.') === false) {
 				$profile->picture .= '.jpg';
 			}
 			try {
@@ -673,7 +673,7 @@ class Service
 			// get match images into an array and the content
 			$images = [];
 			if ($match->picture) {
-				if (stripos($match->picture,'.') !== false) {
+				if (stripos($match->picture,'.') === false) {
 					$match->picture .= '.jpg';
 				}
 				try {
