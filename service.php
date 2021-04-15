@@ -93,6 +93,9 @@ class Service
 		// get match images into an array and the content
 		$images = [];
 		if ($match->picture) {
+			if (stripos($match->picture,'.') !== false) {
+				$match->picture .= '.jpg';
+			}
 			try {
 				$images = [Bucket::download('profile', $match->picture)];
 			} catch(Exception $e){}
@@ -299,6 +302,9 @@ class Service
 		// get array of images
 		$images = [];
 		if ($profile->picture ?? false) {
+			if (stripos($profile->picture,'.') !== false) {
+				$profile->picture .= '.jpg';
+			}
 			try {
 				$images[] = Bucket::download('perfil', $profile->picture);
 			} catch(Exception $e) { }
@@ -667,6 +673,9 @@ class Service
 			// get match images into an array and the content
 			$images = [];
 			if ($match->picture) {
+				if (stripos($match->picture,'.') !== false) {
+					$match->picture .= '.jpg';
+				}
 				try {
 					$images = [Bucket::download('perfil', $match->picture)];
 				} catch (Exception $e) {}
