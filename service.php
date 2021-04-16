@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Bucket;
 use Apretaste\Chats;
 use Apretaste\Level;
 use Apretaste\Money;
@@ -80,6 +81,9 @@ class Service
 			return;
 		}
 
+		// add view
+		Database::query("UPDATE _piropazo_people SET views = views + 1 WHERE id_person = {$match->id};");
+
 		Person::setProfileTags($match);
 
 		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
@@ -87,7 +91,15 @@ class Service
 		$match->religion = Core::$religions[$match->religion] ?? '';
 
 		// get match images into an array and the content
-		$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
+		$images = [];
+		if ($match->picture) {
+			if (stripos($match->picture,'.') === false) {
+				$match->picture .= '.jpg';
+			}
+			try {
+				$images = [Bucket::download('profile', $match->picture)];
+			} catch(Exception $e){}
+		}
 
 		// erase unwanted properties in the object
 		$properties = ['id', 'username', 'firstName', 'heart', 'gender', 'aboutMe', 'education', 'religion', 'picture', 'country', 'location', 'age', 'isOnline'];
@@ -289,8 +301,15 @@ class Service
 
 		// get array of images
 		$images = [];
-		if ($profile->picture ?? false) {
-			$images[] = SHARED_PUBLIC_PATH . 'profile/' . $profile->picture;
+
+		if (!empty($profile->picture)) {
+			if (stripos($profile->picture,'.') === false) {
+				$profile->picture .= '.jpg';
+			}
+
+			try {
+				$images[] = Bucket::download('perfil', $profile->picture);
+			} catch(Exception $e) { }
 		}
 
 		// list of values
@@ -654,7 +673,15 @@ class Service
 			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get match images into an array and the content
-			$images = $match->picture ? [SHARED_PUBLIC_PATH . 'profile/' . $match->picture] : [];
+			$images = [];
+			if ($match->picture) {
+				if (stripos($match->picture,'.') === false) {
+					$match->picture .= '.jpg';
+				}
+				try {
+					$images = [Bucket::download('perfil', $match->picture)];
+				} catch (Exception $e) {}
+			}
 
 			// get match properties
 			$match->matched_on = date('d/m/Y', strtotime($match->matched_on));
@@ -803,79 +830,6 @@ class Service
 	}
 
 	/**
-	 * Open the conversation
-	 *
-	 * @param Request
-	 * @param Response
-	 * @throws Alert
-	 * @throws Exception
-	 * @author salvipascual
-	 */
-	public function _conversacion(Request $request, Response $response)
-	{
-		// get the edit response
-		if ($this->isProfileIncomplete($request->person)) {
-			$request->extra_fields = 'hide';
-			return $this->_perfil($request, $response);
-		}
-
-		// get the username of the note
-		$user = Person::find($request->input->data->userId);
-
-		// check if the username is valid
-		if (!$user) {
-			return $response->setTemplate('notFound.ejs');
-		}
-
-		// get the conversation
-		$messages = Chats::conversation($request->person->id, $user->id);
-
-		$chats = [];
-		$images = [];
-		$chatImgDir = SHARED_PUBLIC_PATH . '/content/chat';
-
-		foreach ($messages as $message) {
-			$me = $message->username == $request->person->username;
-
-			$chat = new stdClass();
-			$chat->id = $message->id;
-			$chat->username = $message->username;
-			$chat->text = $message->text;
-			$chat->sent = $message->sent;
-			$chat->read = $message->read;
-			$chat->readed = $message->readed;
-			$chat->name = $me ? $request->person->firstName : $user->firstName;
-			$chat->gender = $me ? $request->person->gender : $user->gender;
-
-			$chat->picture = $me ? $request->person->picture : $user->picture;
-			$images[] = SHARED_PUBLIC_PATH . 'profile/' . $chat->picture;
-
-			if ($message->image) {
-				$message->image .= '.jpg';
-				$images[] = "$chatImgDir/{$message->image}";
-
-				$chat->image = $message->image;
-			}
-
-			$chats[] = $chat;
-		}
-
-		$content = [
-			'messages' => $chats,
-			'myName' => $request->person->firstName,
-			'myPicture' => $request->person->picture,
-			'myGender' => $request->person->gender,
-			'id' => $user->id,
-			'online' => $user->isOnline,
-			'last' => date('d/m/Y h:i a', strtotime($user->lastAccess)),
-			'title' => 'Parejas'
-		];
-
-		$response->setlayout('piropazo.ejs');
-		$response->setTemplate('conversation.ejs', $content, $images);
-	}
-
-	/**
 	 * Open the store
 	 *
 	 * @param Request $request
@@ -987,128 +941,6 @@ class Service
 			'button' => ['href' => 'SERVICIOS', 'caption' => 'Otros Servicios']];
 		$response->setLayout('empty.ejs');
 		$response->setTemplate('message.ejs', $content);
-	}
-
-	/**
-	 * Chats lists with matches filter
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @return Response
-	 * @throws Alert
-	 * @author ricardo
-	 */
-	public function _chat(Request $request, Response $response)
-	{
-		if ($this->isProfileIncomplete($request->person)) {
-			// get the edit response
-			$request->extra_fields = 'hide';
-			return $this->_perfil($request, $response);
-		}
-
-		// get the list of people chating with you
-		$chats = Chats::open($request->person->id);
-
-		$matches = Database::query("SELECT id_from AS id
-		FROM _piropazo_relationships
-		WHERE status = 'match'
-		AND id_to = '{$request->person->id}'
-		UNION
-		SELECT id_to AS id
-		FROM _piropazo_relationships
-		WHERE status = 'match'
-		AND id_from = '{$request->person->id}'");
-
-		$matchesId = [];
-		foreach ($matches as $match) {
-			$matchesId[$match->id] = $match;
-		}
-
-		$onlyMatchesChats = [];
-		$images = [];
-		foreach ($chats as $chat) {
-			if (key_exists($chat->id, $matchesId)) {
-				$chat->last_sent = explode(' ', $chat->last_sent)[0];
-				if ($chat->picture) {
-					$images[] = SHARED_PUBLIC_PATH . 'profile/' . $chat->picture;
-				}
-				$onlyMatchesChats[] = $chat;
-			}
-		}
-
-		// if no matches, let the user know
-		if (empty($onlyMatchesChats)) {
-			$content = [
-				'header' => 'No tiene conversaciones',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Aún no ha hablado con nadie. Cuando dos personas se gustan, pueden empezar una conversación.',
-				'button' => ['href' => 'PIROPAZO', 'caption' => 'Buscar pareja']];
-			$response->setLayout('empty.ejs');
-			return $response->setTemplate('message.ejs', $content);
-		}
-
-		$content = [
-			'chats' => $onlyMatchesChats,
-			'myuserid' => $request->person->id,
-			'title' => 'Chat',
-		];
-
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('chats.ejs', $content, $images);
-	}
-
-	/**
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _escribir(Request $request, Response $response)
-	{
-		if (!isset($request->input->data->id)) {
-			return;
-		}
-		$userTo = Person::find($request->input->data->id);
-		if (!$userTo) {
-			return;
-		}
-		$message = $request->input->data->message;
-
-		if ($request->person->isBlocked($userTo->id)) {
-			Notifications::alert(
-				$request->person->id,
-				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
-				'error'
-			);
-			return;
-		}
-
-		$image = $request->input->data->image ?? false;
-		$fileName = '';
-
-		// get the image name and path
-		if ($image) {
-			$chatImgDir = SHARED_PUBLIC_PATH . '/content/chat';
-			$fileName = Utils::randomHash();
-			$filePath = "$chatImgDir/$fileName.jpg";
-
-			// save the optimized image on the user folder
-			file_put_contents($filePath, base64_decode($image));
-			Images::optimize($filePath);
-		}
-
-		// store the note in the database
-		$message = Database::escape($message, 499, 'utf8mb4');
-		Database::query("INSERT INTO _note (from_user, to_user, `text`, image) VALUES ({$request->person->id},{$userTo->id},'$message', '$fileName')");
-
-		// send notification for the app
-		Notifications::alert(
-			$userTo->id,
-			"@{$request->person->username} le ha enviado un mensaje",
-			'message',
-			"{'command':'chat', 'data':{'userId':'{$request->person->id}'}}"
-		);
 	}
 
 	/**
