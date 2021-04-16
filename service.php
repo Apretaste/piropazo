@@ -301,10 +301,12 @@ class Service
 
 		// get array of images
 		$images = [];
-		if ($profile->picture ?? false) {
+
+		if (!empty($profile->picture)) {
 			if (stripos($profile->picture,'.') === false) {
 				$profile->picture .= '.jpg';
 			}
+
 			try {
 				$images[] = Bucket::download('perfil', $profile->picture);
 			} catch(Exception $e) { }
