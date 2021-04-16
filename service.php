@@ -438,7 +438,6 @@ class Service
 			// create final query with the match score
 			$matches = Database::query("
                 SELECT {$user->id}, id,
-                    IF(picture IS NULL, 0, 100) +
                     IF(province = '$user->provinceCode', 50, 0) +   
                     IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
                     crown * 25 +
@@ -458,6 +457,7 @@ class Service
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
                         AND NOT A.id = {$user->id}
+                    	AND NULLIF(A.picture, '') IS NOT NULL
                 ) AS results 
                 ORDER BY results.active DESC, percent_match DESC
                 LIMIT 50");
