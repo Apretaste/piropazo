@@ -92,7 +92,7 @@ class Service
 
 		// get match images into an array and the content
 		$images = [];
-		if ($match->picture) {
+		if (!empty($match->picture)) {
 			if (stripos($match->picture,'.') === false) {
 				$match->picture .= '.jpg';
 			}
