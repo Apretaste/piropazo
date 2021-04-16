@@ -448,9 +448,11 @@ class Service
                     SELECT 
                         A.id, A.year_of_birth, A.province, A.religion, A.active, A.picture,
                         IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
-                    FROM (_piropazo_people B INNER JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person AND R1.id_from <> {$user->id})
+                    FROM _piropazo_people B 
+                     INNER JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person
                 	 INNER JOIN person A ON A.id = B.id_person
                     WHERE true
+                      	AND R1.id_from <> {$user->id}
                         AND B.active = 1
                         AND $clauseSex 
                         AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
