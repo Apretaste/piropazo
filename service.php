@@ -22,6 +22,7 @@ use Framework\GoogleAnalytics;
  */
 class Service
 {
+
 	/**
 	 * Function executed when the service is called
 	 *
@@ -47,6 +48,8 @@ class Service
 	 */
 	public function _citas(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		if (!$this->isActive($request->person->id)) {
 			$content = [
 				'header' => 'Tiempo sin verte',
@@ -145,6 +148,8 @@ class Service
 	 */
 	public function _si(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// get the emails from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
@@ -248,6 +253,8 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		$profileIncomplete = $this->isProfileIncomplete($request->person);
 
 		// get the user's profile
@@ -528,6 +535,8 @@ class Service
 	 */
 	public function _no(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
@@ -564,6 +573,8 @@ class Service
 	 */
 	public function _reportar(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// do not allow empty codes
 		$violatorId = $request->input->data->id;
 		$violationCode = $request->input->data->violation;
@@ -617,6 +628,8 @@ class Service
 	 */
 	public function _parejas(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = 'hide';
@@ -747,6 +760,8 @@ class Service
 	 */
 	public function _flor(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
 			$request->extra_fields = 'hide';
@@ -804,6 +819,8 @@ class Service
 	 */
 	public function _corazon(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// get the edit response
 		if ($this->isProfileIncomplete($request->person)) {
 			$request->extra_fields = 'hide';
@@ -841,6 +858,8 @@ class Service
 	 */
 	public function _tienda(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = 'hide';
@@ -880,6 +899,8 @@ class Service
 	 */
 	public function _notificaciones(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		if ($this->isProfileIncomplete($request->person)) {
 			// get the edit response
 			$request->extra_fields = 'hide';
@@ -931,6 +952,8 @@ class Service
 	 */
 	public function _salir(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// remove from piropazo
 		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
 
@@ -952,8 +975,10 @@ class Service
 	 * @throws Alert
 	 * @throws Exception
 	 */
-	public function _soporte(Request $request, Response $response)
-	{
+	public function _soporte(Request $request, Response $response) {
+
+		$this->resetViews($request->person);
+
 		// @TODO replace email with ids
 		$email = $request->person->email;
 		$username = $request->person->username;
@@ -995,6 +1020,8 @@ class Service
 	 */
 	public function _pay(Request $request, Response $response)
 	{
+		$this->resetViews($request->person);
+
 		// get buyer and code
 		$buyer = $request->person->id;
 		$code = $request->input->data->code;
@@ -1134,5 +1161,17 @@ class Service
 			$percentage += 5;
 		}
 		return $percentage;
+	}
+
+	/**
+	 * Reset views
+	 *
+	 * @param $person
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 */
+	private function resetViews($person) {
+		// reset views
+		Database::query("UPDATE _piropazo_people SET views = 0 WHERE id_person = {$person->id};");
 	}
 }
