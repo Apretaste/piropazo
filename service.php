@@ -1,7 +1,6 @@
 <?php
 
 use Apretaste\Bucket;
-use Apretaste\Chats;
 use Apretaste\Level;
 use Apretaste\Money;
 use Apretaste\Person;
@@ -11,9 +10,7 @@ use Apretaste\Response;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
 use Framework\Core;
-use Framework\Utils;
 use Framework\Alert;
-use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
 

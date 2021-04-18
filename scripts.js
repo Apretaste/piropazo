@@ -541,15 +541,15 @@ function showToast(text) {
 
 function updatePicture(file) {
 	// display the picture on the img
-	$('#profile-rounded-img').css('background-image', "url(data:image/jpg;base64," + file + ')');
+	$('.picture-container > img').attr('src', "data:image/jpg;base64," + file);
 	resizeImg(); // show confirmation text
 
 	showToast('Su foto ha sido cambiada correctamente');
 }
 
 function callbackSaveProfile() {
-	var bg = $('#profile-rounded-img').css('background-image');
-	if (profile.picture == null && (typeof bg == "undefined" || bg.indexOf('user.jpg') !== -1)) {
+	var src = $('.picture-container > img').attr('src');
+	if (profile.picture == null && (typeof src == "undefined" || src.indexOf('user.png') !== -1)) {
 		showToast("Recuerde subir una foto")
 	} else {
 		showToast("Su informacion se ha salvado correctamente")
@@ -663,14 +663,14 @@ function sendMessageCallback(message) {
 	}
 
 	var newMessage =
-		"<li class=\"right\" id=\"last\">\n" +
-		"     <div class=\"message-avatar circle\"\n" +
-		"          style=\"background-image: url('" + imgPath + myPicture + "'); background-size: contain; width: 30px; height: 30px;\"></div>\n" +
-		"     <div class=\"head\">\n" +
-		"         <a href=\"#!\" class=\"" + myGender + "\">" + myName + "</a>\n" +
-		"         <span class=\"date\">" + new Date().toLocaleString('es-ES') + "</span>\n" +
-		"     </div>\n" +
-		"     <span class=\"text\">" + pictureContent + message + "</span>\n" +
+		"<li class=\"right\" id=\"last\">" +
+		"     <div class=\"message-avatar circle\"" +
+		"          style=\"background-image: url('" + imgPath + myPicture + "'); background-size: contain; width: 30px; height: 30px;\"></div>" +
+		"     <div class=\"head\">" +
+		"         <a href=\"#!\" class=\"" + myGender + "\">" + myName + "</a>" +
+		"         <span class=\"date\">" + new Date().toLocaleString('es-ES') + "</span>" +
+		"     </div>" +
+		"     <span class=\"text\">" + pictureContent + message + "</span>" +
 		"</li>"
 
 	$('.chat').append(newMessage);
