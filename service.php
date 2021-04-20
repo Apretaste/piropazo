@@ -1,18 +1,18 @@
 <?php
 
-use Apretaste\Bucket;
-use Apretaste\Level;
+use Apretaste\Core;
 use Apretaste\Money;
+use Apretaste\Alert;
+use Apretaste\Level;
+use Apretaste\Bucket;
 use Apretaste\Person;
 use Apretaste\Amulets;
 use Apretaste\Request;
 use Apretaste\Response;
+use Apretaste\Database;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
-use Framework\Core;
-use Framework\Alert;
-use Framework\Database;
-use Framework\GoogleAnalytics;
+use Apretaste\GoogleAnalytics;
 
 /**
  * Apretaste Piropazo Service
@@ -92,13 +92,9 @@ class Service
 
 		// get match images into an array and the content
 		$images = [];
-		if (!empty($match->picture)) {
-			if (stripos($match->picture,'.') === false) {
-				$match->picture .= '.jpg';
-			}
-			try {
-				$images = [Bucket::download('perfil', $match->picture)];
-			} catch(Exception $e){}
+		if ($match->picture) {
+			$file = Bucket::getPathByEnvironment('perfil', $match->picture);
+			$images[] = (stripos($match->picture, '.') === false) ? "$file.jpg" : $file;
 		}
 
 		// erase unwanted properties in the object
@@ -305,15 +301,9 @@ class Service
 
 		// get array of images
 		$images = [];
-
-		if (!empty($profile->picture)) {
-			if (stripos($profile->picture,'.') === false) {
-				$profile->picture .= '.jpg';
-			}
-
-			try {
-				$images[] = Bucket::download('perfil', $profile->picture);
-			} catch(Exception $e) { }
+		if ($profile->picture) {
+			$file = Bucket::getPathByEnvironment('perfil', $profile->picture);
+			$images[] = (stripos($profile->picture, '.') === false) ? "$file.jpg" : $file;
 		}
 
 		// list of values
@@ -684,14 +674,9 @@ class Service
 			$match = (object)array_merge((array)$match, (array)Person::prepareProfile($match));
 
 			// get match images into an array and the content
-			$images = [];
 			if ($match->picture) {
-				if (stripos($match->picture,'.') === false) {
-					$match->picture .= '.jpg';
-				}
-				try {
-					$images = [Bucket::download('perfil', $match->picture)];
-				} catch (Exception $e) {}
+				$file = Bucket::getPathByEnvironment('perfil', $match->picture);
+				$images[] = (stripos($match->picture, '.') === false) ? "$file.jpg" : $file;
 			}
 
 			// get match properties
