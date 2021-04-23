@@ -193,6 +193,10 @@ class Service
 			if ($record[0]->status === 'dislike') {
 				Database::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 			}
+
+			// remove from cache
+			Database::query("DELETE FROM _piropazo_cache WHERE user = $idFrom AND suggestion = $idTo;");
+
 			return;
 		}
 
