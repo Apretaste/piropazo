@@ -1,7 +1,6 @@
 <?php
 
 use Apretaste\Bucket;
-use Apretaste\Chats;
 use Apretaste\Level;
 use Apretaste\Money;
 use Apretaste\Person;
@@ -11,9 +10,7 @@ use Apretaste\Response;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
 use Framework\Core;
-use Framework\Utils;
 use Framework\Alert;
-use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
 
@@ -845,7 +842,7 @@ class Service
 		// post a notification for the user
 		Notifications::alert(
 			$request->person->id,
-			'Enhorabuena, Usted se ha agregado un corazon. Ahora su perfil se mostrara a muchos más usuarios por los proximos tres dias',
+			'Usted ha usado un corazón y su perfil se mostrará a muchos más usuarios por los próximos tres días',
 			'favorite',
 			'{"command":"piropazo"}'
 		);
