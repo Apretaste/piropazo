@@ -36,3 +36,24 @@ var menu = [
 <div class="row">
     {{APP_TEMPLATE_CODE}}
 </div>
+
+
+<!-- MENU -->
+<ul id="home-menu" class="sidenav">
+    <% for (var i in menu) { %>
+        <li><a href="#!" onclick="apretaste.send({command:'PIROPAZO <%= menu[i].link %>', data: {}})">
+                <i class="fa fa-<%= menu[i].icon %>"></i>
+                <%- menu[i].caption %>
+            </a>
+        </li>
+    <% } %>
+</ul>
+
+<div class="bottom-space"></div>
+
+<!-- BUTTON -->
+<div id="btn" class="fixed-action-btn">
+    <a class="btn-floating btn-large waves-effect waves-light sidenav-trigger" href="#!" data-target="home-menu">
+        <i class="material-icons">menu</i>
+    </a>
+</div>
