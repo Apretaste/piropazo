@@ -26,7 +26,6 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 * @throws Alert
-	 * @author salvipascual
 	 */
 	public function _main(Request $request, Response $response)
 	{
@@ -41,7 +40,7 @@ class Service
 	 * @param Response $response
 	 * @return Response|void
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _citas(Request $request, Response $response)
 	{
@@ -65,8 +64,29 @@ class Service
 			return;
 		}
 
-		// get the best match for the user
-		$match = $this->getMatchFromCache($request->person);
+		$match = null;
+
+		if ($request->input->data->id) {
+			$match = Person::find($request->input->data->id);
+
+			if (!$this->isProfileIncomplete($match)) {
+				$match->heart = Database::queryFirst("SELECT IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart from _piropazo_people WHERE id_person = {$match->id}")->heart ?? 0;
+
+				// get the match color class based on gender
+				if ($match->gender === 'M') {
+					$match->color = 'male';
+				} elseif ($match->gender === 'F') {
+					$match->color = 'female';
+				} else {
+					$match->color = 'neutral';
+				}
+			}
+		}
+
+		if ($match === null) {
+			// get the best match for the user
+			$match = $this->getMatchFromCache($request->person);
+		}
 
 		// if no matches, let the user know
 		if (!$match) {
@@ -98,6 +118,11 @@ class Service
 			}
 			try {
 				$images = [Bucket::download('perfil', $match->picture)];
+
+				if (stripos($images[0],'.') === false) {
+					$images[0] .= '.jpg';
+				}
+
 			} catch(Exception $e){}
 		}
 
@@ -141,7 +166,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _si(Request $request, Response $response)
 	{
@@ -192,7 +217,7 @@ class Service
 			}
 
 			// remove from cache
-			Database::query("DELETE FROM _piropazo_cache WHERE user = $idFrom AND suggestion = $idTo;");
+			$this->clearCache($idFrom, $idTo);
 
 			return;
 		}
@@ -206,7 +231,7 @@ class Service
 		COMMIT");
 
 		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		$this->clearCache($idFrom, $idTo);
 
 		// submit to Google Analytics 
 		GoogleAnalytics::event('piropazo_yes', $idTo);
@@ -222,7 +247,7 @@ class Service
 	 * @param Object $person
 	 * @return Boolean
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	private function isProfileIncomplete($person)
 	{
@@ -246,16 +271,21 @@ class Service
 	/**
 	 * Open the user's profile
 	 *
-	 * @param Request
-	 * @param Response
-	 * @return Response
+	 * @param Request $request
+	 * @param Response $response
+	 * @return mixed
 	 * @throws Alert
-	 * @author salvipascual
+	 * @throws \Apretaste\Alert
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
+		// reset views of piropazo profile
 		$this->resetViews($request->person);
 
+		// force recreation of cache
+		$this->clearCache($request->person->id);
+
+		// get if profile is incomplete
 		$profileIncomplete = $this->isProfileIncomplete($request->person);
 
 		// get the user's profile
@@ -267,7 +297,7 @@ class Service
 			// run powers for amulet DETECTIVE
 			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
 				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Notifications::alert($profile->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
+				Notifications::alert($profile->id, $msg, 'pageview', "{command:'PERFIL', data:{id:'@{$request->person->id}'}}");
 			}
 
 			// run powers for amulet SHADOWMODE
@@ -289,23 +319,18 @@ class Service
 		$profile->heart = $user->heart;
 		$profile->heart_time_left = 60 * 60 * 24 * 3 - $user->heart_time_left;
 
-		$profile->minAge = intval($user->minAge);
-		$profile->maxAge = intval($user->maxAge);
+		$profile->minAge = (int) $user->minAge;
+		$profile->maxAge = (int) $user->maxAge;
 
 		// get what gender do you search for
-		if ($profile->sexualOrientation === 'BI') {
-			$profile->searchfor = 'AMBOS';
-		} elseif ($profile->gender === 'M' && $profile->sexualOrientation === 'HETERO') {
-			$profile->searchfor = 'MUJERES';
-		} elseif ($profile->gender === 'F' && $profile->sexualOrientation === 'HETERO') {
-			$profile->searchfor = 'HOMBRES';
-		} elseif ($profile->gender === 'M' && $profile->sexualOrientation === 'HOMO') {
-			$profile->searchfor = 'HOMBRES';
-		} elseif ($profile->gender === 'F' && $profile->sexualOrientation === 'HOMO') {
-			$profile->searchfor = 'MUJERES';
-		} else {
-			$profile->searchfor = '';
-		}
+		$profile->searchfor = [
+			'BI,F' => 'AMBOS',
+			'BI,M' => 'AMBOS',
+			'HETERO,F' => 'HOMBRES',
+			'HETERO,M' => 'MUJERES',
+			'HOMO,F' => 'MUJERES',
+			'HOMO,M' => 'HOMBRES'
+		]["{$profile->sexualOrientation},{$profile->gender}"] ?? '';
 
 		// get array of images
 		$images = [];
@@ -317,6 +342,9 @@ class Service
 
 			try {
 				$images[] = Bucket::download('perfil', $profile->picture);
+				if (stripos($images[0],'.') === false) {
+					$images[0] .= '.jpg';
+				}
 			} catch(Exception $e) { }
 		}
 
@@ -337,8 +365,8 @@ class Service
 	 * Make active if the person uses Piropazo for the first time
 	 *
 	 * @param Int $id
-	 * @throws Alert
-	 * @author salvipascual
+	 * @throws \Apretaste\Alert
+
 	 */
 	private function activatePiropazoUser($id)
 	{
@@ -368,7 +396,7 @@ class Service
 	 * @param Person $user
 	 * @return mixed
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	private function getMatchFromCache($user)
 	{
@@ -404,7 +432,8 @@ class Service
 				return $person;
 			}
 
-			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
+			// remove non good profiles
+			$this->clearCache($user->id, $person->id);
 		}
 
 		return false;
@@ -416,7 +445,7 @@ class Service
 	 * @param Person $user , you
 	 * @return Boolean
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	private function createMatchesCache($user)
 	{
@@ -487,7 +516,7 @@ class Service
 	 * @param array $properties , array of properties to keep
 	 * @param Object $object , object to clean
 	 * @return Object, clean object
-	 * @author salvipascual
+
 	 */
 	private function filterObjectProperties($properties, $object)
 	{
@@ -505,7 +534,7 @@ class Service
 	 *
 	 * @param Int $id
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	private function markLastTimeUsed($id)
 	{
@@ -532,7 +561,7 @@ class Service
 	 * @param Request
 	 * @param Response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _no(Request $request, Response $response)
 	{
@@ -553,7 +582,7 @@ class Service
 		COMMIT");
 
 		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		$this->clearCache($idFrom, $idTo);
 
 		// submit to Google Analytics 
 		GoogleAnalytics::event('piropazo_no', $idTo);
@@ -570,7 +599,7 @@ class Service
 	 *
 	 * @return \Apretaste\Response
 	 * @throws \Framework\Alert
-	 * @author salvipascual
+
 	 */
 	public function _reportar(Request $request, Response $response)
 	{
@@ -624,8 +653,7 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
-	 * @author salvipascual
+	 * @throws \Apretaste\Alert
 	 */
 	public function _parejas(Request $request, Response $response)
 	{
@@ -695,6 +723,9 @@ class Service
 				}
 				try {
 					$images = [Bucket::download('perfil', $match->picture)];
+					if (stripos($images[0],'.') === false) {
+						$images[0] .= '.jpg';
+					}
 				} catch (Exception $e) {}
 			}
 
@@ -757,7 +788,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _flor(Request $request, Response $response)
 	{
@@ -797,7 +828,7 @@ class Service
 			UPDATE _piropazo_relationships SET expires_matched_blocked=ADDTIME(expires_matched_blocked,'168:00:00.00') WHERE id_from='{$request->person->id}' AND id_to='{$request->input->data->id}';");
 
 		// create a notification for the user
-		Notifications::alert($request->input->data->id, "$message", 'local_florist', '{"command":"PIROPAZO PAREJAS"}');
+		Notifications::alert($request->input->data->id, "$message", 'local_florist', '{"command":"PIROPAZO FLORES"}');
 
 		// let the sender know the flower was delivered
 		$content = [
@@ -816,7 +847,7 @@ class Service
 	 * @param Response
 	 * @return Response|void
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _corazon(Request $request, Response $response)
 	{
@@ -855,7 +886,7 @@ class Service
 	 * @param Response $response
 	 * @return Response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _tienda(Request $request, Response $response)
 	{
@@ -896,7 +927,7 @@ class Service
 	 * @param Response $response
 	 * @return Response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _notificaciones(Request $request, Response $response)
 	{
@@ -949,7 +980,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 * @throws Alert
-	 * @author salvipascual
+
 	 */
 	public function _salir(Request $request, Response $response)
 	{
@@ -1088,83 +1119,6 @@ class Service
 	}
 
 	/**
-	 * Get the percentage of match for two profiles
-	 *
-	 * @param Int $idOne
-	 * @param Int $idTwo
-	 * @return Number
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function getPercentageMatch($idOne, $idTwo)
-	{
-		// get both profiles
-		$p = Database::query("
-			SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, year_of_birth 
-			FROM person 
-			WHERE id='$idOne' 
-			OR id='$idTwo'");
-
-		// do not continue if any user can't be found
-		if (empty($p[0]) || empty($p[1])) {
-			return 0;
-		}
-
-		// calculate basic values
-		$percentage = 0;
-		if ($p[0]->eyes == $p[1]->eyes) {
-			$percentage += 5;
-		}
-		if ($p[0]->skin == $p[1]->skin) {
-			$percentage += 5;
-		}
-		if ($p[0]->body_type == $p[1]->body_type) {
-			$percentage += 5;
-		}
-		if ($p[0]->hair == $p[1]->hair) {
-			$percentage += 5;
-		}
-		if ($p[0]->highest_school_level == $p[1]->highest_school_level) {
-			$percentage += 10;
-		}
-		if ($p[0]->lang == $p[1]->lang) {
-			$percentage += 10;
-		}
-		if ($p[0]->religion == $p[1]->religion) {
-			$percentage += 10;
-		}
-		if ($p[0]->country == $p[1]->country) {
-			$percentage += 5;
-		}
-		if ($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) {
-			$percentage += 10;
-		}
-
-		// calculate interests
-		$arrOne = explode(',', strtolower($p[0]->interests));
-		$arrTwo = explode(',', strtolower($p[1]->interests));
-		$intersect = array_intersect($arrOne, $arrTwo);
-		if ($intersect) {
-			$percentage += 20;
-		}
-
-		// calculate age
-		$ageOne = date('Y') - $p[0]->year_of_birth;
-		$ageTwo = date('Y') - $p[1]->year_of_birth;
-		$diff = abs($ageOne - $ageTwo);
-		if ($diff == 0) {
-			$percentage += 15;
-		}
-		if ($diff >= 1 && $diff <= 5) {
-			$percentage += 10;
-		}
-		if ($diff >= 6 && $diff <= 10) {
-			$percentage += 5;
-		}
-		return $percentage;
-	}
-
-	/**
 	 * Reset views
 	 *
 	 * @param $person
@@ -1174,5 +1128,38 @@ class Service
 	private function resetViews($person) {
 		// reset views
 		Database::query("UPDATE _piropazo_people SET views = 0 WHERE id_person = {$person->id};");
+	}
+
+	/**
+	 * Remove records from piropazo cache
+	 *
+	 * @param $personId
+	 * @param bool $suggestion
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 */
+	private function clearCache($personId, $suggestion = false) {
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$personId} ".($suggestion ? " AND suggestion = $suggestion ": ""));
+	}
+
+	/**
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 */
+	public function _flores(Request $request, Response $response) {
+
+		$flowers = Database::query("
+			SELECT id_sender, message, concat(concat(person.first_name, ' '), person.last_name) as full_name 
+			FROM _piropazo_flowers 
+			    INNER JOIN person ON person.id = _piropazo_flowers.id_sender 
+			WHERE id_receiver = {$request->person->id}
+			ORDER BY sent DESC");
+
+		$response->setLayout('piropazo.ejs');
+		$response->setTemplate('flowers.ejs', [
+			'flowers' => $flowers
+		]);
 	}
 }

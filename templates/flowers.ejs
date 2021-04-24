@@ -1,0 +1,17 @@
+<div class="row">
+    <div class="col s12">
+        <ul class="collection one-line">
+        <% for (var i = 0; i < flowers.length;i++) { var flower = flowers[i]; %>
+            <li class="collection-item avatar" onclick="apretaste.send({command: 'PIROPAZO CITAS', data: {id: <%= flower.id_sender %>}});">
+                <i class="material-icons circle">local_florist</i>
+                <span class="title"><b><%= flower.full_name %></b></span>
+                <p><%= flower.message %></p>
+                <span class="chip tiny clear">
+                    <i class="material-icons icon">perm_contact_calendar</i>
+                    <%= moment(flower.sent).format('MMM D, h:mm A') %>
+                </span>
+            </li>
+        <% } %>
+        </ul>
+    </div>
+</div>
