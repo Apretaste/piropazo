@@ -1159,6 +1159,7 @@ class Service
 
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('flowers.ejs', [
+			'title' => 'Flores',
 			'flowers' => $flowers
 		]);
 	}
