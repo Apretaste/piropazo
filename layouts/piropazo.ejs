@@ -42,7 +42,7 @@ var menu = [
 <ul id="home-menu" class="sidenav">
     <% for (var i in menu) { %>
         <li><a href="#!" onclick="apretaste.send({command:'PIROPAZO <%= menu[i].link %>', data: {}})">
-                <i class="fa fa-<%= menu[i].icon %>"></i>
+                <i class="material-icons icon"><%= menu[i].icon %></i>
                 <%- menu[i].caption %>
             </a>
         </li>
