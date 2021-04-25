@@ -886,7 +886,6 @@ class Service
 	 * @param Response $response
 	 * @return Response
 	 * @throws Alert
-
 	 */
 	public function _tienda(Request $request, Response $response)
 	{
