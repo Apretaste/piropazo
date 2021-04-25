@@ -66,7 +66,7 @@ class Service
 
 		$match = null;
 
-		if ($request->input->data->id) {
+		if ($request->input->data->id ?? false) {
 			$match = Person::find($request->input->data->id);
 
 			if (!$this->isProfileIncomplete($match)) {
