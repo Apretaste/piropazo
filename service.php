@@ -113,16 +113,8 @@ class Service
 		// get match images into an array and the content
 		$images = [];
 		if (!empty($match->picture)) {
-			if (stripos($match->picture,'.') === false) {
-				$match->picture .= '.jpg';
-			}
 			try {
 				$images = [Bucket::download('perfil', $match->picture)];
-
-				if (stripos($images[0],'.') === false) {
-					$images[0] .= '.jpg';
-				}
-
 			} catch(Exception $e){}
 		}
 
@@ -336,15 +328,8 @@ class Service
 		$images = [];
 
 		if (!empty($profile->picture)) {
-			if (stripos($profile->picture,'.') === false) {
-				$profile->picture .= '.jpg';
-			}
-
 			try {
 				$images[] = Bucket::download('perfil', $profile->picture);
-				if (stripos($images[0],'.') === false) {
-					$images[0] .= '.jpg';
-				}
 			} catch(Exception $e) { }
 		}
 
@@ -718,14 +703,8 @@ class Service
 			// get match images into an array and the content
 			$images = [];
 			if ($match->picture) {
-				if (stripos($match->picture,'.') === false) {
-					$match->picture .= '.jpg';
-				}
 				try {
 					$images = [Bucket::download('perfil', $match->picture)];
-					if (stripos($images[0],'.') === false) {
-						$images[0] .= '.jpg';
-					}
 				} catch (Exception $e) {}
 			}
 
