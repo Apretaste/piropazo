@@ -66,8 +66,8 @@ class Service
 
 		$match = null;
 
-		if ($request->input->data->id) {
-			$match = Person::find($request->input->data->id);
+		if ($request->input->data->match) {
+			$match = Person::find($request->input->data->match);
 
 			if (!$this->isProfileIncomplete($match)) {
 				$match->heart = Database::queryFirst("SELECT IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart from _piropazo_people WHERE id_person = {$match->id}")->heart ?? 0;
@@ -537,6 +537,7 @@ class Service
 	public function _nonext(Request $request, Response $response)
 	{
 		$this->_no($request, $response);
+
 		$this->_main($request, $response);
 	}
 
@@ -555,6 +556,7 @@ class Service
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
+
 		if (empty($idTo)) {
 			return;
 		}
