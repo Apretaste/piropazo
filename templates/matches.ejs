@@ -61,7 +61,7 @@
                             </p>
                         </div>
 
-                        <div class="card-action" style="padding: 12px">
+                        <div class="card-action grey lighten-4" style="padding: 12px">
                             <!-- BUTTONS -->
                             <a class="green-text" onclick="doMatch('<%= person.id %>')">
                                 Me gusta
@@ -79,7 +79,7 @@
         <% if (flowers.length >0) { %>
             <section>
                 <% for (var i = 0; i < flowers.length;i++) { var flower = flowers[i]; %>
-                    <div class="card" id="<%= person.id %>">
+                    <div class="card">
                         <div class="card-content" style="padding: 12px">
                             <p><span class="title"><b><%= flower.full_name %></b></span></p>
                             <p><%= flower.message %></p>
@@ -88,7 +88,7 @@
                                 <%= moment(flower.sent).format('MMM D, h:mm A') %>
                             </span>
                         </div>
-                        <div class="card-action" style="padding: 12px">
+                        <div class="card-action grey lighten-4" style="padding: 12px">
                             <a class="green-text" onclick="apretaste.send({command: 'PIROPAZO CITAS', data: {match: <%= flower.id_sender %>}});">
                                 Ver perfil
                             </a>
