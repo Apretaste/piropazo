@@ -118,9 +118,21 @@ class Service
 			} catch(Exception $e){}
 		}
 
-		// erase unwanted properties in the object
-		$properties = ['id', 'username', 'firstName', 'heart', 'gender', 'aboutMe', 'education', 'religion', 'picture', 'country', 'location', 'age', 'isOnline'];
-		$match = $this->filterObjectProperties($properties, $match);
+		// prepare value object
+		$match = (object) [
+			'id' => $match->id,
+			'firstName' => $match->firstName ,
+			'gender' => $match->gender,
+			'aboutMe' => $match->aboutMe,
+			'location' => $match->location,
+			'education' => $match->education,
+			'religion' => $match->religion,
+			'picture' => $match->picture,
+			'country' => $match->country,
+			'isOnline' => $match->isOnline,
+			'age' => $match->age,
+			'heart' => $match->heart
+		];
 
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
@@ -128,9 +140,17 @@ class Service
 		// get the number of flowers for the logged user
 		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
+		$flowers = Database::query("
+			SELECT id_sender, message, concat(concat(person.first_name, ' '), person.last_name) as full_name 
+			FROM _piropazo_flowers 
+			    INNER JOIN person ON person.id = _piropazo_flowers.id_sender 
+			WHERE id_receiver = {$request->person->id}
+			ORDER BY sent DESC");
+
 		$content = [
 			'match' => $match,
-			'myflowers' => $myFlowers[0]->flowers
+			'myflowers' => $myFlowers[0]->flowers,
+			'flowers' => $flowers
 		];
 
 		// build the response
@@ -285,23 +305,6 @@ class Service
 		$isMyOwnProfile = $id === $request->person->id;
 		$profile = Person::find($id);
 
-		if (!$isMyOwnProfile) {
-			// run powers for amulet DETECTIVE
-			if (Amulets::isActive(Amulets::DETECTIVE, $id)) {
-				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Notifications::alert($profile->id, $msg, 'pageview', "{command:'PERFIL', data:{id:'@{$request->person->id}'}}");
-			}
-
-			// run powers for amulet SHADOWMODE
-			if (Amulets::isActive(Amulets::SHADOWMODE, $id)) {
-				return $response->setTemplate('message.ejs', [
-					'header' => 'Shadow-Mode',
-					'icon' => 'visibility_off',
-					'text' => 'La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso.'
-				]);
-			}
-		}
-
 		$user = Database::queryFirst("
 			SELECT crowns, IFNULL(TIMESTAMPDIFF(DAY, crowned,NOW()),3) < 3 AS heart, IFNULL(TIMESTAMPDIFF(SECOND, crowned,NOW()),0) AS heart_time_left, minAge, maxAge
 			FROM _piropazo_people
@@ -412,6 +415,8 @@ class Service
 				} else {
 					$person->color = 'neutral';
 				}
+
+				if (empty($person->location) || strlen($person->location) < 3) $person->location = null;
 
 				// return the match
 				return $person;
@@ -716,8 +721,23 @@ class Service
 			$match->religion = isset(Core::$religions[$match->religion]) ? Core::$religions[$match->religion] : '';
 
 			// erase unwanted properties in the object
-			$properties = ['id', 'username', 'firstName', 'gender', 'age', 'type', 'location', 'religion', 'education', 'picture', 'matched_on', 'time_left', 'isOnline'];
+			$properties = [ 'gender', 'age', 'type', 'location', 'religion', 'education', 'picture', 'matched_on', 'time_left', 'isOnline'];
 			$match = $this->filterObjectProperties($properties, $match);
+			$match = (object) [
+				'id' => $match->id,
+				'firstName' => $match->firstName ,
+				'gender' => $match->gender,
+				'type' => $match->type,
+				'location' => $match->location,
+				'education' => $match->education,
+				'religion' => $match->religion,
+				'picture' => $match->picture,
+				'country' => $match->country,
+				'isOnline' => $match->isOnline,
+				'age' => $match->age,
+				'matched_on' => $match->matched_on,
+				'time_left' => $match->time_left
+			];
 
 			// count the number of waiting
 			if ($match->type === 'WAITING') {
@@ -1123,24 +1143,4 @@ class Service
 		Database::query("DELETE FROM _piropazo_cache WHERE user={$personId} ".($suggestion ? " AND suggestion = $suggestion ": ""));
 	}
 
-	/**
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 * @throws \Apretaste\Alert
-	 */
-	public function _flores(Request $request, Response $response) {
-
-		$flowers = Database::query("
-			SELECT id_sender, message, concat(concat(person.first_name, ' '), person.last_name) as full_name 
-			FROM _piropazo_flowers 
-			    INNER JOIN person ON person.id = _piropazo_flowers.id_sender 
-			WHERE id_receiver = {$request->person->id}
-			ORDER BY sent DESC");
-
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('flowers.ejs', [
-			'flowers' => $flowers
-		]);
-	}
 }

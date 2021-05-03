@@ -605,8 +605,10 @@ function openChat(id) {
 
 function viewProfile(id) {
 	apretaste.send({
-		'command': 'PERFIL',
-		'data': {'username': id}
+		command: 'PERFIL',
+		data: {
+			id: id
+		}
 	});
 }
 
