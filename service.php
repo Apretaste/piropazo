@@ -121,7 +121,7 @@ class Service
 		// prepare value object
 		$match = (object) [
 			'id' => $match->id,
-			'firstName' => $match->firstName ,
+			'firstName' => $match->firstName,
 			'gender' => $match->gender,
 			'aboutMe' => $match->aboutMe,
 			'location' => $match->location,
@@ -712,9 +712,7 @@ class Service
 			$match->education = isset(Core::$education[$match->education]) ? Core::$education[$match->education] : '';
 			$match->religion = isset(Core::$religions[$match->religion]) ? Core::$religions[$match->religion] : '';
 
-			// erase unwanted properties in the object
-			$properties = [ 'gender', 'age', 'type', 'location', 'religion', 'education', 'picture', 'matched_on', 'time_left', 'isOnline'];
-			$match = $this->filterObjectProperties($properties, $match);
+			// prepare value object
 			$match = (object) [
 				'id' => $match->id,
 				'firstName' => $match->firstName ,

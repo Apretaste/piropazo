@@ -44,14 +44,14 @@
 
         <!--WAITING FOR YOU-->
         <% if(waiting.length > 0) { %>
-            <section>
+            <section id="watings">
                 <% waiting.forEach(function(person) { %>
                     <div class="card" id="<%= person.id %>">
                         <div class="card-image waves-effect waves-block waves-light">
                             <!-- PICTURE -->
                             <% if (person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
                             else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-                            <img src="<%= src %>" alt="<%= person.firstName %>" class="responsive-img"/>
+                            <img src="<%= src %>" alt="<%= person.firstName %>" class="responsive-img" onclick="apretaste.showImage('<%= src %>');"/>
                         </div>
                         <div class="card-content" style="padding: 12px">
                             <p>
