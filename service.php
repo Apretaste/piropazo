@@ -140,17 +140,9 @@ class Service
 		// get the number of flowers for the logged user
 		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
-		$flowers = Database::query("
-			SELECT id_sender, message, concat(concat(person.first_name, ' '), person.last_name) as full_name 
-			FROM _piropazo_flowers 
-			    INNER JOIN person ON person.id = _piropazo_flowers.id_sender 
-			WHERE id_receiver = {$request->person->id}
-			ORDER BY sent DESC");
-
 		$content = [
 			'match' => $match,
-			'myflowers' => $myFlowers[0]->flowers,
-			'flowers' => $flowers
+			'myflowers' => $myFlowers[0]->flowers
 		];
 
 		// build the response
@@ -756,12 +748,20 @@ class Service
 		// get the number of flowers for the logged user
 		$myFlowers = Database::query("SELECT flowers FROM _piropazo_people WHERE id_person={$request->person->id}");
 
+		$flowers = Database::query("
+			SELECT id_sender, message, concat(concat(person.first_name, ' '), person.last_name) as full_name 
+			FROM _piropazo_flowers 
+			    INNER JOIN person ON person.id = _piropazo_flowers.id_sender 
+			WHERE id_receiver = {$request->person->id}
+			ORDER BY sent DESC");
+
 		// create response array
 		$content = [
 			'myflowers' => $myFlowers[0]->flowers,
 			'waiting' => $waiting,
 			'matched' => $matched,
 			'title' => 'Parejas',
+			'flowers' => $flowers
 		];
 
 		// Building the response
