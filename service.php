@@ -14,12 +14,8 @@ use Apretaste\Challenges;
 use Apretaste\Notifications;
 use Apretaste\GoogleAnalytics;
 
-/**
- * Apretaste Piropazo Service
- */
 class Service
 {
-
 	/**
 	 * Function executed when the service is called
 	 *
@@ -84,8 +80,10 @@ class Service
 		// add view
 		Database::query("UPDATE _piropazo_people SET views = views + 1 WHERE id_person = {$match->id};");
 
+		// add a comma separate list of tags to the profile
 		Person::setProfileTags($match);
 
+		// prepare tags for showing
 		$match->country = $match->country === 'cu' ? 'Cuba' : 'Otro';
 		$match->education = Core::$education[$match->education] ?? '';
 		$match->religion = Core::$religions[$match->religion] ?? '';
@@ -93,8 +91,7 @@ class Service
 		// get match images into an array and the content
 		$images = [];
 		if ($match->picture) {
-			$file = Bucket::getPathByEnvironment('perfil', $match->picture);
-			$images[] = (stripos($match->picture, '.') === false) ? "$file.jpg" : $file;
+			$images[] = Bucket::getPathByEnvironment('perfil', $match->picture);
 		}
 
 		// erase unwanted properties in the object
@@ -115,20 +112,6 @@ class Service
 		// build the response
 		$response->setLayout('piropazo.ejs');
 		$response->setTemplate('dates.ejs', $content, $images);
-	}
-
-	/**
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @throws \FeedException
-	 * @throws \Framework\Alert
-	 */
-
-	public function _sinext(Request $request, Response $response)
-	{
-		$this->_si($request, $response);
-		$this->_main($request, $response);
 	}
 
 	/**
@@ -205,34 +188,41 @@ class Service
 
 		// add challenge
 		Challenges::complete('piropazo-say-yes-no', $request->person->id);
-
 	}
 
 	/**
-	 * Check if a profile is incomplete
+	 * Say No to a match
 	 *
-	 * @param Object $person
-	 * @return Boolean
-	 * @throws Alert
+	 * @param Request
+	 * @param Response
 	 * @author salvipascual
 	 */
-	private function isProfileIncomplete($person)
+	public function _no(Request $request, Response $response)
 	{
-		// run powers for amulet ROMEO
-		// NOTE: added here for convenience, since this function is called all over the place
-		if (Amulets::isActive(Amulets::ROMEO, $person->id)) {
-			Database::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$person->id}");
+		$this->resetViews($request->person);
+
+		// get the ids from and to
+		$idFrom = $request->person->id;
+		$idTo = $request->input->data->id;
+		if (empty($idTo)) {
+			return;
 		}
 
-		// ensure your profile is completed
-		/** @var Person $person */
-		return (
-			empty($person->firstName) ||
-			empty($person->picture) ||
-			empty($person->gender) ||
-			empty($person->sexualOrientation) /*||
-			intval($person->age) < 18*/
-		);
+		// mark the transaction as blocked
+		Database::query("
+		START TRANSACTION;
+		DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
+		INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
+		COMMIT");
+
+		// remove match from the cache so it won't show again
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+
+		// submit to Google Analytics 
+		GoogleAnalytics::event('piropazo_no', $idTo);
+
+		// add challenge
+		Challenges::complete('piropazo-say-yes-no', $request->person->id);
 	}
 
 	/**
@@ -241,7 +231,6 @@ class Service
 	 * @param Request
 	 * @param Response
 	 * @return Response
-	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _perfil(Request $request, Response $response)
@@ -302,8 +291,7 @@ class Service
 		// get array of images
 		$images = [];
 		if ($profile->picture) {
-			$file = Bucket::getPathByEnvironment('perfil', $profile->picture);
-			$images[] = (stripos($profile->picture, '.') === false) ? "$file.jpg" : $file;
+			$images[] = Bucket::getPathByEnvironment('perfil', $profile->picture);
 		}
 
 		// list of values
@@ -320,297 +308,10 @@ class Service
 	}
 
 	/**
-	 * Make active if the person uses Piropazo for the first time
-	 *
-	 * @param Int $id
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function activatePiropazoUser($id)
-	{
-		Database::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
-	}
-
-	/**
-	 * Check if the user exists in piropazo and is active
-	 *
-	 * @param Int $id
-	 * @throws Alert
-	 * @author ricardo
-	 */
-	private function isActive($id)
-	{
-		$res = Database::query("SELECT active FROM _piropazo_people WHERE id_person='$id'");
-		if ($res) {
-			return $res[0]->active;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Get the person who best matches with you
-	 *
-	 * @param Person $user
-	 * @return mixed
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function getMatchFromCache($user)
-	{
-		// create cache if needed
-		$this->createMatchesCache($user);
-
-		$matches = Database::query("
-            SELECT 
-                A.id, A.suggestion AS user, 
-                IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
-            FROM _piropazo_cache A
-            JOIN _piropazo_people B
-            ON A.suggestion = B.id_person
-            WHERE A.user = {$user->id}
-            ORDER BY heart DESC, A.match DESC, A.id");
-
-		foreach ($matches as $match) {
-			$person = Person::find($match->user);
-
-			if (!$this->isProfileIncomplete($person)) {
-				$person->heart = $match->heart;
-
-				// get the match color class based on gender
-				if ($person->gender === 'M') {
-					$person->color = 'male';
-				} elseif ($person->gender === 'F') {
-					$person->color = 'female';
-				} else {
-					$person->color = 'neutral';
-				}
-
-				// return the match
-				return $person;
-			}
-
-			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
-		}
-
-		return false;
-	}
-
-	/**
-	 * Create matches cache to speed up searches
-	 *
-	 * @param Person $user , you
-	 * @return Boolean
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function createMatchesCache($user)
-	{
-		// do not cache if already exist data
-		if (Database::queryFirst("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}")->cnt < 1) {
-
-			$piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
-
-			// filter based on sexual orientation
-			switch ($user->sexualOrientation) {
-				case 'HETERO':
-					$clauseSex = "A.gender <> '$user->gender' AND COALESCE(A.sexual_orientation,'HETERO') <> 'HOMO' ";
-					break;
-				case 'HOMO':
-					$clauseSex = "A.gender = '$user->gender' AND COALESCE(A.sexual_orientation, 'HETERO') <> 'HETERO' ";
-					break;
-				case 'BI':
-					$clauseSex = "(COALESCE(A.sexual_orientation, 'HETERO') = 'BI' 
-						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HOMO' 
-							AND A.gender = '$user->gender') 
-						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HETERO' 
-							AND A.gender <> '$user->gender')
-						) ";
-					break;
-			}
-
-			// create final query with the match score
-			$matches = Database::query("
-                SELECT {$user->id}, id,
-                    IF(province = '$user->provinceCode', 50, 0) +   
-                    IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
-                    crown * 25 +
-                    IF(religion = '$user->religion', 20, 0) +
-                    IF(results.active, 50, 0)    
-                    AS percent_match
-                FROM (
-                    SELECT 
-                        A.id, A.year_of_birth, A.province, A.religion, A.active, A.picture,
-                        IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
-                    FROM _piropazo_people B 
-                     LEFT JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person AND R1.id_from = {$user->id}
-                	 INNER JOIN person A ON A.id = B.id_person
-                    WHERE true
-                      	AND R1.id_from is NULL
-                        AND B.active = 1
-                        AND $clauseSex 
-                        AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
-                        AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
-                        AND NOT A.id = {$user->id}
-                    	AND NULLIF(A.picture, '') IS NOT NULL
-                ) AS results 
-                ORDER BY results.active DESC, percent_match DESC
-                LIMIT 50");
-
-			foreach ($matches as $match) {
-				Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->percent_match});");
-			}
-
-			return count($matches) > 0;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Remove all properties in an object except the ones passes in the array
-	 *
-	 * @param array $properties , array of properties to keep
-	 * @param Object $object , object to clean
-	 * @return Object, clean object
-	 * @author salvipascual
-	 */
-	private function filterObjectProperties($properties, $object)
-	{
-		$objProperties = get_object_vars($object);
-		foreach ($objProperties as $prop => $value) {
-			if (!in_array($prop, $properties)) {
-				unset($object->$prop);
-			}
-		}
-		return $object;
-	}
-
-	/**
-	 * Mark the last time the system was used by a user
-	 *
-	 * @param Int $id
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	private function markLastTimeUsed($id)
-	{
-		Database::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
-	}
-
-	/**
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @throws \FeedException
-	 * @throws \Framework\Alert
-	 */
-
-	public function _nonext(Request $request, Response $response)
-	{
-		$this->_no($request, $response);
-		$this->_main($request, $response);
-	}
-
-	/**
-	 * Say No to a match
-	 *
-	 * @param Request
-	 * @param Response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _no(Request $request, Response $response)
-	{
-		$this->resetViews($request->person);
-
-		// get the ids from and to
-		$idFrom = $request->person->id;
-		$idTo = $request->input->data->id;
-		if (empty($idTo)) {
-			return;
-		}
-
-		// mark the transaction as blocked
-		Database::query("
-		START TRANSACTION;
-		DELETE FROM _piropazo_relationships WHERE (id_from='$idFrom' AND id_to='$idTo') OR (id_to='$idFrom' AND id_from='$idTo');
-		INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','dislike',CURRENT_TIMESTAMP);
-		COMMIT");
-
-		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
-
-		// submit to Google Analytics 
-		GoogleAnalytics::event('piropazo_no', $idTo);
-
-		// add challenge
-		Challenges::complete('piropazo-say-yes-no', $request->person->id);
-	}
-
-	/**
-	 * Flag a user's profile
-	 *
-	 * @param \Apretaste\Request $request
-	 * @param \Apretaste\Response $response
-	 *
-	 * @return \Apretaste\Response
-	 * @throws \Framework\Alert
-	 * @author salvipascual
-	 */
-	public function _reportar(Request $request, Response $response)
-	{
-		$this->resetViews($request->person);
-
-		// do not allow empty codes
-		$violatorId = $request->input->data->id;
-		$violationCode = $request->input->data->violation;
-		if (empty($violatorId) || empty($violationCode)) {
-			return $response;
-		}
-
-		// save the report
-		Database::query("
-			INSERT INTO _piropazo_reports (id_reporter, id_violator, type) 
-			VALUES ({$request->person->id}, $violatorId, '$violationCode')");
-
-		// say NO to the user
-		$request->query = $violatorId;
-		$this->_no($request, $response);
-	}
-
-	/**
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert|FeedException
-	 */
-
-	public function _activate(Request $request, Response $response)
-	{
-		// create or activate piropazo user
-		$this->activatePiropazoUser($request->person->id);
-		$this->_main($request, $response);
-	}
-
-	/**
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert|FeedException
-	 */
-
-	public function _deactivate(Request $request, Response $response)
-	{
-		// create or activate piropazo user
-		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person = '{$request->person->id}'");
-		$this->_main($request, $response);
-	}
-
-	/**
 	 * Get the list of matches for your user
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _parejas(Request $request, Response $response)
@@ -627,8 +328,8 @@ class Service
 		// get list of people whom you liked or liked you
 		$matches = Database::query("
 			SELECT B.*, 'WAITING' AS type, A.id_from AS id, '' AS matched_on, datediff(A.expires_matched_blocked, CURDATE()) AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today,
-			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
+				   last_access < CURRENT_DATE as is_first_access_today,
+				   MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
@@ -637,8 +338,8 @@ class Service
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_from AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today,
-			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
+				   last_access < CURRENT_DATE as is_first_access_today,
+				   MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_from = B.id
@@ -646,8 +347,8 @@ class Service
 			AND id_to = '{$request->person->id}'
 			UNION
 			SELECT B.*, 'MATCH' AS type, A.id_to AS id, A.expires_matched_blocked AS matched_on, '' AS time_left,
-			       last_access < CURRENT_DATE as is_first_access_today,
-			       MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
+				   last_access < CURRENT_DATE as is_first_access_today,
+				   MONTH(last_access) < MONTH(CURRENT_DATE) as is_first_access_month 
 			FROM _piropazo_relationships A
 			LEFT JOIN person B
 			ON A.id_to = B.id
@@ -675,8 +376,7 @@ class Service
 
 			// get match images into an array and the content
 			if ($match->picture) {
-				$file = Bucket::getPathByEnvironment('perfil', $match->picture);
-				$images[] = (stripos($match->picture, '.') === false) ? "$file.jpg" : $file;
+				$images[] = Bucket::getPathByEnvironment('perfil', $match->picture);
 			}
 
 			// get match properties
@@ -719,25 +419,10 @@ class Service
 	}
 
 	/**
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @throws \FeedException
-	 * @throws \Framework\Alert
-	 */
-	public function _flornext(Request $request, Response $response)
-	{
-		$this->_flor($request, $response);
-		$this->_si($request, $response);
-		$this->_main($request, $response);
-	}
-
-	/**
 	 * Sends a flower to another user
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _flor(Request $request, Response $response)
@@ -759,6 +444,7 @@ class Service
 				'icon' => 'local_florist',
 				'text' => 'Actualmente usted no tiene suficientes flores para usar. Puede comprar algunas flores frescas en la tienda de Piropazo.',
 				'button' => ['href' => 'PIROPAZO TIENDA', 'caption' => 'Tienda']];
+
 			$response->setLayout('empty.ejs');
 			$response->setTemplate('message.ejs', $content);
 			return;
@@ -795,8 +481,7 @@ class Service
 	 *
 	 * @param Request
 	 * @param Response
-	 * @return Response|void
-	 * @throws Alert
+	 * @return Response
 	 * @author salvipascual
 	 */
 	public function _corazon(Request $request, Response $response)
@@ -835,7 +520,6 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 * @return Response
-	 * @throws Alert
 	 * @author salvipascual
 	 */
 	public function _tienda(Request $request, Response $response)
@@ -871,134 +555,11 @@ class Service
 	}
 
 	/**
-	 * Show a list of notifications
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @return Response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _notificaciones(Request $request, Response $response)
-	{
-		$this->resetViews($request->person);
-
-		if ($this->isProfileIncomplete($request->person)) {
-			// get the edit response
-			$request->extra_fields = 'hide';
-			return $this->_perfil($request, $response);
-		}
-
-		// get all unread notifications
-		$notifications = Database::query("
-			SELECT id,icon,`text`,link,inserted
-			FROM notification
-			WHERE `to` = {$request->person->id} 
-			AND service = 'piropazo'
-			AND `hidden` = 0
-			ORDER BY inserted DESC");
-
-		// if no notifications, let the user know
-		if (empty($notifications)) {
-			$content = [
-				'header' => 'Nada por leer',
-				'icon' => 'notifications_off',
-				'text' => 'Por ahora usted no tiene ninguna notificación por leer.',
-				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja']];
-			$response->setLayout('empty.ejs');
-			return $response->setTemplate('message.ejs', $content);
-		}
-
-		foreach ($notifications as $noti) {
-			$noti->inserted = strtoupper(date('d/m/Y h:ia', strtotime(($noti->inserted))));
-		}
-
-		// prepare content for the view
-		$content = [
-			'notifications' => $notifications,
-			'title' => 'Notificaciones',
-		];
-
-		// build the response
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('notifications.ejs', $content);
-	}
-
-	/**
-	 * Exit the Piropazo network
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 * @author salvipascual
-	 */
-	public function _salir(Request $request, Response $response)
-	{
-		$this->resetViews($request->person);
-
-		// remove from piropazo
-		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person={$request->person->id}");
-
-		// respond to user
-		$content = [
-			'header' => 'Ha salido de Piropazo',
-			'icon' => 'directions_walk',
-			'text' => 'No recibirá más mensajes de otros usuarios ni aparecerá en la lista de Piropazo. Si revisa Piropazo nuevamente, su perfil será agregado automáticamente.',
-			'button' => ['href' => 'SERVICIOS', 'caption' => 'Otros Servicios']];
-		$response->setLayout('empty.ejs');
-		$response->setTemplate('message.ejs', $content);
-	}
-
-	/**
-	 * Show the list of support messages
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 * @throws Exception
-	 */
-	public function _soporte(Request $request, Response $response) {
-
-		$this->resetViews($request->person);
-
-		// @TODO replace email with ids
-		$email = $request->person->email;
-		$username = $request->person->username;
-
-		// get the list of messages
-		$tickets = Database::query("
-			SELECT A.*, B.username 
-			FROM support_tickets A 
-			JOIN person B
-			ON A.from = B.email
-			WHERE A.from = '$email' 
-			OR A.requester = '$email' 
-			ORDER BY A.creation_date ASC");
-
-		// prepare chats for the view
-		$chat = [];
-		foreach ($tickets as $ticket) {
-			$message = new stdClass();
-			$message->class = $ticket->from == $email ? 'me' : 'you';
-			$message->from = $ticket->username;
-			$message->text = preg_replace('/[\x00-\x1F\x7F]/u', '', $ticket->body);
-			$message->date = date_format((new DateTime($ticket->creation_date)), 'd/m/Y h:i a');
-			$message->status = $ticket->status;
-			$chat[] = $message;
-		}
-
-		// send data to the view
-		$response->setLayout('piropazo.ejs');
-		$response->setTemplate('soporte.ejs', ['messages' => $chat, 'myusername' => $username, 'title' => 'Soporte']);
-	}
-
-	/**
 	 * Pay for an item and add the items to the database
 	 *
 	 * @param Request $request
 	 * @param Response $response
 	 * @return Response
-	 * @throws Alert
 	 */
 	public function _pay(Request $request, Response $response)
 	{
@@ -1069,91 +630,245 @@ class Service
 	}
 
 	/**
-	 * Get the percentage of match for two profiles
-	 *
-	 * @param Int $idOne
-	 * @param Int $idTwo
-	 * @return Number
-	 * @throws Alert
-	 * @author salvipascual
+	 * Activate a profile in Piropazo
+	 * 
+	 * @param Request $request
+	 * @param Response $response
 	 */
-	private function getPercentageMatch($idOne, $idTwo)
+	public function _activate(Request $request, Response $response)
 	{
-		// get both profiles
-		$p = Database::query("
-			SELECT eyes, skin, body_type, hair, highest_school_level, interests, lang, religion, country, usstate, province, year_of_birth 
-			FROM person 
-			WHERE id='$idOne' 
-			OR id='$idTwo'");
-
-		// do not continue if any user can't be found
-		if (empty($p[0]) || empty($p[1])) {
-			return 0;
-		}
-
-		// calculate basic values
-		$percentage = 0;
-		if ($p[0]->eyes == $p[1]->eyes) {
-			$percentage += 5;
-		}
-		if ($p[0]->skin == $p[1]->skin) {
-			$percentage += 5;
-		}
-		if ($p[0]->body_type == $p[1]->body_type) {
-			$percentage += 5;
-		}
-		if ($p[0]->hair == $p[1]->hair) {
-			$percentage += 5;
-		}
-		if ($p[0]->highest_school_level == $p[1]->highest_school_level) {
-			$percentage += 10;
-		}
-		if ($p[0]->lang == $p[1]->lang) {
-			$percentage += 10;
-		}
-		if ($p[0]->religion == $p[1]->religion) {
-			$percentage += 10;
-		}
-		if ($p[0]->country == $p[1]->country) {
-			$percentage += 5;
-		}
-		if ($p[0]->usstate == $p[1]->usstate || $p[0]->province == $p[1]->province) {
-			$percentage += 10;
-		}
-
-		// calculate interests
-		$arrOne = explode(',', strtolower($p[0]->interests));
-		$arrTwo = explode(',', strtolower($p[1]->interests));
-		$intersect = array_intersect($arrOne, $arrTwo);
-		if ($intersect) {
-			$percentage += 20;
-		}
-
-		// calculate age
-		$ageOne = date('Y') - $p[0]->year_of_birth;
-		$ageTwo = date('Y') - $p[1]->year_of_birth;
-		$diff = abs($ageOne - $ageTwo);
-		if ($diff == 0) {
-			$percentage += 15;
-		}
-		if ($diff >= 1 && $diff <= 5) {
-			$percentage += 10;
-		}
-		if ($diff >= 6 && $diff <= 10) {
-			$percentage += 5;
-		}
-		return $percentage;
+		// create or activate piropazo user
+		$this->activatePiropazoUser($request->person->id);
+		$this->_main($request, $response);
 	}
 
 	/**
-	 * Reset views
-	 *
-	 * @param $person
-	 * @throws Alert
-	 * @throws \Apretaste\Alert
+	 * Deactivate a profile in Piropazo
+	 * 
+	 * @param Request $request
+	 * @param Response $response
 	 */
-	private function resetViews($person) {
-		// reset views
-		Database::query("UPDATE _piropazo_people SET views = 0 WHERE id_person = {$person->id};");
+	public function _deactivate(Request $request, Response $response)
+	{
+		// create or activate piropazo user
+		Database::query("UPDATE _piropazo_people SET active=0 WHERE id_person = '{$request->person->id}'");
+		$this->_main($request, $response);
+	}
+
+	/**
+	 * Reset the number of views for an user
+	 *
+	 * @param Person $person
+	 */
+	private function resetViews($person)
+	{
+		Database::query("UPDATE _piropazo_people SET views = 0 WHERE id_person = {$person->id}");
+	}
+
+	/**
+	 * Check if a profile is incomplete
+	 *
+	 * @param Object $person
+	 * @return Boolean
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function isProfileIncomplete($person)
+	{
+		// run powers for amulet ROMEO
+		// NOTE: added here for convenience, since this function is called all over the place
+		if (Amulets::isActive(Amulets::ROMEO, $person->id)) {
+			Database::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$person->id}");
+		}
+
+		// ensure your profile is completed
+		/** @var Person $person */
+		return (
+			empty($person->firstName) ||
+			empty($person->picture) ||
+			empty($person->gender) ||
+			empty($person->sexualOrientation) /*||
+			intval($person->age) < 18*/
+		);
+	}
+
+	/**
+	 * Make active if the person uses Piropazo for the first time
+	 *
+	 * @param Int $id
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function activatePiropazoUser($id)
+	{
+		Database::query("INSERT INTO _piropazo_people (id_person) VALUES('$id') ON DUPLICATE KEY UPDATE active = 1");
+	}
+
+	/**
+	 * Get the person who best matches with you
+	 *
+	 * @param Person $user
+	 * @return mixed
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function getMatchFromCache($user)
+	{
+		// create cache if needed
+		$this->createMatchesCache($user);
+
+		$matches = Database::query("
+			SELECT 
+				A.id, A.suggestion AS user, 
+				IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()),3) < 3 AS heart
+			FROM _piropazo_cache A
+			JOIN _piropazo_people B
+			ON A.suggestion = B.id_person
+			WHERE A.user = {$user->id}
+			ORDER BY heart DESC, A.match DESC, A.id");
+
+		foreach ($matches as $match) {
+			$person = Person::find($match->user);
+
+			if (!$this->isProfileIncomplete($person)) {
+				$person->heart = $match->heart;
+
+				// get the match color class based on gender
+				if ($person->gender === 'M') {
+					$person->color = 'male';
+				} elseif ($person->gender === 'F') {
+					$person->color = 'female';
+				} else {
+					$person->color = 'neutral';
+				}
+
+				// return the match
+				return $person;
+			}
+
+			Database::query("DELETE FROM _piropazo_cache WHERE user={$user->id} AND suggestion={$person->id}");
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Create matches cache to speed up searches
+	 *
+	 * @param Person $user , you
+	 * @return Boolean
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function createMatchesCache($user)
+	{
+		// do not cache if already exist data
+		if (Database::queryFirst("SELECT COUNT(id) AS cnt FROM _piropazo_cache WHERE user = {$user->id}")->cnt < 1) {
+
+			$piropazoPreferences = Database::queryFirst("SELECT minAge, maxAge FROM _piropazo_people WHERE id_person = {$user->id}");
+
+			// filter based on sexual orientation
+			switch ($user->sexualOrientation) {
+				case 'HETERO':
+					$clauseSex = "A.gender <> '$user->gender' AND COALESCE(A.sexual_orientation,'HETERO') <> 'HOMO' ";
+					break;
+				case 'HOMO':
+					$clauseSex = "A.gender = '$user->gender' AND COALESCE(A.sexual_orientation, 'HETERO') <> 'HETERO' ";
+					break;
+				case 'BI':
+					$clauseSex = "(COALESCE(A.sexual_orientation, 'HETERO') = 'BI' 
+						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HOMO' 
+							AND A.gender = '$user->gender') 
+						OR (COALESCE(A.sexual_orientation, 'HETERO') = 'HETERO' 
+							AND A.gender <> '$user->gender')
+						) ";
+					break;
+			}
+
+			// create final query with the match score
+			$matches = Database::query("
+				SELECT {$user->id}, id,
+					IF(province = '$user->provinceCode', 50, 0) +   
+					IF(ABS(IFNULL(YEAR(CURRENT_DATE) - year_of_birth, 0) - $user->age) <= 5, 20, 0) +
+					crown * 25 +
+					IF(religion = '$user->religion', 20, 0) +
+					IF(results.active, 50, 0)    
+					AS percent_match
+				FROM (
+					SELECT 
+						A.id, A.year_of_birth, A.province, A.religion, A.active, A.picture,
+						IFNULL(TIMESTAMPDIFF(DAY, B.crowned,NOW()), 3) < 3 AS crown 
+					FROM _piropazo_people B 
+					 LEFT JOIN _piropazo_relationships R1 ON R1.id_to = B.id_person AND R1.id_from = {$user->id}
+					 INNER JOIN person A ON A.id = B.id_person
+					WHERE true
+						AND R1.id_from is NULL
+						AND B.active = 1
+						AND $clauseSex 
+						AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) >= {$piropazoPreferences->minAge})
+						AND (A.year_of_birth IS NULL OR IFNULL(YEAR(NOW())-year_of_birth,0) <= {$piropazoPreferences->maxAge})
+						AND NOT A.id = {$user->id}
+						AND NULLIF(A.picture, '') IS NOT NULL
+				) AS results 
+				ORDER BY results.active DESC, percent_match DESC
+				LIMIT 50");
+
+			foreach ($matches as $match) {
+				Database::query("INSERT INTO _piropazo_cache (`user`, suggestion, `match`) VALUES ({$user->id}, {$match->id}, {$match->percent_match});");
+			}
+
+			return count($matches) > 0;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove all properties in an object except the ones passes in the array
+	 *
+	 * @param array $properties , array of properties to keep
+	 * @param Object $object , object to clean
+	 * @return Object, clean object
+	 * @author salvipascual
+	 */
+	private function filterObjectProperties($properties, $object)
+	{
+		$objProperties = get_object_vars($object);
+		foreach ($objProperties as $prop => $value) {
+			if (!in_array($prop, $properties)) {
+				unset($object->$prop);
+			}
+		}
+		return $object;
+	}
+
+	/**
+	 * Mark the last time the system was used by a user
+	 *
+	 * @param Int $id
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function markLastTimeUsed($id)
+	{
+		Database::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
+	}
+
+	/**
+	 * Check if the user exists in piropazo and is active
+	 *
+	 * @param Int $id
+	 * @throws Alert
+	 * @author ricardo
+	 */
+	private function isActive($id)
+	{
+		$res = Database::query("SELECT active FROM _piropazo_people WHERE id_person='$id'");
+		if ($res) {
+			return $res[0]->active;
+		} else {
+			return false;
+		}
 	}
 }
