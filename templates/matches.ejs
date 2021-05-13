@@ -1,99 +1,48 @@
 <div class="row">
+	<div class="col s12">
+		<ul class="tabs tabs-fixed-width">
+			<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO CITAS'})">Citas</a></li>
+			<li class="tab"><a href="#" class="active">Parejas</a></li>
+			<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO PERFIL'})">Perfil</a></li>
+			<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO TIENDA'})">Tienda</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="row">
 	<div class="col s12" id="matches-lists">
-		<!--YOUR MATCHES-->
-		<% if(matched.length > 0) { %>
-			<section id="matches">
-				<% matched.forEach(function(person) { %>
-					<div class="card" id="<%= person.id %>">
-						<div class="card-image waves-effect waves-block waves-light">
-							<!-- PICTURE -->
-							<% if (person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
-							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.firstName %>"
-								 onclick="apretaste.send({'command':'PERFIL','data':{'username':'<%= person.id %>'}})"
-								 class="responsive-img"/>
-						</div>
-						<div class="card-content" style="padding: 12px">
-							<p>
-								<b class="black-text"><%= person.firstName %></b>, <%= person.age %>
-								años. <%= person.location %>.<br>
-								<%= person.education + (person.religion != 'Otra' ? ', ' + person.religion : '') %>
-							</p>
-						</div>
+		<% people.forEach(function(item) { %>
+			<div class="card" id="<%= item.id %>">
+				<!-- IMAGE -->
+				<div class="card-image waves-effect waves-block waves-light">
+					<% var src = "{{APP_IMAGE_PATH}}" + item.picture %>
+					<img src="<%= src %>" alt="<%= item.firstName %>" onclick="apretaste.showImage('<%= src %>')"/>
+				</div>
 
-						<!-- BUTTONS -->
-						<div class="card-action" style="padding:12px">
-							<a class="green-text" onclick="openChat('<%= person.id %>')">Hablar</a>
-							<a class="green-text" onclick="viewProfile('<%= person.id %>')">Perfil</a>
-							<a class="red-text" onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.firstName %>')">Olvidar</a>
-						</div>
-					</div>
-				<% }) %>
-			</section>
-		<% } %>
+				<!-- CONTENT -->
+				<div class="card-content" style="padding: 12px">
+					<p>
+						<b class="<%= item.gender %>"><%= item.firstName %></b>, <%= item.age %>
+						años. <%= item.location %>.<br>
+						<%= item.education + (item.religion != 'Otra' ? ', ' + item.religion : '') %>
+					</p>
+				</div>
 
-		<!--WAITING FOR YOU-->
-		<% if(waiting.length > 0) { %>
-			<section>
-				<% waiting.forEach(function(person) { %>
-					<div class="card" id="<%= person.id %>">
-						<div class="card-image waves-effect waves-block waves-light">
-							<!-- PICTURE -->
-							<% if (person.picture) var src = "{{APP_IMAGE_PATH}}" + person.picture;
-							else var src = "{{APP_RESOURCES}}/images/user.jpg"; %>
-							<img src="<%= src %>" alt="<%= person.firstName %>" class="responsive-img"/>
-						</div>
-						<div class="card-content" style="padding: 12px">
-							<p>
-								<b class="black-text"><%= person.firstName %></b>, <%= person.age %>
-								años. <%= person.location %>.<br>
-								<%= person.education + (person.religion != 'Otra' ? ', ' + person.religion : '') %>
-							</p>
-						</div>
+				<!-- BUTTONS -->
+				<div class="card-action grey lighten-4">
+					<% if(item.type == 'MATCH') { %>
+						<a class="green-text" onclick="openChat('<%= item.id %>')">Hablar</a>
+						<a class="green-text" onclick="viewProfile('<%= item.id %>')">Perfil</a>
+						<a class="red-text" onclick="deleteMatchModalOpen('<%= item.id %>', '<%= item.firstName %>')">Olvidar</a>
+					<% } %>
 
-						<div class="card-action" style="padding: 12px">
-							<!-- BUTTONS -->
-							<a class="green-text" onclick="doMatch('<%= person.id %>')">
-								Me gusta
-							</a>
-							<a class="red-text"
-							   onclick="deleteMatchModalOpen('<%= person.id %>', '<%= person.firstName %>')">
-								No, paso
-							</a>
-						</div>
-					</div>
-				<% }) %>
-			</section>
-		<% } %>
-
-		<div id="modal" class="modal">
-			<div class="modal-content">
-				<h4>Copie el correo</h4>
-				<p id="per"></p>
-			</div>
-			<div class="modal-footer">
-				<a href="#!" class="modal-close waves-effect waves-green btn-flat">Hecho</a>
-			</div>
-		</div>
-
-		<!-- FLOWER POPUP -->
-		<div id="modalFlower" class="modal">
-			<div class="modal-content">
-				<h4 class="green-text">Enviar flor</h4>
-				<p>Usted tiene <span id="flowerCount"> <%= myflowers %> </span> flores. Agregue un mensaje para enviar a
-					<b class="name"></b>, llamar su atención y agregar 7 días al tiempo de espera.</p>
-				<div class="row">
-					<div class="input-field col s12">
-						<textarea id="flowerMsg" maxlength="200" class="validate materialize-textarea"></textarea>
-						<label for="flowerMsg">Agrega un mensaje con tu flor</label>
-					</div>
+					<% if(item.type == 'WAITING') { %>
+						<a class="green-text" onclick="doMatch('<%= item.id %>')">Me gusta</a>
+						<a class="red-text" onclick="deleteMatchModalOpen('<%= item.id %>', '<%= item.firstName %>')">No, paso</a>
+					<% } %>
 				</div>
 			</div>
-			<div class="modal-footer">
-				<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
-				<a href="#!" class="modal-close waves-effect waves-green btn-flat green-text" onclick="sendFlower()">Enviar</a>
-			</div>
-		</div>
+		<% }) %>
 	</div>
 </div>
 

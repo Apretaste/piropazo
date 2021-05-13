@@ -1,96 +1,27 @@
-/* PIROPAZO PERFIL */
-
-body {
-	overflow: visible !important;
-}
-
-*:disabled {
-	color: black !important;
-	border-bottom: none !important;
-}
-
-.profile-img {
-	width: 100%;
-}
-
-.date-img {
-	margin: auto;
-	display: block;
-	position: relative;
-	padding: .75rem 0;
-	width: 100%;
-}
+/* CITAS */
 
 #profile {
 	position: relative;
 }
 
-#info h1, #info h2, #info h3 {
-	color: white;
-	margin: 6px;
+#citas-image {
+	display: block;
+	width: 100%;
+	border-radius: 15px;
 }
 
-#desc {
+#citas-no-image {
+	background: #133919;
+	z-index: -100;
+	width: 100%;
+	height: 50vh;
+	border-radius: 15px;
+}
+
+#citas-heart {
 	position: absolute;
-	bottom: 0;
-	z-index: 1;
-	background-color: white;
-	margin: auto;
-	padding: 5px;
-}
-
-#desc-table td {
-	padding: 0 5px;
-}
-
-#desc-table tr {
-	border: none;
-}
-
-#desc-table td:first-child {
-	width: 24px;
-	padding-left: 0;
-}
-
-#info-list, #info-list li {
-	border: none;
-	margin: 0;
-	padding-top: 0;
-}
-
-#info h1, #info h2 {
-	display: inline;
-}
-
-.row {
-	margin-bottom: 5px;
-}
-
-.row:last-of-type {
-	margin-bottom: 0;
-}
-
-.underline {
-	text-decoration: underline;
-}
-
-.size-large {
-	font-size: 20px;
-}
-
-#denounce-link {
-	font-size: small;
-	color: grey;
-}
-
-.material-placeholder {
-	position: relative;
-}
-
-.main-heart {
-	position: absolute;
-	right: -16px;
-	top: 4px;
+	right: 10px;
+	top: 10px;
 	width: 72px;
 	height: 72px;
 	background: white;
@@ -99,126 +30,83 @@ body {
 	z-index: 1;
 }
 
-#heart-icon {
-	position: absolute;
-	top: 10px;
-	right: 15px;
-}
-
-#heart-icon > i {
-	font-size: 2.2rem;
-	font-weight: 100;
-}
-
-.position-bottom {
+#citas-text {
 	position: absolute;
 	display: block;
 	z-index: 1;
-	bottom: 48px;
+	text-shadow:1px 1px black;
+	bottom: 20px;
+	left: 20px;
 }
 
-.position-bottom.left {
-	left: 6px;
+#citas-buttons {
+	position: fixed;
+	bottom: 20px;
+	left: 0px;
 }
 
-.position-bottom.right {
-	right: 6px;
-}
-
-.actions {
-	position: absolute;
-}
-
-.actions .material-icons {
+#citas-buttons .material-icons {
 	font-size: 2.5rem;
 }
 
-.picture-container {
+#citas-flower-conter {
+	background-color: #e53935;
+	width: 25px;
+	height: 25px;
+	border: 2px solid white;
+	border-radius: 50%;
+	position: relative;
+	top: 15px;
+	left: 50px;
+	color: white;
+	z-index: 9999;
+	padding-top: 3px;
+	font-size: smaller;
+	line-height: 15px;
+}
+
+/* PAREJAS */
+
+.card-image {
+	max-height: 200px;
+}
+
+.card-image img {
+	object-fit: cover;
+}
+
+/* PERFIL */
+
+#profile-image {
 	position: relative;
 	margin-bottom: 10px;
 }
 
-#picture-upload-btn {
+#profile-heart {
+	width: 72px;
+	height: 72px;
+	background: white;
+	border-radius: 50%;
+	padding: 8px;
+	z-index: 1;
 	position: absolute;
-	bottom: 20px;
+	top: 10px;
 	right: 20px;
 }
 
-#edit-fields {
-	margin-bottom: 80px;
-}
-
-#more {
-	bottom: 56px;
-}
-
-/* Tienda */
-
-#store-list {
-	border-left: none;
-	border-right: none;
-}
-
-#store-list li {
-	padding-left: 48px;
-}
-
-#store-list p:nth-child(4) {
-	color: #62c145 !important;
-}
-
-#store-list .material-icons {
-	top: 30%;
-	font-size: 28px;
-	left: 4px;
-}
-
-/* Matches */
-
-#matches-lists .secondary-content {
-	top: 32%;
-	right: 6px;
-}
-
-#matches-lists .secondary-content a:first-child {
-	margin-right: 5px;
-}
-
-#noti-list .secondary-content {
-	top: 32%;
+#profile-upload-btn {
+	position: absolute;
+	bottom: 10px;
 	right: 20px;
 }
 
-#matches-lists .collection, #matches-lists li, #chats-list, #noti-list {
-	border: none;
-}
-
-#matches img {
-	width: 100%;
-	max-height: 180px;
-	object-fit: cover;
-}
-
-/* MESSAGES */
+/* MESSAGE */
 
 .message {
 	padding: 5px 10px;
 	border-radius: 3px;
-}
-
-.message.danger {
 	color: #e53935;
 	background-color: #ffcdd2;
-}
-
-.message.notice {
-	color: #1565c0;
-	background-color: #bbdefb;
-}
-
-.message.success {
-	color: #1b5e20;
-	background-color: #c8e6c9;
 }
 
 .message i {
@@ -233,7 +121,7 @@ body {
 	margin-bottom: 0px;
 }
 
-/* GENDERS */
+/* GENDER */
 
 .M {
 	color: #5c6bc0;
@@ -261,40 +149,4 @@ body {
 
 .chip.tiny .icon {
 	line-height: 20px;
-}
-
-.chip.clear {
-	color: rgba(0, 0, 0, 0.87);
-	margin: 0px;
-	padding: 0px;
-	background-color: transparent;
-}
-
-/* ICONS */
-
-.icon-text {
-	margin: 3px 0px 20px 0px;
-	font-size: small;
-	white-space: nowrap;
-}
-
-.icon-alert {
-	background-color: #ff0000;
-	width: 25px;
-	height: 27px;
-	border: 1px solid white;
-	border-radius: 15px;
-	position: relative;
-	top: 10px;
-	left: 45px;
-	color: white;
-	z-index: 9999;
-	padding-top: 3px;
-}
-
-.icon-alert.icon-favorite {
-	width: 13px;
-	height: 13px;
-	top: -2px;
-	left: 22px
 }

@@ -1,264 +1,208 @@
-<% var isDisabled = !isMyOwnProfile ? "disabled" : "";
-var colSize = isDisabled ? "s6" : "s12 m6";
-if(!isMyOwnProfile){ %>
-	<style>
-		.caret, label {
-			display: none;
-		}
-
-		.input-field {
-			margin: 0;
-		}
-
-		textarea {
-			margin-bottom: 0;
-			padding: 0;
-		}
-	</style>
-<% } %>
-
-<% if(profileIncomplete){ %>
+<% if(profileIncomplete) { %>
 	<div class="row">
 		<div class="col s12">
-			<div class="message danger">
+			<div class="message">
 				<i class="fas fa-exclamation-triangle"></i>
 				<p>Para usar Piropazo, primero debe llenar todo su perfil y agregar una foto.</p>
 			</div>
 		</div>
 	</div>
-<% } %>
-
-<% if(profile.heart == "1" && isMyOwnProfile){ %>
+<% } else { %>
 	<div class="row">
 		<div class="col s12">
-			<div class="message success">
-				<i class="fas fa-exclamation-triangle"></i>
-				<p>Su corazón vence en <%= heartRemaining() %></p>
-			</div>
+			<ul class="tabs tabs-fixed-width">
+				<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO CITAS'})">Citas</a></li>
+				<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO PAREJAS'})">Parejas</a></li>
+				<li class="tab"><a href="#" class="active">Perfil</a></li>
+				<li class="tab"><a href="#" onclick="apretaste.send({command: 'PIROPAZO TIENDA'})">Tienda</a></li>
+			</ul>
 		</div>
 	</div>
 <% } %>
 
-<!-- PICTURE -->
-<% if (profile.picture) var src = "{{APP_IMAGE_PATH}}" + profile.picture;
-else var src = "{{APP_SERVICE_PATH}}/images/user.png"; %>
+<div class="row">
+	<div id="profile-image" class="col s12">
+		<!-- PICTURE -->
+		<% if (profile.picture) { %>
+			<img id="citas-image" src="{{APP_IMAGE_PATH}}<%= profile.picture %>" alt="¡Sin foto!"/>
+		<%} else { %>
+			<div id="citas-no-image"></div>
+		<% } %>
 
-<div class="picture-container col s12">
-	<img src="<%= src %>" alt="Picture" class="responsive-img profile-img">
+		<!-- HEART -->
+		<% if(profile.heart == 1){ %>
+			<div id="profile-heart" onclick="showToast('Expira en <%= moment(profile.heartExpires).add(3, 'days').format('MMM D, h:mm A') %>')">
+				<i class="material-icons medium green-text">favorite</i>
+			</div>
+		<% } %>
 
-	<% if(isMyOwnProfile){ %>
-		<input <%= isDisabled %> id="picturefield" type="file" class="hide"/>
-		<a class="btn-floating white" id="picture-upload-btn" onclick="uploadPicture()">
+		<!-- EDIT BUTTON -->
+		<input id="picturefield" type="file" class="hide"/>
+		<a id="profile-upload-btn"  class="btn-floating white" onclick="uploadPicture()">
 			<i class="material-icons grey-text text-darken-4">edit</i>
 		</a>
-	<% } %>
-
-	<% if(profile.heart == "1"){ %>
-		<i id="heart-icon" class="material-icons green-text medium">favorite</i>
-	<% } %>
+	</div>
 </div>
 
-<div class="row" id="edit-fields">
+<div class="row">
 	<!-- NAME -->
-	<div class="input-field col <%= colSize %>">
+	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">person</i>
-		<input <%= isDisabled %> id="first_name" type="text" value="<%= profile.firstName %>" class="validate"/>
+		<input id="first_name" type="text" value="<%= profile.firstName %>" class="validate"/>
 		<label for="first_name">Nombre</label>
 	</div>
 
 	<!-- BIRTH YEAR -->
-	<div class="input-field col <%= colSize %>">
+	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">cake</i>
-		<select <%= isDisabled %> id="year_of_birth" class="validate">
-			<option value="" <%= profile.year_of_birth == "" ? "selected" : "" %> disabled></option>
+		<select id="year_of_birth" class="validate">
+
+			<option value="" disabled></option>
 			<% getYears().forEach(function(year) { %>
-				<option value="<%= year %>" <% if(profile.yearOfBirth == year){ %>selected<% } %>><%= year %></option>
+				<% var selected = profile.yearOfBirth == year ? "selected" : "" %>
+				<option <%= selected %> value="<%= year %>"><%= year %></option>
 			<% }); %>
 		</select>
 		<label for="year_of_birth">Año de nacimiento</label>
 	</div>
 
 	<!-- MARITAL STATUS -->
-	<% var marital_status = ["SOLTERO", "SALIENDO", "COMPROMETIDO", "CASADO"] %>
-	<div class="input-field col <%= colSize %>">
+	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">favorite</i>
-		<select <%= isDisabled %> id="marital_status" class="validate">
+		<select id="marital_status" class="validate">
 			<option value=""></option>
 			<% marital_status.forEach(function(val) { %>
-				<option value="<%= val %>" <% if(val == profile.maritalStatus){ %>selected
-						<% } %>
-				><%= val.firstUpper() %></option>
+				<% var selected = profile.maritalStatus == val ? "selected" : "" %>
+				<option <%= selected %> value="<%= val %>"><%= firstUpper(val) %></option>
 			<% }); %>
 		</select>
 		<label for="marital_status">Estado Civil</label>
 	</div>
 
 	<!-- HIGHEST SCHOOL LEVEL-->
-	<% var highest_school_level = ["PRIMARIO", "SECUNDARIO", "TECNICO", "UNIVERSITARIO", "POSTGRADUADO", "DOCTORADO", "OTRO"] %>
-	<div class="input-field col <%= colSize %> <%= profile.education == "" && !isMyOwnProfile ? "hide" : "" %>">
+	<div class="input-field col s12 <%= profile.education == "" ? "hide" : "" %>">
 		<i class="material-icons prefix grey-text text-darken-2">school</i>
-		<select <%= isDisabled %> id="highest_school_level" class="validate">
+		<select id="highest_school_level" class="validate">
 			<option value=""></option>
 			<% highest_school_level.forEach(function(val) { %>
-				<option value="<%= val %>" <% if(val == profile.education){ %>selected
-						<% } %>
-				><%= val.firstUpper() %></option>
-			<% }); %>
+				<% var selected = profile.education == val ? "selected" : "" %>
+				<option <%= selected %> value="<%= val %>"><%= firstUpper(val) %></option>
+			<% }) %>
 		</select>
 		<label for="highest_school_level">Nivel Educativo</label>
 	</div>
 
 	<!-- PROVINCE-->
-	<div class="input-field province-div col <%= colSize %>">
+	<div class="input-field province-div col s12">
 		<i class="material-icons prefix grey-text text-darken-2">place</i>
-		<select <%= isDisabled %> id="province" class="validate">
+		<select id="province" class="validate">
 			<option value=""></option>
 			<% Object.keys(province).forEach(function(val) { %>
-				<option value="<%= val %>" <% if(val == profile.provinceCode){ %>selected<% } %>><%= province[val] %></option>
-			<% }); %>
+				<% var selected = profile.provinceCode == val ? "selected" : "" %>
+				<option <%= selected %> value="<%= val %>"><%= province[val] %></option>
+			<% }) %>
 		</select>
 		<label for="province">Provincia</label>
 	</div>
 
 	<!-- RELIGION -->
-	<% var religion = ["CRISTIANISMO", "CATOLICISMO", "YORUBA", "PROTESTANTE", "SANTERO", "ABAKUA", "BUDISMO", "ISLAM", "ATEISMO", "AGNOSTICISMO", "SECULARISMO", "OTRA"] %>
-	<div class="input-field col <%= colSize %>">
+	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">flare</i>
-		<select <%= isDisabled %> id="religion" class="validate">
+		<select id="religion" class="validate">
 			<option value=""></option>
 			<% religion.forEach(function(val) { %>
-				<option value="<%= val %>" <% if(val == profile.religion){ %>selected
-						<% } %>
-				><%= val.firstUpper() %></option>
-			<% }); %>
+				<% var selected = profile.religion == val ? "selected" : "" %>
+				<option <%= selected %> value="<%= val %>"><%= firstUpper(val) %></option>
+			<% }) %>
 		</select>
 		<label for="religion">Religión</label>
 	</div>
 
 	<!-- GENDER -->
-	<div class="input-field col <%= colSize %>">
+	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">wc</i>
-		<select <%= isDisabled %> id="gender" class="validate"
-								  onchange="$('#sexual_orientation').parent().parent().parent().removeClass('hide');">
-			<option value="" <% if(profile.gender == ''){ %>selected
-					<% } %>
-					disabled></option>
-			<option value="M" <% if(profile.gender == 'M'){ %>selected
-					<% } %>
-			>Hombre
-			</option>
-			<option value="F" <% if(profile.gender == 'F'){ %>selected
-					<% } %>
-			>Mujer
-			</option>
+		<select id="gender" class="validate">
+			<option value=""></option>
+			<option value="M" <% if(profile.gender == 'M'){ %>selected<% } %>>Hombre</option>
+			<option value="F" <% if(profile.gender == 'F'){ %>selected<% } %>>Mujer</option>
 		</select>
 		<label for="gender">Sexo</label>
 	</div>
 
 	<!-- SEXUAL ORIENTATION -->
-	<% var orientation = ["MUJERES", "HOMBRES", "AMBOS"] %>
-	<div class="input-field col <%= colSize %> <%= profile.gender == "" ? "hide" : "" %>">
+	<div class="input-field col s12">
 		<i class="fa fa-venus-mars prefix grey-text text-darken-2"></i>
-		<select <%= isDisabled %> id="sexual_orientation" class="validate">
-			<option value="" <% if(profile.sexualOrientation == '' || profile.gender == ""){ %>selected
-					<% } %>
-					disabled></option>
-			<% orientation.forEach(function(val) { %>
-				<option value="<%= val %>" <% if(val == profile.searchfor && profile.gender != ""){ %>selected
-						<% } %>
-				><%= val.firstUpper() %></option>
-			<% }); %>
+		<select id="sexual_orientation" class="validate">
+			<option value=""></option>
+			<% sexual_orientation.forEach(function(val) { %>
+				<% var selected = profile.religion == val ? "selected" : "" %>
+				<option <%= selected %> value="<%= val %>"><%= firstUpper(val) %></option>
+			<% }) %>
 		</select>
 		<label for="sexual_orientation">¿Qué género buscas?</label>
 	</div>
 
-	<!-- AGE RANGE -->
+	<!-- AGE MIN -->
 	<div class="input-field col s6">
 		<i class="fa fa-bullseye prefix grey-text text-darken-2"></i>
 		<select id="ageFrom">
 			<% for(var i=16; i<=100;i++) { %>
-				<option value="<%= i %>" <% if (profile.minAge === i) {%> selected <% } %>><%= i %></option>
+				<% var selected = profile.minAge === i ? "selected" : "" %>
+				<option <%= selected %> value="<%= i %>"><%= i %></option>
 			<% } %>
 		</select>
 		<label for="ageFrom">Desde</label>
 	</div>
+
+	<!-- AGE MAX -->
 	<div class="input-field col s6">
 		<select id="ageTo">
 			<% for(var i=16; i<=100;i++) { %>
-				<option value="<%= i %>" <% if (profile.maxAge === i) {%> selected <% } %>><%= i %></option>
+				<% var selected = profile.maxAge === i ? "selected" : "" %>
+				<option <%= selected %> value="<%= i %>"><%= i %></option>
 			<% } %>
 		</select>
 		<label for="ageTo">Hasta</label>
 	</div>
 
-	<% if( ! profileIncomplete){ %>
-		<div class="col s12 center">
-			<% if(isMyOwnProfile){ %>
-				<a class="waves-effect waves-light btn green" style="width: 100%" onclick="heartModalOpen()">
-					Usar un corazón (<%= profile.hearts %>)
-				</a>
-			<% } %>
-		</div>
+	<!-- HEART BUTTON -->
+	<div class="col s12 center" style="margin-top: 20px;">
+		<a class="waves-effect waves-light btn green" style="width:100%" onclick="heartModalOpen(<%= profileIncomplete %>, <%= profile.hearts %>)">
+			Usar un corazón (<%= profile.hearts %>)
+		</a>
+	</div>
 
-		<div class="col s12" style="height: 10px"></div>
-
-		<div class="col s12 center">
-			<% if(isMyOwnProfile){ %>
-				<a class="waves-effect waves-light waves-red red-text" style="width: 100%" onclick="deactivateModalOpen()">
-					Salir de Piropazo
-				</a>
-			<% } %>
-		</div>
-	<% } %>
+	<!-- EXIT BUTTON -->
+	<div class="col s12 center" style="margin-top: 10px;">
+		<a class="waves-effect waves-light waves-red red-text" style="width: 100%" onclick="deactivateModalOpen()">
+			Salir de Piropazo
+		</a>
+	</div>
 </div>
 
 <!-- SAVE BUTTON -->
+<div class="fixed-action-btn">
+	<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
+</div>
 
-<% if(isMyOwnProfile){ %>
-	<div class="fixed-action-btn">
-		<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="submitProfileData()"><i class="material-icons">save</i></a>
+<!-- HEART MODAL -->
+<div id="heartModal" class="modal">
+	<div class="modal-content">
+		<p>¿Desea que éste corazón aparezca en su perfil por 3 días, haciendo que su perfil se muestre con mayor frecuencia?</p>
 	</div>
-<% } %>
+	<div class="modal-footer">
+		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+		<a onclick="apretaste.send({command:'PIROPAZO CORAZON'})" class="modal-close waves-effect waves-red btn-flat green-text">Aceptar</a>
+	</div>
+</div>
 
+<!-- DEACTIVATE MODAL -->
 <div id="deactivateModal" class="modal">
 	<div class="modal-content">
 		<p>Si elige salir de Piropazo, su perfil no se mostrará a otros usuarios ni recibirá más flores. Siempre puede continuar su uso volviendo a abrir el servicio y eligiendo entrar.</p>
 	</div>
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})"
-		   class="modal-close waves-effect waves-red btn-flat green-text">Salir de Piropazo</a>
-	</div>
-</div>
-
-<div id="heartModal" class="modal">
-	<div class="modal-content">
-		<p>¿Desea que éste corazón aparezca en su perfil por 3 días, haciendo que su perfil se muestre con mayor
-			frecuencia?</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="exchangeHeart()" class="modal-close waves-effect waves-red btn-flat green-text">Aceptar</a>
-	</div>
-</div>
-
-<div id="congratsModal" class="modal">
-	<a href="#!" class="modal-close waves-effect waves-light btn-flat right"><i
-				class="material-icons red-text">close</i></a>
-	<div class="modal-content center-align">
-		<br>
-		<h3 class="green-text">¡Felicidades!</h3>
-		<p class="green-text">Usted ha canjeado un corazón</p>
-		<br>
-	</div>
-</div>
-
-<div id="timeLeftModal" class="modal">
-	<a href="#!" class="modal-close waves-effect waves-light btn-flat right"><i class="material-icons red-text">close</i></a>
-	<div class="modal-content center-align">
-		<p class="green-text">Tiempo restante:</p>
-		<br>
-		<h3 class="green-text"></h3>
-		<br>
+		<a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})" class="modal-close waves-effect waves-red btn-flat green-text">Salir de Piropazo</a>
 	</div>
 </div>
