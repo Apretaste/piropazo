@@ -22,9 +22,8 @@
 				<!-- CONTENT -->
 				<div class="card-content" style="padding: 12px">
 					<p>
-						<b class="<%= item.gender %>"><%= item.firstName %></b>, <%= item.age %>
-						años. <%= item.location %>.<br>
-						<%= item.education + (item.religion != 'Otra' ? ', ' + item.religion : '') %>
+						<b class="<%= item.gender %>"><%= item.firstName %></b>, <%= item.age %> años, <%= item.location %>.<br>
+						<%= item.education  %> <%= (item.religion != 'Otra' ? ', ' + item.religion : '') %>
 					</p>
 				</div>
 
