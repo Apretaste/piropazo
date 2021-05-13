@@ -23,11 +23,10 @@
 <div class="row">
 	<div id="profile-image" class="col s12">
 		<!-- PICTURE -->
-		<% if (profile.picture) { %>
-			<img id="citas-image" src="{{APP_IMAGE_PATH}}<%= profile.picture %>" alt="¡Sin foto!"/>
-		<%} else { %>
-			<div id="citas-no-image"></div>
-		<% } %>
+		<% var hideProfileImage = (profile.picture) ? '' : 'hide' %>
+		<% var hideNoProfileImage = (profile.picture) ? 'hide' : '' %>
+		<img id="citas-image" class="<%= hideProfileImage %>" src="{{APP_IMAGE_PATH}}<%= profile.picture %>" alt="¡Sin foto!"/>
+		<div id="citas-no-image" class="<%= hideNoProfileImage %>"></div>
 
 		<!-- HEART -->
 		<% if(profile.heart == 1){ %>
@@ -56,8 +55,7 @@
 	<div class="input-field col s12">
 		<i class="material-icons prefix grey-text text-darken-2">cake</i>
 		<select id="year_of_birth" class="validate">
-
-			<option value="" disabled></option>
+			<option value=""></option>
 			<% getYears().forEach(function(year) { %>
 				<% var selected = profile.yearOfBirth == year ? "selected" : "" %>
 				<option <%= selected %> value="<%= year %>"><%= year %></option>
@@ -126,7 +124,7 @@
 			<option value="M" <% if(profile.gender == 'M'){ %>selected<% } %>>Hombre</option>
 			<option value="F" <% if(profile.gender == 'F'){ %>selected<% } %>>Mujer</option>
 		</select>
-		<label for="gender">Sexo</label>
+		<label for="gender">Género</label>
 	</div>
 
 	<!-- SEXUAL ORIENTATION -->
@@ -135,7 +133,7 @@
 		<select id="sexual_orientation" class="validate">
 			<option value=""></option>
 			<% sexual_orientation.forEach(function(val) { %>
-				<% var selected = profile.religion == val ? "selected" : "" %>
+				<% var selected = profile.searchfor == val ? "selected" : "" %>
 				<option <%= selected %> value="<%= val %>"><%= firstUpper(val) %></option>
 			<% }) %>
 		</select>
@@ -192,7 +190,7 @@
 	</div>
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="apretaste.send({command:'PIROPAZO CORAZON'})" class="modal-close waves-effect waves-red btn-flat green-text">Aceptar</a>
+		<a onclick="apretaste.send({command:'PIROPAZO CORAZON'}); block(this);" class="modal-close waves-effect waves-red btn-flat green-text">Aceptar</a>
 	</div>
 </div>
 
@@ -203,6 +201,6 @@
 	</div>
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'})" class="modal-close waves-effect waves-red btn-flat green-text">Salir de Piropazo</a>
+		<a onclick="apretaste.send({'command': 'PIROPAZO DEACTIVATE'}); block(this);" class="modal-close waves-effect waves-red btn-flat green-text">Salir de Piropazo</a>
 	</div>
 </div>

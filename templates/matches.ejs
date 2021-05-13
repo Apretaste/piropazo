@@ -31,14 +31,14 @@
 				<!-- BUTTONS -->
 				<div class="card-action grey lighten-4">
 					<% if(item.type == 'MATCH') { %>
-						<a class="green-text" onclick="openChat('<%= item.id %>')">Hablar</a>
-						<a class="green-text" onclick="viewProfile('<%= item.id %>')">Perfil</a>
-						<a class="red-text" onclick="deleteMatchModalOpen('<%= item.id %>', '<%= item.firstName %>')">Olvidar</a>
+						<a class="green-text" onclick="apretaste.send({command:'CHAT', data:{userId:<%= item.id %>}}); block(this);">Hablar</a>
+						<a class="green-text" onclick="apretaste.send({command:'PERFIL', data:{username:<%= item.id %>}}); block(this);">Perfil</a>
+						<a class="red-text" onclick="deleteModalOpen(<%= item.id %>, '<%= item.firstName %>')">Olvidar</a>
 					<% } %>
 
 					<% if(item.type == 'WAITING') { %>
-						<a class="green-text" onclick="doMatch('<%= item.id %>')">Me gusta</a>
-						<a class="red-text" onclick="deleteMatchModalOpen('<%= item.id %>', '<%= item.firstName %>')">No, paso</a>
+						<a class="green-text" onclick="respondToDate(<%= item.id %>, 'SI', 'PAREJAS'); block(this);">Me gusta</a>
+						<a class="red-text" onclick="respondToDate(<%= item.id %>, 'NO', 'PAREJAS'); block(this);">No, paso</a>
 					<% } %>
 				</div>
 			</div>
@@ -46,12 +46,15 @@
 	</div>
 </div>
 
+<!-- DELETE MODAL -->
+
 <div id="deleteModal" class="modal">
+	<input id="personId" type="hidden">
 	<div class="modal-content">
 		<p>¿Seguro que deseas quitar a <b class="name"></b>? Esta desición es irreversible.</p>
 	</div>
 	<div class="modal-footer">
-		<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="sayNoAndBlock(activeId)" class="modal-close waves-effect waves-red btn-flat red-text">Borrar</a>
+		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+		<a onclick="respondToDate($('#personId').val(), 'NO', 'PAREJAS'); block(this);" class="modal-close waves-effect waves-red btn-flat red-text">Borrar</a>
 	</div>
 </div>

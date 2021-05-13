@@ -26,19 +26,6 @@ class Service
 	 */
 	public function _main(Request $request, Response $response)
 	{
-		// reset the number of views for an user
-		Database::query("UPDATE _piropazo_people SET views=0 WHERE id_person={$request->person->id}");
-
-		// run powers for amulet ROMEO
-		if (Amulets::isActive(Amulets::ROMEO, $request->person->id)) {
-			Database::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
-		}
-
-		// force users to fill their profile
-		if ($this->isProfileIncomplete($request->person)) {
-			return $this->_perfil($request, $response);
-		}
-
 		// by default, open citas
 		$this->_citas($request, $response);
 	}
@@ -55,7 +42,8 @@ class Service
 	public function _citas(Request $request, Response $response)
 	{
 		// dont check dates if you are not active
-		if (!$this->isActive($request->person->id)) {
+		$isInactive = Database::queryFirst("SELECT active FROM _piropazo_people WHERE id_person={$request->person->id}")->active < 1;
+		if ($isInactive) {
 			return $response->setTemplate('message.ejs', [
 				'navigation' => false,
 				'header' => 'Tiempo sin verte',
@@ -63,6 +51,19 @@ class Service
 				'text' => 'Parece que es primera vez que usa Piropazo o que ha desactivado su uso anteriormente. Si desea buscar pareja en Piropazo, presione el botón a continuación para hacer su perfil público. Otros usuarios podrán ver su foto, nombre y datos del perfil, pero no podrán ver su @username',
 				'button' => ['href' => 'PIROPAZO ACTIVATE', 'caption' => 'Usar Piropazo']
 			]);
+		}
+
+		// force users to fill their profile
+		if ($this->isProfileIncomplete($request->person)) {
+			return $this->_perfil($request, $response);
+		}
+
+		// reset the number of views for an user
+		Database::query("UPDATE _piropazo_people SET views=0 WHERE id_person={$request->person->id}");
+
+		// run powers for amulet ROMEO
+		if (Amulets::isActive(Amulets::ROMEO, $request->person->id)) {
+			Database::query("UPDATE _piropazo_people SET crowned=CURRENT_TIMESTAMP WHERE id_person={$request->person->id}");
 		}
 
 		// create cache if needed
@@ -84,8 +85,8 @@ class Service
 				'header' => 'No hay citas',
 				'icon' => 'sentiment_very_dissatisfied',
 				'text' => 'Esto es vergonzoso, pero no pudimos encontrar a nadie que vaya con usted. Por favor regrese más tarde, o cambie su perfil e intente nuevamente.',
-				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil'],
-				'title' => 'Citas']);
+				'button' => ['href' => 'PIROPAZO PERFIL', 'caption' => 'Editar perfil']
+			]);
 		}
 
 		// increse the number of views for the user
@@ -119,7 +120,7 @@ class Service
 		// create content for the view
 		$content = [
 			'person' => $person,
-			'myflowers' => $myFlowers->flowers
+			'flowers' => $myFlowers->flowers
 		];
 
 		// build the response
@@ -142,56 +143,49 @@ class Service
 		if (empty($idTo)) return;
 
 		// check if there is any previous record between you and that person
-		$record = Database::query("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
+		$record = Database::queryFirst("SELECT status FROM _piropazo_relationships WHERE id_from='$idTo' AND id_to='$idFrom'");
 
-		// if they liked you, like too; if they dislike you, block
-		if ($record) {
-			// if they liked you, create a match
-			if ($record[0]->status === 'like') {
-				// get the target @username
-				$username = Database::query("SELECT username FROM person WHERE id = $idTo")[0]->username;
+		// if they liked you make a match
+		if ($record && $record->status == 'like') {
+			// get the target @username
+			$username = Database::queryFirst("SELECT username FROM person WHERE id = $idTo")->username;
 
-				// make friends
-				$request->person->requestFriend($idTo);
-				Person::find($idTo)->requestFriend($idFrom);
+			// make friends
+			$request->person->requestFriend($idTo);
+			Person::find($idTo)->requestFriend($idFrom);
 
-				// update to create a match
-				Database::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+			// update to create a match
+			Database::query("UPDATE _piropazo_relationships SET status='match', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
 
-				// add the experience
-				Level::setExperience('PIROPAZO_MATCH', $idFrom);
-				Level::setExperience('PIROPAZO_MATCH', $idTo);
+			// add the experience
+			Level::setExperience('PIROPAZO_MATCH', $idFrom);
+			Level::setExperience('PIROPAZO_MATCH', $idTo);
 
-				// submit to Google Analytics 
-				GoogleAnalytics::event('piropazo_match', $idTo);
+			// submit to Google Analytics 
+			GoogleAnalytics::event('piropazo_match', $idTo);
 
-				// create notifications for both you and your date
-				Notifications::alert($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
-				Notifications::alert(
-					$idTo,
-					"Felicidades, ambos tu y @{$request->person->username} se han gustado",
-					'people',
-					'{"command":"PIROPAZO PAREJAS"}'
-				);
-			}
-
-			// if they dislike you, block that match
-			if ($record[0]->status === 'dislike') {
-				Database::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
-			}
-			return;
+			// create notifications for both you and your date
+			Notifications::alert($idFrom, "Felicidades, ambos tu y @$username se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
+			Notifications::alert($idTo, "Felicidades, ambos tu y @{$request->person->username} se han gustado", 'people', '{"command":"PIROPAZO PAREJAS"}');
 		}
 
-		// insert the new relationship
-		$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
-		Database::query("
-		START TRANSACTION;
-		DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
-		INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
-		COMMIT");
+		// if they disliked you block them
+		if ($record && $record->status == 'dislike') {
+			Database::query("UPDATE _piropazo_relationships SET status='blocked', expires_matched_blocked=CURRENT_TIMESTAMP WHERE id_from='$idTo' AND id_to='$idFrom'");
+		}
+
+		// if there is no record, insert the new relationship
+		if (empty($record)) {
+			$threeDaysForward = date('Y-m-d H:i:s', strtotime('+3 days'));
+			Database::query("
+				START TRANSACTION;
+				DELETE FROM _piropazo_relationships WHERE id_from='$idFrom' AND id_to='$idTo';
+				INSERT INTO _piropazo_relationships (id_from,id_to,status,expires_matched_blocked) VALUES ('$idFrom','$idTo','like','$threeDaysForward');
+				COMMIT");
+		}
 
 		// remove match from the cache so it won't show again
-		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");
+		Database::query("DELETE FROM _piropazo_cache WHERE user={$idFrom} AND suggestion={$idTo}");			
 
 		// submit to Google Analytics 
 		GoogleAnalytics::event('piropazo_yes', $idTo);
@@ -212,9 +206,7 @@ class Service
 		// get the ids from and to
 		$idFrom = $request->person->id;
 		$idTo = $request->input->data->id;
-		if (empty($idTo)) {
-			return;
-		}
+		if (empty($idTo)) return;
 
 		// mark the transaction as blocked
 		Database::query("
@@ -275,11 +267,13 @@ class Service
 			$images[] = Bucket::getPathByEnvironment('perfil', $profile->picture);
 		}
 
+		// check if the profile is incomplete
+		$profileIncomplete = $this->isProfileIncomplete($request->person);
+
 		// create content for the view
 		$content = [
-			'title' => 'Perfil',
 			'profile' => $profile,
-			'profileIncomplete' => $this->isProfileIncomplete($request->person),
+			'profileIncomplete' => $profileIncomplete,
 		];
 
 		// erase unwanted properties in the object
@@ -330,8 +324,8 @@ class Service
 				'header' => 'No tiene parejas',
 				'icon' => 'sentiment_very_dissatisfied',
 				'text' => 'Aún no tiene parejas ni nadie ha pedido ser pareja suya. Si esperaba ver a alguien aquí es posible que hayan dejado el servicio. No se desanime, hay muchos muchos peces en el océano.',
-				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja'],
-				'title' => 'Parejas']);
+				'button' => ['href' => 'PIROPAZO CITAS', 'caption' => 'Buscar Pareja']
+			]);
 		}
 
 		// organize list of matches
@@ -360,14 +354,8 @@ class Service
 		// mark the last time the system was used
 		$this->markLastTimeUsed($request->person->id);
 
-		// create response array
-		$content = [
-			'title' => 'Parejas',
-			'people' => $people
-		];
-
 		// send data to the view
-		$response->setTemplate('matches.ejs', $content, $images);
+		$response->setTemplate('matches.ejs', ['people' => $people], $images);
 	}
 
 	/**
@@ -396,7 +384,7 @@ class Service
 		$message = !empty($message) ? "{$request->person->firstName} le envia una flor: $message" : "{$request->person->firstName} le envia una flor";
 
 		// get the recipient's username
-		$name = Database::query("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")[0]->first_name;
+		$name = Database::queryFirst("SELECT first_name FROM person WHERE id='{$request->input->data->id}'")->first_name;
 
 		// send the flower and increase response time in 7 days
 		Database::query("
@@ -406,6 +394,9 @@ class Service
 
 		// create a notification for the user
 		Notifications::alert($request->input->data->id, "$message", 'local_florist', '{"command":"PIROPAZO PAREJAS"}');
+
+		// create the match
+		$this->_si($request, $response);
 
 		// let the sender know the flower was delivered
 		$response->setTemplate('message.ejs', [
@@ -480,8 +471,7 @@ class Service
 		$content = [
 			'credit' => $credit,
 			'flowers' => $user->flowers,
-			'crowns' => $user->crowns,
-			'title' => 'Tienda'
+			'crowns' => $user->crowns
 		];
 
 		// build the response
@@ -713,22 +703,5 @@ class Service
 	private function markLastTimeUsed($id)
 	{
 		Database::query("UPDATE _piropazo_people SET last_access=CURRENT_TIMESTAMP WHERE id_person='$id'");
-	}
-
-	/**
-	 * Check if the user exists in piropazo and is active
-	 *
-	 * @param Int $id
-	 * @throws Alert
-	 * @author ricardo
-	 */
-	private function isActive($id)
-	{
-		$res = Database::query("SELECT active FROM _piropazo_people WHERE id_person='$id'");
-		if ($res) {
-			return $res[0]->active;
-		} else {
-			return false;
-		}
 	}
 }

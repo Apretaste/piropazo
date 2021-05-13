@@ -53,20 +53,20 @@
 		<!-- BUTTONS -->
 		<div id="citas-buttons" class="col s12 center-align valign-wrapper">
 			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large grey darken-2" style="margin-top:25px;" onclick="respondToDate('<%= person.id %>', 'NO')">
+				<a class="waves-effect waves-light btn-floating btn-large grey darken-2" style="margin-top:25px;" onclick="respondToDate(<%= person.id %>, 'NO', 'CITAS'); block(this);">
 					<i class="material-icons large">clear</i>
 				</a>
 			</div>
 			<div class="col s4">
-				<% if(myflowers > 0) { %>
-					<div id="citas-flower-conter"><%= myflowers %></div>
+				<% if(flowers > 0) { %>
+					<div id="citas-flower-conter"><%= flowers %></div>
 				<% } %>
-				<a class="waves-effect waves-light btn-floating btn-large <%= myflowers > 0 ? 'green': 'grey' %>" onclick="openFlowerModal('<%= person.id %>', '<%= person.firstName %>')">
+				<a class="waves-effect waves-light btn-floating btn-large <%= flowers > 0 ? 'green': 'grey' %>" onclick="openFlowerModal(<%= person.id %>, '<%= person.firstName %>', <%= flowers %>)">
 					<i class="material-icons large">local_florist</i>
 				</a>
 			</div>
 			<div class="col s4">
-				<a class="waves-effect waves-light btn-floating btn-large green" style="margin-top:25px;" onclick="respondToDate('<%= person.id %>', 'SI')">
+				<a class="waves-effect waves-light btn-floating btn-large green" style="margin-top:25px;" onclick="respondToDate(<%= person.id %>, 'SI', 'CITAS'); block(this);">
 					<i class="material-icons large">check</i>
 				</a>
 			</div>
@@ -74,9 +74,10 @@
 	</div>
 </div>
 
-<!-- FLOWER POPUP -->
+<!-- FLOWER MODAL -->
 
 <div id="modalFlower" class="modal">
+	<input id="personId" type="hidden">
 	<div class="modal-content">
 		<h4 class="green-text">Enviar flor</h4>
 		<p>Agregue un mensaje para enviar a <b class="name"></b> y llamar su atención</p>
@@ -86,7 +87,7 @@
 		</div>
 	</div>
 	<div class="modal-footer">
-		<a href="#!" onclick="activeId = ''" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
-		<a href="#!" class="modal-close waves-effect waves-green btn-flat green-text" onclick="sendFlower()">Enviar</a>
+		<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cerrar</a>
+		<a href="#!" class="modal-close waves-effect waves-green btn-flat green-text" onclick="sendFlower(); block(this);">Enviar</a>
 	</div>
 </div>
