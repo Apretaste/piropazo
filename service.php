@@ -41,8 +41,11 @@ class Service
 	 */
 	public function _citas(Request $request, Response $response)
 	{
+		// check if you the user is inactive
+		$res = Database::queryFirst("SELECT active FROM _piropazo_people WHERE id_person={$request->person->id}");
+		$isInactive = empty($res) || $res->active < 1;
+
 		// dont check dates if you are not active
-		$isInactive = Database::queryFirst("SELECT active FROM _piropazo_people WHERE id_person={$request->person->id}")->active < 1;
 		if ($isInactive) {
 			return $response->setTemplate('message.ejs', [
 				'navigation' => false,
@@ -459,13 +462,13 @@ class Service
 	public function _tienda(Request $request, Response $response)
 	{
 		// get the user items
-		$user = Database::query("
+		$user = Database::queryFirst("
 			SELECT flowers, crowns
 			FROM _piropazo_people
-			WHERE id_person = {$request->person->id}")[0];
+			WHERE id_person = {$request->person->id}");
 
 		// get the user credit
-		$credit = Database::query("SELECT credit FROM person WHERE id={$request->person->id}")[0]->credit;
+		$credit = Database::queryFirst("SELECT credit FROM person WHERE id={$request->person->id}")->credit;
 
 		// prepare content for the view
 		$content = [
